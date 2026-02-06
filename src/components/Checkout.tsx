@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, CreditCard, Mail, User, MapPin, Phone } from 'lucide-react';
+import { Loader2, CreditCard, User, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,6 @@ export function Checkout({ isOpen, onClose, onSuccess }: CheckoutProps) {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -50,7 +49,6 @@ export function Checkout({ isOpen, onClose, onSuccess }: CheckoutProps) {
   });
 
   const paymentMethod = watch('paymentMethod');
-  const installments = watch('installments');
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('pt-BR', {
@@ -80,6 +78,9 @@ export function Checkout({ isOpen, onClose, onSuccess }: CheckoutProps) {
         description: `Pedido BRAVOS BRASIL - ${cart.items.length} item(ns)`,
         installments: data.installments,
         payment_method_id: paymentMethod === 'credit_card' ? 'visa' : paymentMethod === 'debit_card' ? 'master' : 'pix',
+        payer: {
+          email: data.email,
+        },
         items: cart.items,
         payerEmail: data.email,
         payerName: data.name,

@@ -8,15 +8,13 @@
  */
 
 import { initMercadoPago } from '@mercadopago/sdk-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface MercadoPagoProviderProps {
   children: React.ReactNode;
 }
 
 export function MercadoPagoProvider({ children }: MercadoPagoProviderProps) {
-  const [isReady, setIsReady] = useState(false);
-
   useEffect(() => {
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
     
@@ -25,7 +23,6 @@ export function MercadoPagoProvider({ children }: MercadoPagoProviderProps) {
         'VITE_MERCADOPAGO_PUBLIC_KEY não está configurado. ' +
         'Adicione a Public Key no arquivo .env'
       );
-      setIsReady(false);
       return;
     }
 
@@ -35,11 +32,8 @@ export function MercadoPagoProvider({ children }: MercadoPagoProviderProps) {
       initMercadoPago(publicKey, {
         locale: 'pt-BR',
       });
-
-      setIsReady(true);
     } catch (error) {
       console.error('Erro ao inicializar Mercado Pago SDK:', error);
-      setIsReady(false);
     }
   }, []);
 

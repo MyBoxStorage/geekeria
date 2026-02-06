@@ -18,7 +18,7 @@ interface PaymentBrickProps {
   payerEmail: string;
   payerName?: string;
   onReady?: () => void;
-  onSubmit?: (formData: any) => void;
+  onSubmit?: (formData: any) => Promise<unknown>;
   onError?: (error: any) => void;
 }
 
@@ -80,7 +80,7 @@ export function PaymentBrick({
           bankTransfer: ['pix'],
         },
       }}
-      onSubmit={onSubmit}
+      onSubmit={onSubmit || (async () => Promise.resolve())}
       onReady={onReady}
       onError={onError}
     />
