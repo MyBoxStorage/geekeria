@@ -34,7 +34,8 @@ export interface CreatePreferenceResponse {
   };
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+// Use VITE_API_URL as single source of truth (no localhost fallback in production)
+const BACKEND_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Cria uma preferência de pagamento no Mercado Pago via backend

@@ -21,8 +21,21 @@ import { listAdminOrders, exportAdminOrder } from './routes/admin/orders';
 // Carrega variáveis de ambiente
 dotenv.config();
 
+// Production environment validation (fail fast on missing required vars)
+if (process.env.NODE_ENV === 'production') {
+  const required = ['DATABASE_URL', 'MP_ACCESS_TOKEN', 'FRONTEND_URL', 'BACKEND_URL', 'ADMIN_TOKEN'];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length) {
+    throw new Error(`Missing required env vars in production: ${missing.join(', ')}`);
+  }
+}
+
 const app = express();
-const PORT = process.env.PORT || 3001;
+
+// Trust proxy for correct IP detection behind Fly.io/reverse proxy
+app.set('trust proxy', 1);
+
+const PORT = parseInt(process.env.PORT || '3001', 10);
 
 /**
  * Rate limiting simples em memória (por IP + rota)
@@ -86,13 +99,27 @@ const rateLimitAdminExportOrder = createRouteRateLimiter(
 );
 
 // Middlewares
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-}));
+// CORS: Support multiple origins (production + staging if needed)
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()).filter(Boolean)
+  : ['http://localhost:5173'];
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// Body size limits (DoS protection)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -144,10 +171,11 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://0.0.0.0:${PORT}/health`);
   console.log(`💳 Mercado Pago integration ready`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 export default app;
