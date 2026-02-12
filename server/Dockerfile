@@ -43,6 +43,10 @@ RUN npm run build
 
 # Production stage
 FROM base AS runner
+
+# Adicionar OpenSSL para Prisma funcionar no Alpine (Fly.io)
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 ENV NODE_ENV=production
