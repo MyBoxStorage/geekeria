@@ -8,15 +8,15 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createPayment } from './routes/mp/create-payment';
-import { createPreference } from './routes/mp/create-preference';
-import { webhookHandler } from './routes/mp/webhooks';
-import { healthCheck } from './routes/health';
-import { shippingQuote } from './routes/shipping/quote';
-import { createOrder } from './routes/checkout/create-order';
-import { getOrder } from './routes/orders/get-order';
-import { markMontink, validateAdminToken } from './routes/orders/mark-montink';
-import { listAdminOrders, exportAdminOrder } from './routes/admin/orders';
+import { createPayment } from './routes/mp/create-payment.js';
+import { createPreference } from './routes/mp/create-preference.js';
+import { webhookHandler } from './routes/mp/webhooks.js';
+import { healthCheck } from './routes/health.js';
+import { shippingQuote } from './routes/shipping/quote.js';
+import { createOrder } from './routes/checkout/create-order.js';
+import { getOrder } from './routes/orders/get-order.js';
+import { markMontink, validateAdminToken } from './routes/orders/mark-montink.js';
+import { listAdminOrders, exportAdminOrder } from './routes/admin/orders.js';
 
 // Carrega variáveis de ambiente
 dotenv.config();

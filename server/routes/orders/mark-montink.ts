@@ -14,8 +14,8 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../utils/prisma';
-import { logger } from '../../utils/logger';
+import { prisma } from '../../utils/prisma.js';
+import { logger } from '../../utils/logger.js';
 
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 

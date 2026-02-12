@@ -13,9 +13,9 @@
  * a função createMontinkOrder será implementada.
  */
 
-import { montinkRequest } from './client';
-import { logger } from '../../utils/logger';
-import type { MontinkOrderResponse } from './types';
+import { montinkRequest } from './client.js';
+import { logger } from '../../utils/logger.js';
+import type { MontinkOrderResponse } from './types.js';
 
 /**
  * Busca um pedido na Montink por ID

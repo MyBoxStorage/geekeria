@@ -8,10 +8,10 @@
  * 2. Endpoint POST oficial da Montink estiver disponível e documentado
  */
 
-import { prisma } from '../utils/prisma';
-import { logger } from '../utils/logger';
-import { mapOrderToMontinkPayload } from '../integrations/montink/mappers';
-import { createMontinkOrder } from '../integrations/montink/orders';
+import { prisma } from '../utils/prisma.js';
+import { logger } from '../utils/logger.js';
+import { mapOrderToMontinkPayload } from '../integrations/montink/mappers.js';
+import { createMontinkOrder } from '../integrations/montink/orders.js';
 
 const MONTINK_CREATE_ORDER_ENABLED = process.env.MONTINK_CREATE_ORDER_ENABLED === 'true';
 

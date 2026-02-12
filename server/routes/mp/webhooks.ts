@@ -7,8 +7,8 @@
  */
 
 import { Request, Response } from 'express';
-import { prisma } from '../../utils/prisma';
-import { logger } from '../../utils/logger';
+import { prisma } from '../../utils/prisma.js';
+import { logger } from '../../utils/logger.js';
 
 export async function webhookHandler(req: Request, res: Response) {
   // Sempre responder 200 rapidamente para o Mercado Pago

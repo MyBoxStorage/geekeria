@@ -4,7 +4,7 @@
  * Cliente reutilizável para fazer requisições à API da Montink
  */
 
-import { logger } from '../../utils/logger';
+import { logger } from '../../utils/logger.js';
 
 const MONTINK_BASE_URL = process.env.MONTINK_BASE_URL ?? 'https://api.montink.com.br';
 const MONTINK_API_TOKEN = process.env.MONTINK_API_TOKEN;

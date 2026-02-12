@@ -7,8 +7,8 @@
 
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../utils/prisma';
-import { logger } from '../../utils/logger';
+import { prisma } from '../../utils/prisma.js';
+import { logger } from '../../utils/logger.js';
 
 const listAdminOrdersSchema = z.object({
   status: z.string().default('READY_FOR_MONTINK'),
@@ -52,7 +52,7 @@ export async function listAdminOrders(req: Request, res: Response) {
     const { status, limit } = parsed.data;
 
     const orders = await prisma.order.findMany({
-      where: { status },
+      where: { status: status as 'PENDING' | 'PAID' | 'READY_FOR_MONTINK' | 'SENT_TO_MONTINK' | 'FAILED_MONTINK' | 'CANCELED' | 'FAILED' | 'REFUNDED' },
       orderBy: { createdAt: 'asc' },
       take: limit,
       include: {

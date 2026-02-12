@@ -2,8 +2,8 @@
  * Funções de integração com API Montink para cálculo de frete
  */
 
-import { montinkRequest } from './client';
-import { logger } from '../../utils/logger';
+import { montinkRequest } from './client.js';
+import { logger } from '../../utils/logger.js';
 
 /**
  * Parâmetros para cotação de frete Montink

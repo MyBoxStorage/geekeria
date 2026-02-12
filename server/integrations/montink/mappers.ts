@@ -4,12 +4,12 @@
  * Estas funções apenas transformam dados, não fazem chamadas à API
  */
 
-import type { MontinkOrderRequest } from './types';
-import { prisma } from '../../utils/prisma';
+import type { MontinkOrderRequest } from './types.js';
+import { prisma } from '../../utils/prisma.js';
 
-// Tipos do Prisma - usar tipos retornados pelas queries
-type Order = Awaited<ReturnType<typeof prisma.order.findUnique>>;
-type OrderItem = Awaited<ReturnType<typeof prisma.orderItem.findUnique>>;
+// Tipos do Prisma - não-nulos para uso no mapper
+type Order = NonNullable<Awaited<ReturnType<typeof prisma.order.findUnique>>>;
+type OrderItem = NonNullable<Awaited<ReturnType<typeof prisma.orderItem.findUnique>>>;
 
 /**
  * Mapeia Order + OrderItems para payload de criação de pedido na Montink

@@ -13,13 +13,13 @@
 
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { logger } from '../../utils/logger';
-import { getMontinkShippingQuote } from '../../integrations/montink/shipping';
+import { logger } from '../../utils/logger.js';
+import { getMontinkShippingQuote } from '../../integrations/montink/shipping.js';
 import { 
   SHIPPING_STRATEGY, 
   FALLBACK_SHIPPING_CONFIG,
   calculateFallbackShipping 
-} from '../../config/shipping';
+} from '../../config/shipping.js';
 
 // Schema de validação
 const shippingQuoteSchema = z.object({
