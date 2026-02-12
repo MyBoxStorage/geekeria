@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for bravos on 2026-02-12T05:35:27Z
+# fly.toml app configuration file generated for bravos on 2026-02-12T14:40:32Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'bravos'
-primary_region = 'iad'
+primary_region = 'gru'
 
 [build]
 
@@ -20,4 +20,4 @@ primary_region = 'iad'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 256
