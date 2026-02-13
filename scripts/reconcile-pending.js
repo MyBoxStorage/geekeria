@@ -35,7 +35,7 @@ async function main() {
 
     if (data.ok === true) {
       console.log(
-        `[OK] checked=${data.checked} updated=${data.updated} skipped=${data.skippedMissingPaymentId || 0} errors=${data.errors || 0}`
+        `[OK] checked=${data.checked} updated=${data.updated} unchanged=${data.unchanged || 0} skippedMissingPaymentId=${data.skippedMissingPaymentId || 0} skippedRace=${data.skippedRace || 0} errors=${data.errors || 0}`
       );
       process.exit(0);
     }

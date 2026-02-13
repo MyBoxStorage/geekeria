@@ -29,7 +29,14 @@ export class MpHttpError extends Error {
   }
 }
 
-export async function fetchMpPayment(paymentId: string): Promise<MpPaymentPayload> {
+export type FetchMpPaymentOptions = {
+  signal?: AbortSignal;
+};
+
+export async function fetchMpPayment(
+  paymentId: string,
+  options?: FetchMpPaymentOptions
+): Promise<MpPaymentPayload> {
   const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) {
     throw new Error('MP_ACCESS_TOKEN not set');
@@ -42,6 +49,7 @@ export async function fetchMpPayment(paymentId: string): Promise<MpPaymentPayloa
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
+    signal: options?.signal,
   });
 
   if (!res.ok) {

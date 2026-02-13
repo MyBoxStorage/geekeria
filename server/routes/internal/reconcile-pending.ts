@@ -3,7 +3,7 @@
  *
  * Reconciles stale PENDING orders against Mercado Pago.
  * Protected by x-admin-token and rate limit. No PII in response.
- * Records AdminEvent for audit: RECONCILE_UPDATED_STATUS, RECONCILE_SKIPPED_MISSING_PAYMENT_ID, RECONCILE_ERROR.
+ * Records AdminEvent for audit: RECONCILE_UPDATED_STATUS, RECONCILE_SKIPPED_MISSING_PAYMENT_ID, RECONCILE_SKIPPED_RACE, RECONCILE_ERROR.
  * 
  * Mapeamento de status:
  * - approved → PAID
@@ -13,12 +13,57 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
-import { fetchMpPayment } from '../../services/mp/fetchPayment.js';
+import { fetchMpPayment, MpHttpError } from '../../services/mp/fetchPayment.js';
 
 const DEFAULT_OLDER_THAN_MINUTES = 5;
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 50;
 const MAX_EXAMPLES = 5;
+const MP_FETCH_TIMEOUT_MS = 12_000;
+const MP_RETRY_ATTEMPTS = 2;
+const MP_RETRY_BACKOFF_MS = 500;
+
+function isRetryableError(err: unknown): boolean {
+  if (err instanceof MpHttpError) {
+    return err.status === 429 || (err.status >= 500 && err.status < 600);
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    return msg.includes('abort') || msg.includes('timeout') || msg.includes('network') || msg.includes('fetch');
+  }
+  return false;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchMpPaymentWithTimeoutAndRetry(paymentId: string): Promise<{ status?: string }> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= MP_RETRY_ATTEMPTS; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), MP_FETCH_TIMEOUT_MS);
+    try {
+      const payment = await fetchMpPayment(paymentId, { signal: controller.signal });
+      clearTimeout(timeout);
+      return payment;
+    } catch (err) {
+      clearTimeout(timeout);
+      lastErr = err;
+      if (attempt < MP_RETRY_ATTEMPTS && isRetryableError(err)) {
+        logger.warn('[RECONCILE] MP fetch retryable error, retrying', {
+          paymentId,
+          attempt,
+          error: err instanceof Error ? err.message : 'Unknown',
+        });
+        await sleep(MP_RETRY_BACKOFF_MS * attempt);
+      } else {
+        throw lastErr;
+      }
+    }
+  }
+  throw lastErr;
+}
 
 /**
  * Mapeia status do Mercado Pago para status do pedido (específico para reconcile)
@@ -89,6 +134,7 @@ export async function reconcilePending(req: Request, res: Response) {
     updated: 0,
     unchanged: 0,
     skippedMissingPaymentId: 0,
+    skippedRace: 0,
     errors: 0,
     examples: {
       updated: [] as string[],
@@ -125,8 +171,8 @@ export async function reconcilePending(req: Request, res: Response) {
     }
 
     try {
-      // Consultar status no Mercado Pago
-      const payment = await fetchMpPayment(order.mpPaymentId);
+      // Consultar status no Mercado Pago (com timeout 12s e retry para erros retentáveis)
+      const payment = await fetchMpPaymentWithTimeoutAndRetry(order.mpPaymentId);
       const mpStatus = payment.status ?? null;
       const mappedStatus = mapMpStatusForReconcile(mpStatus);
 
@@ -152,10 +198,10 @@ export async function reconcilePending(req: Request, res: Response) {
         continue;
       }
 
-      // Atualizar pedido no banco
+      // Atualizar pedido no banco com CAS: WHERE id AND status='PENDING' para evitar corrida com webhook
       const oldStatus = order.status;
-      await prisma.order.update({
-        where: { id: order.id },
+      const updateResult = await prisma.order.updateMany({
+        where: { id: order.id, status: 'PENDING' },
         data: {
           status: mappedStatus,
           mpStatus,
@@ -163,17 +209,43 @@ export async function reconcilePending(req: Request, res: Response) {
         },
       });
 
-      // Criar evento de auditoria
+      if (updateResult.count === 0) {
+        summary.skippedRace += 1;
+        logger.info('[RECONCILE] Skipped race - webhook or another process updated first', {
+          orderId: order.id,
+          externalReference: order.externalReference,
+          mpPaymentId: order.mpPaymentId,
+          source,
+        });
+        await prisma.adminEvent.create({
+          data: {
+            action: 'RECONCILE_SKIPPED_RACE',
+            orderId: order.id,
+            externalReference: order.externalReference,
+            metadata: {
+              externalReference: order.externalReference,
+              mpPaymentId: order.mpPaymentId,
+              attemptedStatus: mappedStatus,
+              source,
+              checkedAt,
+            },
+          },
+        });
+        continue;
+      }
+
+      // Criar evento de auditoria (RECONCILE_UPDATED_STATUS)
       await prisma.adminEvent.create({
         data: {
           action: 'RECONCILE_UPDATED_STATUS',
           orderId: order.id,
           externalReference: order.externalReference,
           metadata: {
-            from: oldStatus,
-            to: mappedStatus,
-            mpStatus,
+            externalReference: order.externalReference,
+            fromStatus: oldStatus,
+            toStatus: mappedStatus,
             mpPaymentId: order.mpPaymentId,
+            mpStatus,
             source,
             checkedAt,
           },
@@ -230,6 +302,7 @@ export async function reconcilePending(req: Request, res: Response) {
     updated: summary.updated,
     unchanged: summary.unchanged,
     skippedMissingPaymentId: summary.skippedMissingPaymentId,
+    skippedRace: summary.skippedRace,
     errors: summary.errors,
   });
 
