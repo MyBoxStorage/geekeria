@@ -26,6 +26,7 @@ export async function monitorStatus(req: Request, res: Response) {
   let pendingTooLong = { count: 0, examples: [] as string[] };
   let abandonedPending = { count: 0, examples: [] as string[] };
   let failedWebhooks = { count: 0, examples: [] as string[] };
+  let ignoredWebhooksLast24h = { count: 0, examples: [] as string[] };
   let countHighRiskLast24h = 0;
   let countHighRiskLast1h = 0;
 
@@ -42,6 +43,7 @@ export async function monitorStatus(req: Request, res: Response) {
       pendingTooLong,
       abandonedPending,
       failedWebhooks,
+      ignoredWebhooksLast24h,
       countHighRiskLast24h,
       countHighRiskLast1h,
     });
@@ -103,7 +105,7 @@ export async function monitorStatus(req: Request, res: Response) {
     // If query fails, leave count 0 and examples []
   }
 
-  // C) Failed webhooks in last 24h (status === 'failed', receivedAt >= now - 24h)
+  // C) Failed webhooks in last 24h — EXACTLY status='failed' (ignores 'ignored', null, etc.)
   const webhookCutoff = new Date(now.getTime() - FAILED_WEBHOOKS_LOOKBACK_HOURS * 60 * 60 * 1000);
   try {
     const failedEvents = await prisma.webhookEvent.findMany({
@@ -124,6 +126,31 @@ export async function monitorStatus(req: Request, res: Response) {
     failedWebhooks = {
       count,
       examples: failedEvents.map((e: { eventId: string }) => e.eventId),
+    };
+  } catch {
+    // If query fails, leave count 0 and examples []
+  }
+
+  // C2) Ignored webhooks in last 24h (observability only; does not affect ok)
+  try {
+    const ignoredEvents = await prisma.webhookEvent.findMany({
+      where: {
+        status: 'ignored',
+        receivedAt: { gte: webhookCutoff },
+      },
+      select: { eventId: true },
+      orderBy: { receivedAt: 'desc' },
+      take: 5,
+    });
+    const ignoredCount = await prisma.webhookEvent.count({
+      where: {
+        status: 'ignored',
+        receivedAt: { gte: webhookCutoff },
+      },
+    });
+    ignoredWebhooksLast24h = {
+      count: ignoredCount,
+      examples: ignoredEvents.map((e: { eventId: string }) => e.eventId),
     };
   } catch {
     // If query fails, leave count 0 and examples []
@@ -174,6 +201,7 @@ export async function monitorStatus(req: Request, res: Response) {
     pendingTooLong,
     abandonedPending,
     failedWebhooks,
+    ignoredWebhooksLast24h,
     countHighRiskLast24h,
     countHighRiskLast1h,
   });
