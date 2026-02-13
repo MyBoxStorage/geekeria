@@ -35,6 +35,9 @@ jobs:
       - name: Build frontend
         run: npm ci && npm run build
 
+      - name: Prisma generate (for backend build)
+        run: cd server && npx prisma@5.22.0 generate --schema=../prisma/schema.prisma
+
       - name: Build backend
         run: cd server && npm ci && npm run build
 
