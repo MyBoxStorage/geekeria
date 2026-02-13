@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prisma:generate": "npx prisma@5.22.0 generate --schema=./prisma/schema.prisma",
+    "prisma:status": "npx prisma@5.22.0 migrate status --schema=./prisma/schema.prisma"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
