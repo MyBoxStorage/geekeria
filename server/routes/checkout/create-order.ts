@@ -17,6 +17,12 @@ import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { randomUUID } from 'crypto';
+import {
+  getClientIp,
+  getClientUserAgent,
+  computeOrderRiskSimple,
+  truncateForDb,
+} from '../../services/risk/riskScoring.js';
 
 // Schema de validação
 const createOrderSchema = z.object({
@@ -108,6 +114,26 @@ export async function createOrder(req: Request, res: Response) {
     // Gerar external reference único
     const externalReference = `order_${randomUUID()}`;
 
+    // Telemetria e risco (não bloqueia; se falhar, persiste sem risco)
+    const ipAddress = getClientIp(req) ?? null;
+    const userAgent = getClientUserAgent(req) ?? null;
+    let risk: { riskScore: number; riskFlag: boolean; riskReasons: string | null } = {
+      riskScore: 0,
+      riskFlag: false,
+      riskReasons: null,
+    };
+    try {
+      risk = computeOrderRiskSimple({
+        ipAddress,
+        userAgent,
+        payerCpf: payer.cpf,
+        shippingCep: shipping?.cep ?? null,
+        shippingState: shipping?.state ?? null,
+      });
+    } catch {
+      // não bloquear: mantém risk zerado
+    }
+
     logger.info(`Creating order: externalRef=${externalReference}, total=${totals.total}`);
 
     // Criar Order e OrderItems em uma transação
@@ -136,6 +162,12 @@ export async function createOrder(req: Request, res: Response) {
           shippingCost: totals.shippingCost,
           shippingService: shipping?.service,
           shippingDeadline: shipping?.deadline,
+          // Telemetria / risco
+          ipAddress: truncateForDb(ipAddress ?? undefined),
+          userAgent: truncateForDb(userAgent ?? undefined),
+          riskScore: risk.riskScore,
+          riskFlag: risk.riskFlag,
+          riskReasons: risk.riskReasons,
         },
       });
 

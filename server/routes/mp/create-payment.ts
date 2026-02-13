@@ -13,11 +13,15 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
-
-const prisma = new PrismaClient();
+import {
+  getClientIp,
+  getClientUserAgent,
+  computeOrderRiskSimple,
+  truncateForDb,
+} from '../../services/risk/riskScoring.js';
 
 // Schema de validação
 const createPaymentSchema = z.object({
@@ -64,6 +68,26 @@ export async function createPayment(req: Request, res: Response) {
 
     // Gerar referência externa única
     const externalReference = `BRAVOS-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Telemetria e risco (não bloqueia; se falhar, persiste sem risco)
+    const ipAddress = getClientIp(req) ?? null;
+    const userAgent = getClientUserAgent(req) ?? null;
+    let risk: { riskScore: number; riskFlag: boolean; riskReasons: string | null } = {
+      riskScore: 0,
+      riskFlag: false,
+      riskReasons: null,
+    };
+    try {
+      risk = computeOrderRiskSimple({
+        ipAddress,
+        userAgent,
+        payerCpf: payer.cpf,
+        shippingCep: null,
+        shippingState: null,
+      });
+    } catch {
+      // não bloquear
+    }
 
     // Preparar dados para o Mercado Pago
     const mpPaymentData: any = {
@@ -117,6 +141,7 @@ export async function createPayment(req: Request, res: Response) {
     const order = await prisma.order.create({
       data: {
         total: amount,
+        subtotal: amount,
         status: 'PENDING',
         payerName: payer.name,
         payerEmail: payer.email,
@@ -124,6 +149,11 @@ export async function createPayment(req: Request, res: Response) {
         payerPhone: payer.phone,
         paymentMethod: paymentMethod,
         externalReference: externalReference,
+        ipAddress: truncateForDb(ipAddress ?? undefined),
+        userAgent: truncateForDb(userAgent ?? undefined),
+        riskScore: risk.riskScore,
+        riskFlag: risk.riskFlag,
+        riskReasons: risk.riskReasons,
         items: {
           create: items.map((item) => ({
             productId: item.productId,
@@ -142,11 +172,15 @@ export async function createPayment(req: Request, res: Response) {
     logger.info(`Order created: ${order.id}, External Ref: ${externalReference}`);
 
     // Chamar API do Mercado Pago
+    // Gerar idempotency key baseado na external reference
+    const idempotencyKey = `bravos-${externalReference}-${Date.now()}`;
+    
     const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'X-Idempotency-Key': idempotencyKey,
       },
       body: JSON.stringify(mpPaymentData),
     });

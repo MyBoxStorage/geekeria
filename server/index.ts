@@ -18,6 +18,9 @@ import { createOrder } from './routes/checkout/create-order.js';
 import { getOrder } from './routes/orders/get-order.js';
 import { markMontink, validateAdminToken } from './routes/orders/mark-montink.js';
 import { listAdminOrders, exportAdminOrder } from './routes/admin/orders.js';
+import { getOrderAudit } from './routes/admin/audit.js';
+import { monitorStatus } from './routes/internal/monitor.js';
+import { reconcilePending } from './routes/internal/reconcile-pending.js';
 import { createRateLimiter } from './utils/rateLimiter.js';
 
 // Carrega variáveis de ambiente
@@ -63,6 +66,21 @@ const rateLimitAdminListOrders = createRateLimiter({
 });
 const rateLimitAdminExportOrder = createRateLimiter({
   routeKey: 'GET:/api/admin/orders/export',
+  maxRequests: 30,
+  windowMs: WINDOW_MS,
+});
+const rateLimitMonitor = createRateLimiter({
+  routeKey: 'internal:monitor',
+  maxRequests: 30,
+  windowMs: WINDOW_MS,
+});
+const rateLimitReconcilePending = createRateLimiter({
+  routeKey: 'internal:reconcile-pending',
+  maxRequests: 10,
+  windowMs: WINDOW_MS,
+});
+const rateLimitAdminAudit = createRateLimiter({
+  routeKey: 'GET:/api/admin/orders/audit',
   maxRequests: 30,
   windowMs: WINDOW_MS,
 });
@@ -123,6 +141,24 @@ app.get(
   validateAdminToken,
   rateLimitAdminExportOrder,
   exportAdminOrder
+);
+app.get(
+  '/api/admin/orders/:externalReference/audit',
+  validateAdminToken,
+  rateLimitAdminAudit,
+  getOrderAudit
+);
+app.get(
+  '/api/internal/monitor',
+  validateAdminToken,
+  rateLimitMonitor,
+  monitorStatus
+);
+app.post(
+  '/api/internal/reconcile-pending',
+  validateAdminToken,
+  rateLimitReconcilePending,
+  reconcilePending
 );
 
 // Error handling middleware

@@ -1,15 +1,28 @@
 /**
  * Simple logger utility
+ * Supports structured logging with objects
  */
 
 export const logger = {
-  info: (message: string, ...args: any[]) => {
-    console.log(`[INFO] ${message}`, ...args);
+  info: (message: string, data?: Record<string, any>) => {
+    if (data) {
+      console.log(`[INFO] ${message}`, JSON.stringify(data));
+    } else {
+      console.log(`[INFO] ${message}`);
+    }
   },
-  error: (message: string, ...args: any[]) => {
-    console.error(`[ERROR] ${message}`, ...args);
+  error: (message: string, data?: Record<string, any>) => {
+    if (data) {
+      console.error(`[ERROR] ${message}`, JSON.stringify(data));
+    } else {
+      console.error(`[ERROR] ${message}`);
+    }
   },
-  warn: (message: string, ...args: any[]) => {
-    console.warn(`[WARN] ${message}`, ...args);
+  warn: (message: string, data?: Record<string, any>) => {
+    if (data) {
+      console.warn(`[WARN] ${message}`, JSON.stringify(data));
+    } else {
+      console.warn(`[WARN] ${message}`);
+    }
   },
 };

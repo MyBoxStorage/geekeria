@@ -17,6 +17,12 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { logger } from '../../utils/logger.js';
+import {
+  getClientIp,
+  getClientUserAgent,
+  computeOrderRiskSimple,
+  truncateForDb,
+} from '../../services/risk/riskScoring.js';
 
 const prisma = new PrismaClient();
 
@@ -167,6 +173,26 @@ export async function createPreference(req: Request, res: Response) {
 
     logger.info(`Preference created: ${mpData.id}, Order: ${finalExternalReference}`);
 
+    // Telemetria e risco (não bloqueia; se falhar, persiste sem risco)
+    const ipAddress = getClientIp(req) ?? null;
+    const userAgent = getClientUserAgent(req) ?? null;
+    let risk: { riskScore: number; riskFlag: boolean; riskReasons: string | null } = {
+      riskScore: 0,
+      riskFlag: false,
+      riskReasons: null,
+    };
+    try {
+      risk = computeOrderRiskSimple({
+        ipAddress,
+        userAgent,
+        payerCpf: payer.cpf,
+        shippingCep: payer.zipCode ?? null,
+        shippingState: null,
+      });
+    } catch {
+      // não bloquear
+    }
+
     // Criar pedido no banco de dados (status: PENDING)
     const order = await prisma.order.create({
       data: {
@@ -179,6 +205,11 @@ export async function createPreference(req: Request, res: Response) {
         paymentMethod: 'checkout_preference',
         externalReference: finalExternalReference,
         mpPreferenceId: mpData.id?.toString(),
+        ipAddress: truncateForDb(ipAddress ?? undefined),
+        userAgent: truncateForDb(userAgent ?? undefined),
+        riskScore: risk.riskScore,
+        riskFlag: risk.riskFlag,
+        riskReasons: risk.riskReasons,
         items: {
           create: items.map((item) => ({
             productId: item.productId,

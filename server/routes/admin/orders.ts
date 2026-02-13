@@ -74,6 +74,11 @@ export async function listAdminOrders(req: Request, res: Response) {
       mpStatus: order.mpStatus,
       mpPaymentId: order.mpPaymentId,
       payerEmailMasked: maskEmail(order.payerEmail),
+      riskScore: order.riskScore ?? null,
+      riskFlag: order.riskFlag ?? false,
+      riskReasons: order.riskReasons ?? null,
+      ipAddress: order.ipAddress ?? null,
+      userAgent: order.userAgent ?? null,
     }));
 
     logger.info(`Admin list orders: count=${result.length}, status=${status}`);
@@ -189,6 +194,13 @@ export async function exportAdminOrder(req: Request, res: Response) {
       payment: {
         mpStatus: order.mpStatus,
         mpPaymentId: order.mpPaymentId,
+      },
+      risk: {
+        score: order.riskScore ?? null,
+        flag: order.riskFlag ?? false,
+        reasons: order.riskReasons ?? null,
+        ipAddress: order.ipAddress ?? null,
+        userAgent: order.userAgent ?? null,
       },
       notes: 'Cadastrar manualmente na Montink',
     };
