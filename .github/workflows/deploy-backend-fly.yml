@@ -62,7 +62,7 @@ jobs:
       - name: Deploy to Fly.io
         run: |
           set -x
-          flyctl deploy server --remote-only --config fly.toml --dockerfile Dockerfile -a bravosbackend
+          flyctl deploy . --remote-only --config server/fly.toml --dockerfile server/Dockerfile -a bravosbackend
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
