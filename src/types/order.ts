@@ -57,18 +57,35 @@ export interface OrderResponse {
 }
 
 /**
- * Traduz status para linguagem humana
+ * Customer-facing status label (no internal/partner names).
  */
 export function getOrderStatusLabel(status: OrderStatus): string {
   const labels: Record<OrderStatus, string> = {
     PENDING: 'Aguardando confirmação do pagamento',
-    PAID: 'Pagamento aprovado',
-    READY_FOR_MONTINK: 'Pagamento aprovado: produção será iniciada',
-    SENT_TO_MONTINK: 'Em produção/envio',
+    PAID: 'Pagamento confirmado',
+    READY_FOR_MONTINK: 'Pagamento confirmado',
+    SENT_TO_MONTINK: 'Pedido em produção',
     FAILED_MONTINK: 'Precisamos de suporte',
     CANCELED: 'Pedido cancelado',
     FAILED: 'Falha no pagamento',
-    REFUNDED: 'Pedido reembolsado',
+    REFUNDED: 'Reembolsado',
   };
-  return labels[status] || status;
+  return labels[status] ?? 'Status em atualização';
+}
+
+/**
+ * Optional short hint for the status (shown below label).
+ */
+export function getOrderStatusHint(status: OrderStatus): string | null {
+  const hints: Partial<Record<OrderStatus, string | null>> = {
+    PENDING: 'Pagamentos podem levar alguns minutos para confirmar.',
+    PAID: 'Estamos preparando seu pedido para envio.',
+    READY_FOR_MONTINK: 'Estamos preparando seu pedido para envio.',
+    SENT_TO_MONTINK: 'Seu pedido está sendo preparado para envio.',
+    CANCELED: null,
+    FAILED: null,
+    REFUNDED: null,
+    FAILED_MONTINK: 'Entre em contato para mais informações.',
+  };
+  return hints[status] ?? null;
 }

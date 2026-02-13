@@ -1,5 +1,5 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin } from 'lucide-react';
+import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin, PackageSearch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -501,13 +501,45 @@ export default function CheckoutPending() {
             </p>
           </div>
           
-          <Link to="/" className="block">
-            <Button className="w-full" size="lg" variant="default">
-              <Home className="w-4 h-4 mr-2" />
-              Voltar para a Loja
-            </Button>
-          </Link>
-          
+          <div className="space-y-3">
+            {(externalReference || order?.externalReference) ? (
+              <Button
+                className="w-full"
+                size="lg"
+                variant="default"
+                onClick={() => {
+                  const ref = externalReference || order?.externalReference || '';
+                  let email: string | undefined;
+                  try {
+                    const pendingRaw = localStorage.getItem('bb_order_pending');
+                    const pending = pendingRaw ? (JSON.parse(pendingRaw) as PendingOrderData | null) : null;
+                    if (pending?.externalReference === ref && pending?.email) {
+                      email = pending.email;
+                    }
+                  } catch {
+                    // ignore
+                  }
+                  navigate(`/order?ref=${encodeURIComponent(ref)}`, {
+                    state: { ref, email },
+                  });
+                }}
+              >
+                <PackageSearch className="w-4 h-4 mr-2" />
+                Acompanhar meu pedido
+              </Button>
+            ) : (
+              <p className="text-sm text-gray-600 py-2">
+                Consulte seu e-mail para acompanhar o pedido.
+              </p>
+            )}
+            <Link to="/" className="block">
+              <Button className="w-full" size="lg" variant="outline">
+                <Home className="w-4 h-4 mr-2" />
+                Voltar para a Loja
+              </Button>
+            </Link>
+          </div>
+
           <p className="text-xs text-gray-500 mt-6">
             Assim que o pagamento for confirmado, você receberá uma notificação por email.
           </p>

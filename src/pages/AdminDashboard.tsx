@@ -245,6 +245,7 @@ export default function AdminDashboard() {
                       <th className="px-3 py-2 border-b">Itens</th>
                       <th className="px-3 py-2 border-b">Cidade/UF</th>
                       <th className="px-3 py-2 border-b">Pagamento</th>
+                      <th className="px-3 py-2 border-b">Risco</th>
                       <th className="px-3 py-2 border-b">Cliente</th>
                       <th className="px-3 py-2 border-b text-right">Ações</th>
                     </tr>
@@ -273,6 +274,16 @@ export default function AdminDashboard() {
                             <div className="font-mono text-[10px] text-slate-500">
                               {order.mpPaymentId}
                             </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 align-top text-xs">
+                          {order.riskFlag ? (
+                            <span className="inline-flex items-center gap-1 rounded bg-red-100 px-1.5 py-0.5 text-red-800">
+                              <span>⚠️ RISCO</span>
+                              <span className="font-medium">Risco {order.riskScore ?? 0}</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">-</span>
                           )}
                         </td>
                         <td className="px-3 py-2 align-top text-xs text-slate-600">
@@ -330,6 +341,33 @@ export default function AdminDashboard() {
           <DialogHeader>
             <DialogTitle>Export JSON - Pedido</DialogTitle>
           </DialogHeader>
+          {exportData?.risk != null && (
+            <div className="rounded-md border border-slate-200 bg-slate-50 p-4 text-sm">
+              <h4 className="font-semibold text-slate-900 mb-2">Risco</h4>
+              <dl className="grid grid-cols-1 gap-1 text-slate-700">
+                <div><span className="font-medium">Score:</span> {exportData.risk.score ?? '-'}</div>
+                <div>
+                  <span className="font-medium">Motivos:</span>{' '}
+                  {exportData.risk.reasons
+                    ? exportData.risk.reasons
+                        .split(/[;,]/)
+                        .map((r: string) => r.trim())
+                        .filter(Boolean)
+                        .map((reason: string, i: number) => (
+                          <span key={i}>{i > 0 ? ', ' : ''}{reason}</span>
+                        ))
+                    : '-'}
+                </div>
+                <div><span className="font-medium">IP:</span> {exportData.risk.ipAddress ?? '-'}</div>
+                <div>
+                  <span className="font-medium">Navegador:</span>{' '}
+                  {exportData.risk.userAgent
+                    ? String(exportData.risk.userAgent).slice(0, 80) + (exportData.risk.userAgent.length > 80 ? '…' : '')
+                    : '-'}
+                </div>
+              </dl>
+            </div>
+          )}
           <div className="max-h-[60vh] overflow-auto bg-slate-950 text-slate-50 rounded-md p-4 text-xs">
             <pre>{exportData ? JSON.stringify(exportData, null, 2) : 'Carregando...'}</pre>
           </div>

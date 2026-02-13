@@ -16,6 +16,11 @@ export interface AdminOrderSummary {
   mpStatus: string | null;
   mpPaymentId: string | null;
   payerEmailMasked: string | null;
+  riskScore: number | null;
+  riskFlag: boolean;
+  riskReasons: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
 }
 
 export interface AdminOrderListResponse {

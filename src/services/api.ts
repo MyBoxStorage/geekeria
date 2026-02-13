@@ -6,8 +6,14 @@ import { API_URL } from '@/config/api';
 
 export interface ApiError {
   error: string;
-  message?: string;
+  message: string;
+  /** 'http' = response !ok; 'network' = fetch failed / offline / CORS; 'timeout' = request timeout */
+  kind?: 'http' | 'network' | 'timeout';
+  /** HTTP status when kind === 'http' */
+  status?: number;
   details?: any;
+  data?: unknown;
+  url?: string;
 }
 
 /**
@@ -18,7 +24,7 @@ export async function getJSON<T>(
   options?: { headers?: Record<string, string> }
 ): Promise<T> {
   const url = `${API_URL}${path}`;
-  
+
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -28,29 +34,38 @@ export async function getJSON<T>(
       },
     });
 
-    const data = await response.json();
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
 
     if (!response.ok) {
-      const error: ApiError = {
-        error: data.error || 'Request failed',
-        message: data.message,
-        details: data.details,
-      };
-      throw error;
+      const body = data as { error?: string; message?: string; details?: unknown };
+      const message = body?.message ?? body?.error ?? 'Request failed';
+      throw {
+        kind: 'http' as const,
+        status: response.status,
+        error: body?.error ?? 'Request failed',
+        message: typeof message === 'string' ? message : 'Request failed',
+        details: body?.details,
+        data: body,
+        url,
+      } satisfies ApiError;
     }
 
     return data as T;
   } catch (error) {
-    // Se já é um ApiError, re-lança
     if (error && typeof error === 'object' && 'error' in error) {
       throw error;
     }
-    
-    // Erro de rede ou outro erro
     throw {
+      kind: 'network' as const,
       error: 'Network error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    } as ApiError;
+      message: 'Falha de rede',
+      url,
+    } satisfies ApiError;
   }
 }
 
@@ -63,7 +78,7 @@ export async function postJSON<T>(
   options?: { headers?: Record<string, string> }
 ): Promise<T> {
   const url = `${API_URL}${path}`;
-  
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -74,28 +89,37 @@ export async function postJSON<T>(
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    let data: unknown;
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
+    }
 
     if (!response.ok) {
-      const error: ApiError = {
-        error: data.error || 'Request failed',
-        message: data.message,
-        details: data.details,
-      };
-      throw error;
+      const resBody = data as { error?: string; message?: string; details?: unknown };
+      const message = resBody?.message ?? resBody?.error ?? 'Request failed';
+      throw {
+        kind: 'http' as const,
+        status: response.status,
+        error: resBody?.error ?? 'Request failed',
+        message: typeof message === 'string' ? message : 'Request failed',
+        details: resBody?.details,
+        data: resBody,
+        url,
+      } satisfies ApiError;
     }
 
     return data as T;
   } catch (error) {
-    // Se já é um ApiError, re-lança
     if (error && typeof error === 'object' && 'error' in error) {
       throw error;
     }
-    
-    // Erro de rede ou outro erro
     throw {
+      kind: 'network' as const,
       error: 'Network error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    } as ApiError;
+      message: 'Falha de rede',
+      url,
+    } satisfies ApiError;
   }
 }
