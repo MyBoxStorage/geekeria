@@ -11,7 +11,7 @@ import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
-import { fetchMpPayment } from '../../services/mp/fetchPayment.js';
+import { fetchMpPayment, MpHttpError } from '../../services/mp/fetchPayment.js';
 import { mapMpStatusToOrderStatus } from '../../services/mp/statusMapper.js';
 
 /**
@@ -191,12 +191,11 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
     try {
       payment = await fetchMpPayment(paymentId);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      const is404 = msg.includes('404');
-      if (is404) {
+      if (err instanceof MpHttpError && err.status === 404) {
         logger.info('[WEBHOOK] Payment not found (404), ignoring', {
-          eventId: paymentId,
+          webhookEventId,
           provider: 'mercadopago',
+          paymentId,
           httpStatus: 404,
           action: 'ignored',
         });
@@ -209,6 +208,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           },
         });
       } else {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
         logger.error('[WEBHOOK] Failed to fetch payment', { webhookEventId, paymentId, error: msg });
         await prisma.webhookEvent.update({
           where: { id: webhookEventId },
