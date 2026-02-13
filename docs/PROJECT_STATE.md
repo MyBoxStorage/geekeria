@@ -65,3 +65,37 @@ node scripts/monitor-selftest.js https://bravosbackend.fly.dev <ADMIN_TOKEN>
 - Carrega `DATABASE_URL` de `server/.env` se não estiver em env.
 - **Não exige** secrets do Mercado Pago.
 - **Não roda** automaticamente em cron; apenas manual.
+
+## Cancel Abandoned (cancel-abandoned)
+
+Cancela pedidos **PENDING** abandonados (sem `mp_payment_id` — carrinho sem pagamento iniciado).
+
+### Quando usar
+
+- Limpeza operacional de pedidos antigos sem pagamento (carrinhos abandonados).
+- Não afeta pedidos reais: **NÃO cancela** pedidos com `mp_payment_id`.
+- Não toca em PAID, CANCELED, REFUNDED.
+
+### Parâmetros recomendados
+
+- `olderThanMinutes`: 60 (mín. 15)
+- `limit`: 100 (máx. 200)
+
+### Como rodar scripts/cancel-abandoned.js
+
+```bash
+# 1) Dry run (só mostra o que seria cancelado)
+node scripts/cancel-abandoned.js https://bravosbackend.fly.dev <ADMIN_TOKEN>
+
+# 2) Aplicar de fato
+node scripts/cancel-abandoned.js https://bravosbackend.fly.dev <ADMIN_TOKEN> --apply
+
+# Ou com env: OLDER_THAN_MINUTES=60 LIMIT=100 APPLY=true
+API_URL=https://bravosbackend.fly.dev ADMIN_TOKEN=<token> APPLY=true node scripts/cancel-abandoned.js
+```
+
+### Política
+
+- Pedidos abandonados sem pagamento são cancelados manualmente (por enquanto).
+- Endpoint: `POST /api/internal/cancel-abandoned` com `x-admin-token`.
+- Rate limit: 5 req / 5 min.

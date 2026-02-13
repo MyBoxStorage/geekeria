@@ -21,6 +21,7 @@ import { listAdminOrders, exportAdminOrder } from './routes/admin/orders.js';
 import { getOrderAudit } from './routes/admin/audit.js';
 import { monitorStatus } from './routes/internal/monitor.js';
 import { reconcilePending } from './routes/internal/reconcile-pending.js';
+import { cancelAbandoned } from './routes/internal/cancel-abandoned.js';
 import { createRateLimiter } from './utils/rateLimiter.js';
 
 // Carrega variáveis de ambiente
@@ -77,6 +78,11 @@ const rateLimitMonitor = createRateLimiter({
 const rateLimitReconcilePending = createRateLimiter({
   routeKey: 'internal:reconcile-pending',
   maxRequests: 10,
+  windowMs: WINDOW_MS,
+});
+const rateLimitCancelAbandoned = createRateLimiter({
+  routeKey: 'internal:cancel-abandoned',
+  maxRequests: 5,
   windowMs: WINDOW_MS,
 });
 const rateLimitAdminAudit = createRateLimiter({
@@ -159,6 +165,12 @@ app.post(
   validateAdminToken,
   rateLimitReconcilePending,
   reconcilePending
+);
+app.post(
+  '/api/internal/cancel-abandoned',
+  validateAdminToken,
+  rateLimitCancelAbandoned,
+  cancelAbandoned
 );
 
 // Error handling middleware
