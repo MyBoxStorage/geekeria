@@ -64,10 +64,25 @@ jobs:
       - name: Flyctl version
         run: flyctl version
 
+      - name: Debug build context (no secrets)
+        run: |
+          pwd
+          ls -la
+          ls -la server
+          ls -la server/routes/internal
+          test -f server/routes/internal/cancel-abandoned.ts || (echo "::error::cancel-abandoned.ts missing" && exit 1)
+          test -f server/Dockerfile
+          test -f server/fly.toml
+
       - name: Deploy to Fly.io
         run: |
           set -x
-          flyctl deploy . --remote-only --config server/fly.toml --dockerfile server/Dockerfile -a bravosbackend
+          flyctl deploy . \
+            --remote-only \
+            --config server/fly.toml \
+            --dockerfile server/Dockerfile \
+            --build-arg BUILD_SHA=${{ github.sha }} \
+            -a bravosbackend
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 

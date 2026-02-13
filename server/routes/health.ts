@@ -5,5 +5,6 @@ export async function healthCheck(req: Request, res: Response) {
     status: 'ok',
     timestamp: new Date().toISOString(),
     service: 'BRAVOS BRASIL API',
+    buildSha: process.env.BUILD_SHA ?? null,
   });
 }

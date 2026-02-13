@@ -46,6 +46,9 @@ RUN cd server && npm run build
 # Production stage
 FROM base AS runner
 
+ARG BUILD_SHA
+ENV BUILD_SHA=$BUILD_SHA
+
 # Adicionar OpenSSL para Prisma funcionar no Alpine (Fly.io)
 RUN apk add --no-cache openssl
 
