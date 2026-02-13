@@ -59,6 +59,19 @@ node scripts/go-live-check.js https://api.example.com https://example.com
 
 Omit the second URL to run only API checks. Exits 0 on pass, 1 on failure.
 
+## Production validation
+
+- **Quick smoke:** use the [Go-live check](#go-live-check) script with your production API and frontend URLs.
+- **Full runbook (real PIX + webhook + DB):** [docs/PRODUCTION_PAYMENT_VALIDATION.md](docs/PRODUCTION_PAYMENT_VALIDATION.md) — when to run, pre-checks, real PIX steps, and failure triage.
+
+## Monitoring alerts
+
+This repo runs a scheduled GitHub Action (`.github/workflows/monitor-production.yml`) that calls the internal monitor endpoint every 5 minutes. **Required repository secrets:** `MONITOR_API_URL` (e.g. `https://bravos-backend.fly.dev`) and `ADMIN_TOKEN` (same value as the backend env var). When the monitor returns `ok=false`, the job fails and you get GitHub notifications. To run manually: **Actions** → **Monitor Production** → **Run workflow**.
+
+A separate workflow (`.github/workflows/reconcile-pending-production.yml`) runs every 15 minutes to **reconcile stale PENDING orders** against Mercado Pago: it fetches payment status server-side and updates the DB when it differs (no new env vars; uses the same secrets). Run manually: **Actions** → **Reconcile Pending (Production)** → **Run workflow**, or locally: `node scripts/reconcile-pending.js <API_URL> <ADMIN_TOKEN>`.
+
+For **troubleshooting a single order**, use the audit endpoint (requires `x-admin-token`): `GET /api/admin/orders/:externalReference/audit` — returns order snapshot, last 50 admin events, and last 50 related webhook events (no PII).
+
 ## 📝 Scripts Disponíveis
 
 - `npm run dev` - Inicia o servidor de desenvolvimento

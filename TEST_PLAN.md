@@ -33,6 +33,9 @@ chmod +x scripts/test-backend.sh
 
 Ou execute apenas: `runBravosFrontendTests()`
 
+- **Validação em produção (PIX real + webhook + DB):** runbook em [docs/PRODUCTION_PAYMENT_VALIDATION.md](docs/PRODUCTION_PAYMENT_VALIDATION.md).
+- **Monitoring check:** `node scripts/monitor-check.js <API_URL> <ADMIN_TOKEN>` (see [docs/PRODUCTION_PAYMENT_VALIDATION.md#monitoring](docs/PRODUCTION_PAYMENT_VALIDATION.md)).
+
 ---
 
 ## 2. Checklist de verificação manual

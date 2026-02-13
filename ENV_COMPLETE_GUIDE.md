@@ -35,11 +35,20 @@ bravos-real/app/
 | `MONTINK_API_TOKEN` | `server/integrations/montink/client.ts:10` | ⚠️ Opcional | Token da API Montink (quando integrar) |
 | `MONTINK_BASE_URL` | `server/integrations/montink/client.ts:9` | ⚠️ Opcional | URL base da API Montink (padrão: `https://api.montink.com.br`) |
 | `MONTINK_CREATE_ORDER_ENABLED` | `server/services/montinkFulfillment.ts:12` | ⚠️ Opcional | Feature flag para criação automática de pedidos (padrão: `false`) |
-| `ADMIN_TOKEN` | `server/index.ts` (validação produção)<br>`server/routes/orders/mark-montink.ts`<br>`server/routes/admin/orders.ts` | ✅ **Obrigatório em produção** | Token para rotas administrativas (header `x-admin-token`). Gere um token longo e aleatório (ex: `openssl rand -hex 32`). |
+| `ADMIN_TOKEN` | `server/index.ts` (validação produção)<br>`server/routes/orders/mark-montink.ts`<br>`server/routes/admin/orders.ts`<br>`/api/internal/monitor` | ✅ **Obrigatório em produção** | Token para rotas administrativas (header `x-admin-token`). Reutilizado pelo workflow de monitoramento (GitHub Actions); use o mesmo valor. Gere um token longo e aleatório (ex: `openssl rand -hex 32`). |
 | `FRONTEND_URL` | `server/index.ts:23` (CORS) | ✅ Sim | URL do frontend: `http://localhost:5173` ou `https://bravosbrasil.com.br` |
 | `BACKEND_URL` | `server/routes/mp/create-payment.ts:93` (webhook URL) | ✅ Sim | URL do backend: `http://localhost:3001` ou `https://api.bravosbrasil.com.br` |
 | `PORT` | `server/index.ts:19` | ⚠️ Opcional | Porta do servidor (padrão: 3001) |
 | `NODE_ENV` | `server/index.ts:48` | ⚠️ Opcional | `development` ou `production` |
+
+### 🤖 GitHub Actions (monitoramento)
+
+O workflow **Monitor Production** usa **secrets do repositório** (Settings → Secrets and variables → Actions). **Não** são variáveis de ambiente da aplicação:
+
+| Secret | Uso | Como definir |
+|--------|-----|--------------|
+| `MONITOR_API_URL` | URL base da API chamada pelo script de monitor | Ex.: `https://bravos-backend.fly.dev` (mesma URL do backend em produção) |
+| `ADMIN_TOKEN` | Autenticação do endpoint `/api/internal/monitor` | **Reutilize o mesmo valor** de `ADMIN_TOKEN` do backend |
 
 ## 📝 Exemplo Completo de Arquivos .env
 
@@ -161,6 +170,7 @@ notification_url: process.env.BACKEND_URL
 // server/index.ts - em produção, a aplicação não inicia se ADMIN_TOKEN estiver ausente
 // server/routes/orders/mark-montink.ts - header x-admin-token
 // server/routes/admin/orders.ts - header x-admin-token
+// server/routes/internal/monitor.ts - GET /api/internal/monitor (header x-admin-token)
 ```
 
 #### `PORT`
