@@ -3,7 +3,7 @@
 
 generator client {
   provider      = "prisma-client-js"
-  output        = "../node_modules/.prisma/client"
+  output        = "../server/node_modules/.prisma/client"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -67,13 +67,22 @@ model Order {
   // Integração Montink
   montinkOrderId     String? @map("montink_order_id") // ID do pedido no Montink
   montinkStatus      String? @map("montink_status") // Status do pedido no Montink
-  
+
+  // Telemetria / anti-fraude (MVP, não bloqueia compra)
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  riskScore    Int?     @default(0) @map("risk_score")
+  riskFlag     Boolean? @default(false) @map("risk_flag")
+  riskReasons  String?  @map("risk_reasons") // motivos curtos separados por vírgula (sem PII)
+
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
   items       OrderItem[]
   adminEvents AdminEvent[]
 
+  @@index([mpPaymentId])
+  @@index([status, createdAt])
   @@map("orders")
 }
 
