@@ -104,6 +104,7 @@ INSTRUÇÕES:
       }
 
       const result = await model.generateContent(parts as Part[]);
+      console.log('✅ Gemini raw response:', JSON.stringify(result.response, null, 2));
       const response = result.response;
 
       if (
