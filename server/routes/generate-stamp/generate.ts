@@ -83,12 +83,30 @@ export async function generateStamp(
         },
       });
 
+      const fullPrompt = `TAREFA: Gerar um design de camiseta de alta resolução (300 DPI) para impressão DTF.
+
+REQUISITOS:
+1. FORMATO: PNG transparente, proporção 3:4.
+2. CONTEÚDO: APENAS o gráfico isolado. PROIBIDO mockups, modelos humanos ou marcas d'água.
+3. ESTÉTICA: Heroico, épico, patriótico. Cores: Verde (#00843D) e Amarelo (#FFCC29). PROIBIDO Vermelho.
+
+${uploadedImage ? `
+IMAGEM DE BASE: A imagem enviada é o elemento central. Transforme-a em uma arte de camiseta. Aprimore, não substitua. Preserve as características do sujeito, aplicando efeitos sutis como sobreposições da bandeira, respingos de tinta verde/amarela, iluminação dramática ou texturas de desgaste.
+` : `
+ELEMENTO CENTRAL: O design deve ser construído em torno de um poderoso símbolo patriótico brasileiro. Use a ferramenta Google Search se necessário para garantir que brasões e bandeiras estejam atualizados e corretos.
+`}
+
+FUNDO 100% TRANSPARENTE: O resultado FINAL DEVE ser um PNG com um canal alfa real e ativo.
+PROIBIDO FUNDOS SÓLIDOS: NENHUM fundo branco, cinza ou preto.
+
+PEDIDO DO USUÁRIO: "${prompt}"`;
+
       const result = await model.generateContent({
         contents: [
           {
             role: 'user',
             parts: [
-              { text: prompt },
+              { text: fullPrompt },
               ...(uploadedImage
                 ? [
                     {
