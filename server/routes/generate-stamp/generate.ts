@@ -4,6 +4,7 @@ import { generateStampSchema } from './schemas.js';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
 import { uploadImageToGCS } from '../../utils/storage.js';
+import { notifyNewGeneration } from '../../utils/telegram.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -42,7 +43,7 @@ export async function generateStamp(
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { credits: true, email: true },
+      select: { credits: true, email: true, name: true, phone: true },
     });
 
     if (!user || user.credits < 1) {
@@ -212,6 +213,16 @@ OBRIGATÓRIO:
       console.log(
         `✅ Generation ${generation.id} completed. Credits: ${user.credits} → ${updatedUser.credits}`
       );
+
+      // Notificar admin no Telegram
+      await notifyNewGeneration({
+        userName: user.name || 'Sem nome',
+        userEmail: user.email,
+        userPhone: user.phone || undefined,
+        prompt,
+        imageUrl,
+        creditsRemaining: updatedUser.credits,
+      });
 
       res.json({
         success: true,
