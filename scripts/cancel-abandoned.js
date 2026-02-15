@@ -6,7 +6,14 @@
  *
  * Usage: node scripts/cancel-abandoned.js <API_URL> <ADMIN_TOKEN> [--apply]
  *   Or: API_URL=<url> ADMIN_TOKEN=<token> [APPLY=true] node scripts/cancel-abandoned.js [--apply]
+ * Loads server/.env for ADMIN_TOKEN if not in env.
  */
+
+import { config } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+config({ path: path.resolve(__dirname, '..', 'server', '.env') });
 
 const API_URL = (process.argv[2] || process.env.API_URL || process.env.MONITOR_API_URL || '').replace(/\/$/, '');
 const ADMIN_TOKEN = process.argv[3] || process.env.ADMIN_TOKEN;

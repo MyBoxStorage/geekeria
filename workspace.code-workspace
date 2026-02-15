@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../bravosbackend"
+		},
+		{
+			"path": "../../Gerador"
 		}
 	],
 	"settings": {}
