@@ -279,6 +279,8 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
         mpPaymentId: true,
         mpStatus: true,
         externalReference: true,
+        buyerId: true,
+        creditsGranted: true,
       },
     });
 
@@ -361,6 +363,54 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
         status: orderStatus,
       },
     });
+
+    // ========== LIBERAR CRÉDITOS AUTOMÁTICO ==========
+    // Se o pagamento foi aprovado E o pedido tem um comprador (buyerId)
+    // E ainda não liberou créditos, libera +5 créditos
+    if (
+      mpStatus === 'approved' &&
+      order.buyerId &&
+      !order.creditsGranted
+    ) {
+      try {
+        logger.info('[WEBHOOK] Payment approved, granting credits', {
+          orderId: order.id,
+          buyerId: order.buyerId,
+        });
+
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: order.buyerId },
+            data: { credits: { increment: 5 } },
+          }),
+          prisma.creditLog.create({
+            data: {
+              userId: order.buyerId,
+              amount: 5,
+              reason: 'PURCHASE',
+              orderId: order.id,
+            },
+          }),
+          prisma.order.update({
+            where: { id: order.id },
+            data: { creditsGranted: true },
+          }),
+        ]);
+
+        logger.info('[WEBHOOK] +5 credits granted', {
+          orderId: order.id,
+          buyerId: order.buyerId,
+        });
+      } catch (creditError) {
+        logger.error('[WEBHOOK] Error granting credits', {
+          orderId: order.id,
+          buyerId: order.buyerId,
+          error: creditError instanceof Error ? creditError.message : 'Unknown',
+        });
+        // NÃO falha o webhook - apenas loga o erro
+      }
+    }
+    // ========== FIM: LIBERAR CRÉDITOS ==========
 
     // Se pedido está READY_FOR_MONTINK, enfileirar fulfillment (fire-and-forget)
     if (orderStatus === 'READY_FOR_MONTINK') {

@@ -1,0 +1,31 @@
+name: Cleanup Expired Generations
+
+on:
+  schedule:
+    # Roda todo dia às 3h da manhã (UTC)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.ADMIN_TOKEN }}" ]; then
+            echo "::error::ADMIN_TOKEN secret is not configured"
+            exit 1
+          fi
+          echo "Secrets configured"
+
+      - name: Cleanup expired generations (7+ days)
+        env:
+          API_URL: ${{ secrets.MONITOR_API_URL }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          URL="${API_URL:-https://bravosbackend.fly.dev}"
+          curl -X POST "$URL/api/internal/cleanup-expired-generations" \
+            -H "x-admin-token: $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -f || exit 1

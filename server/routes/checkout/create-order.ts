@@ -12,7 +12,8 @@
  * }
  */
 
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
@@ -137,12 +138,27 @@ export async function createOrder(req: Request, res: Response) {
 
     logger.info(`Creating order: externalRef=${externalReference}, total=${totals.total}`);
 
+    // Opcional: obter userId do JWT se o usuário estiver logado
+    let buyerId: string | null = null;
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION';
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
+        buyerId = decoded.userId ?? null;
+      }
+    } catch {
+      // Usuário não autenticado - buyerId fica null
+    }
+
     // Criar Order e OrderItems em uma transação
     const order = await prisma.$transaction(async (tx: any) => {
       // Criar Order
       const newOrder = await tx.order.create({
         data: {
           total: totals.total,
+          buyerId,
           subtotal: totals.subtotal,
           discountTotal: totals.discountTotal,
           status: 'PENDING',
