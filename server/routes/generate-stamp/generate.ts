@@ -83,23 +83,36 @@ export async function generateStamp(
         },
       });
 
-      const fullPrompt = `TAREFA: Criar arte para camiseta (impressão DTF, 300 DPI, PNG transparente, 3:4).
+      const fullPrompt = `TAREFA: Arte profissional para camiseta (impressão DTF, 300 DPI, PNG transparente).
+
+ESTILO DE REFERÊNCIA: Ilustração digital vibrante com bandeira Brasil, textos 3D dourados, respingos de tinta verde/amarelo.
 
 ${uploadedImage ? `
-FOTO BASE:
-- Transforme a pessoa em PERSONAGEM de estampa (estilo ilustração/arte)
-- PRESERVE: formato do rosto, cor de cabelo, estilo de barba/cabelo, tipo de roupa
-- Mantenha a pessoa RECONHECÍVEL (mesmas características faciais)
-- NÃO altere cores naturais da pele (mantenha tons reais)
-- Adicione elementos brasileiros SUTIS ao redor (não sobre a pessoa):
-  * Possível: pequenos detalhes da bandeira ao fundo
-  * Possível: efeitos de luz verde/amarelo discretos
-  * Possível: símbolos nacionais pequenos nas laterais
-- O FOCO é a pessoa, elementos brasileiros são COMPLEMENTO
+COM FOTO:
+- Transformar a pessoa em ILUSTRAÇÃO/ARTE (não manter foto realista)
+- PRESERVAR características: formato do rosto, cabelo, barba, expressão
+- Pessoa deve ser RECONHECÍVEL mas em estilo arte digital
+- Cores naturais da pele (não verde/amarelo na pele)
+- Roupa pode ter cores verde/amarelo se adequado
+
+COMPOSIÇÃO:
+- Pessoa no centro (protagonista)
+- Bandeira do Brasil ao fundo (desfocada, artística, ondulante)
+- Respingos de tinta verde (#00843D) e amarelo (#FFCC29) nas laterais
+- Efeitos de luz dourada irradiando
+- Opcional: raios de luz, brilhos, partículas
+
+TEXTO (se pedido no prompt):
+- Texto em dourado 3D com contorno
+- Fonte bold, impactante
+- Posição: geralmente embaixo
+- Efeito: relevo, sombra, brilho metálico
 ` : `
 SEM FOTO:
-- Crie ilustração original relacionada ao tema brasileiro
-- Estilo: arte de camiseta profissional
+- Criar símbolo/ilustração relacionada ao Brasil
+- Estilo: arte digital vibrante
+- Cores: verde e amarelo predominantes
+- Composição com bandeira ao fundo
 `}
 
 PEDIDO DO USUÁRIO: "${prompt}"
