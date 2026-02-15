@@ -107,9 +107,17 @@ const rateLimitGenerateStamp = createRateLimiter({
 
 // Middlewares
 // CORS: Support multiple origins (production + staging if needed)
-const allowedOrigins = process.env.FRONTEND_URL
+const frontendUrls = process.env.FRONTEND_URL
   ? process.env.FRONTEND_URL.split(',').map((s) => s.trim()).filter(Boolean)
   : ['http://localhost:5173'];
+const allowedOrigins = [
+  ...new Set([
+    ...frontendUrls,
+    'https://bravosbrasil.com.br',
+    'https://www.bravosbrasil.com.br',
+    'http://localhost:5173',
+  ]),
+];
 
 app.use(
   cors({
