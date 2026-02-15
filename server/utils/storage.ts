@@ -1,9 +1,11 @@
 import { Storage } from '@google-cloud/storage';
 import path from 'path';
 
-const storage = process.env.GCS_KEY_JSON
+const storage = process.env.GCS_KEY_BASE64
   ? new Storage({
-      credentials: JSON.parse(process.env.GCS_KEY_JSON),
+      credentials: JSON.parse(
+        Buffer.from(process.env.GCS_KEY_BASE64, 'base64').toString('utf-8')
+      ),
       projectId: 'gen-lang-client-0000876410',
     })
   : new Storage({
