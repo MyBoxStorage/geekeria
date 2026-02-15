@@ -84,52 +84,57 @@ export async function generateStamp(
         },
       });
 
-      const fullPrompt = `TAREFA: Arte profissional para camiseta (impressão DTF, 300 DPI, PNG transparente).
+      const fullPrompt = `TAREFA: Criar arte PROFISSIONAL para estampa de camiseta (impressão DTF, 300 DPI, PNG transparente, 3:4).
 
-ESTILO DE REFERÊNCIA: Ilustração digital vibrante com bandeira Brasil, textos 3D dourados, respingos de tinta verde/amarelo.
+ESTILO: Ilustração digital vibrante inspirada em arte de camiseta premium.
 
 ${uploadedImage ? `
-COM FOTO:
-- Transformar a pessoa em ILUSTRAÇÃO/ARTE (não manter foto realista)
-- PRESERVAR características: formato do rosto, cabelo, barba, expressão
-- Pessoa deve ser RECONHECÍVEL mas em estilo arte digital
-- Cores naturais da pele (não verde/amarelo na pele)
-- Roupa pode ter cores verde/amarelo se adequado
+IMAGEM ENVIADA - ANÁLISE E ADAPTAÇÃO:
+1. ANALISE o conteúdo: pessoa, família, pet, objeto, paisagem, etc.
+2. TRANSFORME em arte de estampa mantendo o TEMA CENTRAL reconhecível
+3. ADAPTE a composição para camiseta:
+   - Se pessoa sozinha: formato busto/retrato (ombros para cima)
+   - Se família/grupo: enquadre todos dentro da composição
+   - Se pet/animal: centralize o animal, composição fechada
+   - Se objeto: destaque o objeto centralizado
+   - Se paisagem: adapte para formato vertical/quadrado
 
-COMPOSIÇÃO:
-- Pessoa no centro (protagonista)
-- Bandeira do Brasil ao fundo (desfocada, artística, ondulante)
-- Respingos de tinta verde (#00843D) e amarelo (#FFCC29) nas laterais
-- Efeitos de luz dourada irradiando
-- Opcional: raios de luz, brilhos, partículas
+IMPORTANTE:
+- NÃO deixe elementos saindo da composição (braços, pernas cortadas)
+- Composição FECHADA e equilibrada
+- Arte deve caber perfeitamente em uma camiseta
+- Mantenha características reconhecíveis do conteúdo original
+- Cores naturais preservadas (só altere se pedido)
 
-TEXTO (se pedido no prompt):
-- Texto em dourado 3D com contorno
-- Fonte bold, impactante
-- Posição: geralmente embaixo
-- Efeito: relevo, sombra, brilho metálico
-- IMPORTANTE: NÃO adicione texto SE o usuário não pediu explicitamente.
+ELEMENTOS BRASILEIROS (sutis):
+- Bandeira do Brasil desfocada ao fundo
+- Respingos de tinta verde (#00843D) e amarelo (#FFCC29)
+- Efeitos de luz dourada
+- Elementos decorativos discretos
 ` : `
 SEM FOTO:
-- Criar símbolo/ilustração relacionada ao Brasil
-- Estilo: arte digital vibrante
-- Cores: verde e amarelo predominantes
-- Composição com bandeira ao fundo
-
-TEXTO (se pedido no prompt):
-- Texto em dourado 3D com contorno
-- Fonte bold, impactante
-- Posição: geralmente embaixo
-- Efeito: relevo, sombra, brilho metálico
-- IMPORTANTE: NÃO adicione texto SE o usuário não pediu explicitamente.
+- Criar ilustração original relacionada ao tema brasileiro
+- Estilo: arte de camiseta profissional
+- Composição equilibrada para impressão
 `}
 
 PEDIDO DO USUÁRIO: "${prompt}"
 
+${prompt.toLowerCase().includes('texto') || prompt.toLowerCase().includes('frase') || prompt.toLowerCase().includes('palavra') ? `
+TEXTO SOLICITADO:
+- Texto em dourado 3D com contorno
+- Fonte bold, impactante
+- Posição: embaixo ou conforme pedido
+- Efeito: relevo, sombra, brilho metálico
+` : `
+SEM TEXTO: Não adicione textos, palavras ou frases (usuário não pediu).
+`}
+
 OBRIGATÓRIO:
-- Fundo 100% transparente (canal alfa)
-- Qualidade de impressão profissional
-- Sem mockups, modelos ou marcas d'água`;
+- Fundo 100% transparente (PNG com canal alfa)
+- Sem mockups, modelos ou marcas d'água
+- Qualidade profissional de impressão
+- Proporção adequada para camiseta`;
 
       const result = await model.generateContent({
         contents: [
