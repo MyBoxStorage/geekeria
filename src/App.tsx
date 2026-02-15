@@ -9,6 +9,7 @@ import CheckoutFailure from "@/pages/CheckoutFailure";
 import CheckoutPending from "@/pages/CheckoutPending";
 import OrderTracking from "@/pages/OrderTracking";
 import AdminDashboard from "@/pages/AdminDashboard";
+import { AdminGenerationsPage } from "@/pages/AdminGenerationsPage";
 
 function App() {
   useEffect(() => {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/checkout/pending" element={<CheckoutPending />} />
         <Route path="/order" element={<OrderTracking />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/generations" element={<AdminGenerationsPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
