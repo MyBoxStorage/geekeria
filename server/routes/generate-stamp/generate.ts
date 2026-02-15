@@ -108,12 +108,20 @@ TEXTO (se pedido no prompt):
 - Fonte bold, impactante
 - Posição: geralmente embaixo
 - Efeito: relevo, sombra, brilho metálico
+- IMPORTANTE: NÃO adicione texto SE o usuário não pediu explicitamente.
 ` : `
 SEM FOTO:
 - Criar símbolo/ilustração relacionada ao Brasil
 - Estilo: arte digital vibrante
 - Cores: verde e amarelo predominantes
 - Composição com bandeira ao fundo
+
+TEXTO (se pedido no prompt):
+- Texto em dourado 3D com contorno
+- Fonte bold, impactante
+- Posição: geralmente embaixo
+- Efeito: relevo, sombra, brilho metálico
+- IMPORTANTE: NÃO adicione texto SE o usuário não pediu explicitamente.
 `}
 
 PEDIDO DO USUÁRIO: "${prompt}"

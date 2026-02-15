@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { AuthModal } from './AuthModal';
 import { apiConfig } from '../config/api';
-import { Sparkles, Download, MessageCircle, Clock } from 'lucide-react';
+import { Sparkles, MessageCircle, Clock } from 'lucide-react';
 
 const API_URL = apiConfig.baseURL;
 const WHATSAPP_NUMBER = '5524992796969';
@@ -100,13 +100,6 @@ export function GeradorEstampas() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    link.download = `estampa-${Date.now()}.png`;
-    link.click();
   };
 
   const handleWhatsApp = () => {
@@ -276,14 +269,6 @@ export function GeradorEstampas() {
                 )}
 
                 <div className="space-y-2">
-                  <button
-                    onClick={handleDownload}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <Download size={18} />
-                    Baixar Imagem
-                  </button>
-
                   <button
                     onClick={handleWhatsApp}
                     className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"
