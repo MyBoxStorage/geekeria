@@ -339,7 +339,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
 // ─── Main Dashboard ───────────────────────────────────────────────
 
 export default function UserDashboard() {
-  const { user, logout } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -367,6 +367,14 @@ export default function UserDashboard() {
     logout();
     navigate('/');
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-[#00843D]" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
