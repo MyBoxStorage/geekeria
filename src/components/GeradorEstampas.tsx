@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '@/hooks/useCart';
 import { AuthModal } from './AuthModal';
 import { ProductSelector } from './ProductSelector';
 import { apiConfig } from '../config/api';
@@ -17,8 +18,10 @@ const EXEMPLOS = {
 
 export function GeradorEstampas() {
   const { user, token, refreshUser } = useAuth();
+  const { addToCart } = useCart();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [prompt, setPrompt] = useState('');
+  const [lastGenerationId, setLastGenerationId] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedPreview, setUploadedPreview] = useState('');
   const [generatedImage, setGeneratedImage] = useState('');
@@ -96,6 +99,7 @@ export function GeradorEstampas() {
 
       setGeneratedImage(data.image);
       setExpiresAt(data.expiresAt ?? '');
+      setLastGenerationId(data.generationId ?? null);
       await refreshUser();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar');
@@ -286,17 +290,29 @@ export function GeradorEstampas() {
                   </Link>
                 </div>
 
-                <div className="mt-6">
-                  <ProductSelector
-                    onAddToCart={(productData) => {
-                      // TODO: Integrar com carrinho existente
-                      console.log('Produto adicionado:', productData);
-                      alert(
-                        `Produto adicionado ao carrinho!\n\n${productData.productName}\nTamanho: ${productData.size}\nCor: ${productData.color}\nQuantidade: ${productData.quantity}\nTotal: R$ ${productData.price.toFixed(2)}`
-                      );
-                    }}
-                  />
-                </div>
+                {generatedImage && lastGenerationId && (
+                  <div className="mt-6">
+                    <ProductSelector
+                      generationId={lastGenerationId}
+                      onAddToCart={(data) => {
+                        addToCart(data.product, data.quantity, data.size, data.color);
+
+                        const cartExtras = JSON.parse(
+                          localStorage.getItem('cartExtras') || '{}'
+                        );
+                        const itemKey = `${data.product.id}-${data.size}-${data.color}`;
+                        cartExtras[itemKey] = {
+                          generationId: data.generationId,
+                          couponCode: data.couponCode,
+                          discount: data.discount,
+                        };
+                        localStorage.setItem('cartExtras', JSON.stringify(cartExtras));
+
+                        alert(`✅ ${data.product.name} adicionado ao carrinho!`);
+                      }}
+                    />
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">

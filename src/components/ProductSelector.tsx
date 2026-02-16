@@ -8,17 +8,22 @@ const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 interface ProductSelectorProps {
-  onAddToCart: (productData: {
-    productId: string;
-    productName: string;
+  generationId: string;
+  onAddToCart: (data: {
+    product: Product;
     size: string;
     color: string;
     quantity: number;
-    price: number;
+    generationId: string;
+    couponCode?: string;
+    discount?: number;
   }) => void;
 }
 
-export function ProductSelector({ onAddToCart }: ProductSelectorProps) {
+export function ProductSelector({
+  generationId,
+  onAddToCart,
+}: ProductSelectorProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [groupedProducts, setGroupedProducts] = useState<Record<string, Product[]>>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -87,12 +92,13 @@ export function ProductSelector({ onAddToCart }: ProductSelectorProps) {
     }
 
     onAddToCart({
-      productId: selectedProduct.id,
-      productName: selectedProduct.name,
+      product: selectedProduct,
       size: selectedSize,
       color: selectedColor,
       quantity,
-      price: calculateTotal(),
+      generationId,
+      couponCode: couponDiscount > 0 ? couponCode : undefined,
+      discount: couponDiscount,
     });
   };
 
