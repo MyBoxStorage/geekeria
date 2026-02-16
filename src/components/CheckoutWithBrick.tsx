@@ -325,7 +325,7 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
           }
         }
         
-        redirectUrl = `/checkout/pending?payment_id=${paymentId}&external_reference=${externalReference}&payment_type_id=pix`;
+        redirectUrl = `/checkout/pending?order_id=${externalReference}&payment_id=${paymentId}&external_reference=${externalReference}&payment_type_id=pix`;
         toast.success('Pagamento PIX processado! Aguardando confirmação.');
       } 
       // Cartão aprovado
@@ -343,7 +343,7 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
       // Outros casos pendentes (boleto, etc)
       else {
         if (import.meta.env.DEV) console.log('⏳ CheckoutWithBrick - Pagamento pendente, redirecionando para pending');
-        redirectUrl = `/checkout/pending?payment_id=${paymentId}&external_reference=${externalReference}&payment_type_id=${paymentMethod}`;
+        redirectUrl = `/checkout/pending?order_id=${externalReference}&payment_id=${paymentId}&external_reference=${externalReference}&payment_type_id=${paymentMethod}`;
         toast.success('Pagamento processado! Aguardando confirmação.');
       }
 
@@ -365,6 +365,19 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
       // Chamar callback de sucesso se fornecido
       if (onSuccess && paymentId) {
         onSuccess(paymentId.toString());
+      }
+
+      // Salvar mpPaymentId no backend para fallback na página pending
+      if (/^\d+$/.test(String(paymentId)) && externalReference && externalReference !== paymentId) {
+        try {
+          await fetch(`${apiConfig.baseURL}/api/orders/${encodeURIComponent(externalReference)}/update-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: String(paymentId), status }),
+          });
+        } catch {
+          // Não bloquear redirect se falhar
+        }
       }
 
       // Redirecionar usando window.location.href para garantir recarregamento

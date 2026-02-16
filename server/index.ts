@@ -16,6 +16,7 @@ import { healthCheck } from './routes/health.js';
 import { shippingQuote } from './routes/shipping/quote.js';
 import { createOrder } from './routes/checkout/create-order.js';
 import { getOrder } from './routes/orders/get-order.js';
+import { updateOrderPayment } from './routes/orders/update-payment.js';
 import { linkOrder } from './routes/orders/link-order.js';
 import { markMontink, validateAdminToken } from './routes/orders/mark-montink.js';
 import { listAdminOrders, exportAdminOrder } from './routes/admin/orders.js';
@@ -163,6 +164,7 @@ app.post('/api/mp/webhooks', webhookHandler);
 app.post('/api/shipping/quote', shippingQuote);
 app.post('/api/checkout/create-order', createOrder);
 app.get('/api/orders/:externalReference', rateLimitGetOrder, getOrder);
+app.post('/api/orders/:externalReference/update-payment', updateOrderPayment);
 app.post('/api/orders/link', requireAuth, linkOrder);
 app.post(
   '/api/orders/:externalReference/mark-montink',

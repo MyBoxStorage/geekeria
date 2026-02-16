@@ -163,7 +163,7 @@ export function PaymentBrick({
             } else             if (formData?.status === 'pending') {
               if (import.meta.env.DEV) console.log('⏳ PaymentBrick - Pagamento pendente, redirecionando...');
               const paymentMethod = formData.payment_method_id || formData.payment_type_id || 'pix';
-              const pendingUrl = `${window.location.origin}/checkout/pending?payment_id=${formData.id}&status=pending&external_reference=${formData.external_reference || ''}&payment_type_id=${paymentMethod}`;
+              const pendingUrl = `${window.location.origin}/checkout/pending?order_id=${encodeURIComponent(formData.external_reference || '')}&payment_id=${formData.id}&external_reference=${encodeURIComponent(formData.external_reference || '')}&payment_type_id=${paymentMethod}`;
               window.location.href = pendingUrl;
             } else if (formData?.status === 'rejected' || formData?.status === 'cancelled') {
               if (import.meta.env.DEV) console.log('❌ PaymentBrick - Pagamento rejeitado, redirecionando...');

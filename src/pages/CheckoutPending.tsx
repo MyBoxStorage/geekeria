@@ -26,13 +26,29 @@ interface PendingOrderData {
   timestamp: number;
 }
 
+/** Verifica se o valor parece ser um payment_id numérico do MP (não external_reference) */
+function isValidMpPaymentId(value: string | null): boolean {
+  if (!value || typeof value !== 'string') return false;
+  return /^\d+$/.test(value.trim());
+}
+
 export default function CheckoutPending() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const paymentId = searchParams.get('payment_id');
-  const externalReference = searchParams.get('external_reference');
+  const orderId = searchParams.get('order_id') ?? searchParams.get('external_reference');
+  const externalReference = searchParams.get('external_reference') ?? orderId;
   const paymentMethod = searchParams.get('payment_type_id');
-  
+
+  if (import.meta.env.DEV) {
+    console.log('🔍 Debug Pending Page:');
+    console.log('- Order ID:', orderId);
+    console.log('- Payment ID:', paymentId);
+    console.log('- External Reference:', externalReference);
+    console.log('- Payment Type:', paymentMethod);
+    console.log('- isValidMpPaymentId(paymentId):', isValidMpPaymentId(paymentId));
+  }
+
   const [pixData, setPixData] = useState<PixPaymentData | null>(null);
   const [pixLoadFailed, setPixLoadFailed] = useState<false | 'FAILED' | 'RATE_LIMIT'>(false);
   const [pixLoading, setPixLoading] = useState(true);
@@ -135,8 +151,39 @@ export default function CheckoutPending() {
       }
     }
 
+    async function fetchPaymentByOrder(ref: string): Promise<boolean> {
+      let email: string | null = null;
+      try {
+        const pendingRaw = localStorage.getItem('bb_order_pending');
+        if (pendingRaw) {
+          const pending = JSON.parse(pendingRaw) as PendingOrderData;
+          if (pending.externalReference === ref && pending.email) {
+            email = pending.email;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      if (!email) return false;
+      try {
+        const orderData = await getOrder(ref, email);
+        if (cancelled) return false;
+        const mpId = orderData.mpPaymentId;
+        if (mpId && isValidMpPaymentId(String(mpId))) {
+          return fetchByPaymentId(String(mpId));
+        }
+        if (import.meta.env.DEV && ref) {
+          console.log('CheckoutPending: Pedido ainda não tem mpPaymentId do MP');
+        }
+      } catch (err) {
+        console.error('CheckoutPending: Error fetching order by reference:', err);
+      }
+      return false;
+    }
+
     async function run() {
-      if (paymentId) {
+      // 1. Se payment_id é numérico (MP real), buscar direto
+      if (paymentId && isValidMpPaymentId(paymentId)) {
         const ok = await fetchByPaymentId(paymentId);
         if (cancelled) return;
         if (ok) {
@@ -145,31 +192,14 @@ export default function CheckoutPending() {
         }
       }
 
-      if (externalReference && !paymentId) {
-        let email: string | null = null;
-        try {
-          const pendingRaw = localStorage.getItem('bb_order_pending');
-          if (pendingRaw) {
-            const pending = JSON.parse(pendingRaw) as PendingOrderData;
-            if (pending.externalReference === externalReference && pending.email) {
-              email = pending.email;
-            }
-          }
-        } catch {
-          // ignore
-        }
-        if (email) {
-          try {
-            const orderData = await getOrder(externalReference, email);
-            if (cancelled) return;
-            const mpId = orderData.mpPaymentId;
-            if (mpId && (await fetchByPaymentId(mpId))) {
-              setPixLoading(false);
-              return;
-            }
-          } catch {
-            // ignore
-          }
+      // 2. Se payment_id parece ser order_id/external_reference OU não temos payment_id, buscar por order
+      const refToUse = orderId ?? externalReference;
+      if (refToUse) {
+        const ok = await fetchPaymentByOrder(refToUse);
+        if (cancelled) return;
+        if (ok) {
+          setPixLoading(false);
+          return;
         }
       }
 
@@ -191,7 +221,7 @@ export default function CheckoutPending() {
     return () => {
       cancelled = true;
     };
-  }, [isPix, paymentId, externalReference, refreshTrigger]);
+  }, [isPix, paymentId, orderId, externalReference, refreshTrigger]);
 
   // Carregar dados do pedido e iniciar polling
   useEffect(() => {
