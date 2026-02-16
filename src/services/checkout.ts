@@ -29,6 +29,7 @@ export interface CreateOrderRequest {
     size?: string;
     color?: string;
   }>;
+  couponCode?: string;
 }
 
 export interface CreateOrderResponse {
@@ -45,6 +46,13 @@ export interface CreateOrderResponse {
 /**
  * Cria um pedido no backend
  */
-export async function createOrder(payload: CreateOrderRequest): Promise<CreateOrderResponse> {
-  return postJSON<CreateOrderResponse>('/api/checkout/create-order', payload);
+export async function createOrder(
+  payload: CreateOrderRequest,
+  options?: { token?: string }
+): Promise<CreateOrderResponse> {
+  return postJSON<CreateOrderResponse>('/api/checkout/create-order', payload, {
+    headers: {
+      ...(options?.token && { Authorization: `Bearer ${options.token}` }),
+    },
+  });
 }

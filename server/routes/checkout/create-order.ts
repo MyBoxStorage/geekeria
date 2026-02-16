@@ -52,6 +52,7 @@ const createOrderSchema = z.object({
     size: z.string().optional(),
     color: z.string().optional(),
   })).min(1, 'Items array cannot be empty'),
+  couponCode: z.string().optional(),
 });
 
 /**
@@ -65,31 +66,45 @@ function calculateDiscountRate(itemCount: number): number {
 }
 
 /**
- * Calcula todos os valores do pedido
+ * Calcula todos os valores do pedido (incluindo cupom)
  */
-function calculateOrderTotals(items: Array<{ quantity: number; unitPrice: number }>) {
+function calculateOrderTotals(
+  items: Array<{ quantity: number; unitPrice: number }>,
+  couponDiscountAmount: number = 0
+) {
   // Calcular subtotal
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-  
+
   // Calcular quantidade total de itens
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  
-  // Calcular desconto
+
+  // Desconto por quantidade
   const discountRate = calculateDiscountRate(itemCount);
-  const discountTotal = subtotal * discountRate;
-  const subtotalAfterDiscount = subtotal - discountTotal;
-  
+  const quantityDiscountTotal = subtotal * discountRate;
+  const subtotalAfterQuantityDiscount = subtotal - quantityDiscountTotal;
+
+  // Desconto por cupom (limitado ao subtotal após desconto de quantidade)
+  const effectiveCouponDiscount = Math.min(
+    couponDiscountAmount,
+    subtotalAfterQuantityDiscount
+  );
+  const subtotalAfterDiscount =
+    subtotalAfterQuantityDiscount - effectiveCouponDiscount;
+  const discountTotal = quantityDiscountTotal + effectiveCouponDiscount;
+
   // Calcular frete
   const FREE_SHIPPING_THRESHOLD = 200;
   const STANDARD_SHIPPING_COST = 15;
-  const shippingCost = subtotalAfterDiscount > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
-  
+  const shippingCost =
+    subtotalAfterDiscount > FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_COST;
+
   // Calcular total
   const total = subtotalAfterDiscount + shippingCost;
-  
+
   return {
     subtotal,
     discountTotal,
+    couponDiscountAmount: effectiveCouponDiscount,
     shippingCost,
     total,
     itemCount,
@@ -108,10 +123,62 @@ export async function createOrder(req: Request, res: Response) {
       });
     }
 
-    const { payer, shipping, items } = validationResult.data;
+    const { payer, shipping, items, couponCode } = validationResult.data;
+
+    // Obter buyerId do JWT (se logado)
+    let buyerId: string | null = null;
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION';
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
+        buyerId = decoded.userId ?? null;
+      }
+    } catch {
+      buyerId = null;
+    }
+
+    // Validar cupom no backend (não confiar no valor do cliente)
+    let couponDiscountAmount = 0;
+    let couponDiscountCode: string | null = null;
+    if (couponCode && couponCode.trim()) {
+      const normalizedCode = couponCode.trim().toUpperCase();
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: normalizedCode },
+      });
+      let valid =
+        coupon &&
+        coupon.isActive &&
+        (!coupon.expiresAt || new Date() <= coupon.expiresAt) &&
+        (!coupon.maxUses || coupon.usedCount < coupon.maxUses);
+
+      if (valid && buyerId && coupon) {
+        const previousUse = await prisma.couponUsage.findFirst({
+          where: { couponId: coupon.id, userId: buyerId },
+        });
+        if (previousUse) valid = false;
+      }
+
+      if (valid && coupon) {
+        couponDiscountCode = normalizedCode;
+        const subtotal = items.reduce(
+          (sum, item) => sum + item.quantity * item.unitPrice,
+          0
+        );
+        const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+        const qtyRate = calculateDiscountRate(itemCount);
+        const subtotalAfterQty = subtotal * (1 - qtyRate);
+        if (coupon.type === 'PERCENTAGE') {
+          couponDiscountAmount = (subtotalAfterQty * coupon.value) / 100;
+        } else {
+          couponDiscountAmount = Math.min(coupon.value, subtotalAfterQty);
+        }
+      }
+    }
 
     // Calcular totals no backend (source of truth)
-    const totals = calculateOrderTotals(items);
+    const totals = calculateOrderTotals(items, couponDiscountAmount);
 
     // Gerar external reference único
     const externalReference = `order_${randomUUID()}`;
@@ -137,20 +204,6 @@ export async function createOrder(req: Request, res: Response) {
     }
 
     logger.info(`Creating order: externalRef=${externalReference}, total=${totals.total}`);
-
-    // Opcional: obter userId do JWT se o usuário estiver logado
-    let buyerId: string | null = null;
-    try {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.replace('Bearer ', '');
-        const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION';
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId?: string };
-        buyerId = decoded.userId ?? null;
-      }
-    } catch {
-      // Usuário não autenticado - buyerId fica null
-    }
 
     // Criar Order e OrderItems em uma transação
     const order = await prisma.$transaction(async (tx: any) => {
@@ -179,6 +232,10 @@ export async function createOrder(req: Request, res: Response) {
           shippingCost: totals.shippingCost,
           shippingService: shipping?.service,
           shippingDeadline: shipping?.deadline,
+          // Cupom
+          couponCode: couponDiscountCode,
+          couponDiscountAmount:
+            totals.couponDiscountAmount > 0 ? totals.couponDiscountAmount : null,
           // Telemetria / risco
           ipAddress: truncateForDb(ipAddress ?? undefined),
           userAgent: truncateForDb(userAgent ?? undefined),
@@ -202,6 +259,33 @@ export async function createOrder(req: Request, res: Response) {
 
       return newOrder;
     });
+
+    // Registrar uso do cupom e incrementar usedCount
+    if (couponDiscountCode && totals.couponDiscountAmount > 0 && order) {
+      try {
+        const coupon = await prisma.coupon.findUnique({
+          where: { code: couponDiscountCode },
+        });
+        if (coupon) {
+          await prisma.coupon.update({
+            where: { id: coupon.id },
+            data: { usedCount: { increment: 1 } },
+          });
+          if (buyerId) {
+            await prisma.couponUsage.create({
+              data: {
+                couponId: coupon.id,
+                userId: buyerId,
+                orderId: order.id,
+                discountAmount: totals.couponDiscountAmount,
+              },
+            });
+          }
+        }
+      } catch (err) {
+        logger.warn('Coupon usage tracking failed', errorMeta(err));
+      }
+    }
 
     logger.info(`Order created: id=${order.id}, externalRef=${externalReference}`);
 

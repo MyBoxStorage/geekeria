@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { apiConfig } from '@/config/api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { User, MapPin } from 'lucide-react';
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/hooks/useCart';
 import { PaymentBrick } from '@/components/PaymentBrick';
 import { toast } from 'sonner';
@@ -38,10 +40,15 @@ interface CheckoutWithBrickProps {
 
 export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBrickProps) {
   const { cart, clearCart } = useCart();
+  const { token } = useAuth();
   const [showPaymentBrick, setShowPaymentBrick] = useState(false);
   const [customerData, setCustomerData] = useState<CheckoutFormData | null>(null);
   const [orderData, setOrderData] = useState<CreateOrderResponse | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponType, setCouponType] = useState<'PERCENTAGE' | 'FIXED' | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   if (import.meta.env.DEV) {
     console.log('CheckoutWithBrick - Renderizado');
@@ -66,6 +73,64 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
       style: 'currency',
       currency: 'BRL',
     });
+  };
+
+  const subtotalFromCart = cart.items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  const calculateCouponDiscount = (): number => {
+    if (couponDiscount === 0 || !couponType) return 0;
+    if (couponType === 'PERCENTAGE') {
+      return (subtotalFromCart * couponDiscount) / 100;
+    }
+    return Math.min(couponDiscount, subtotalFromCart);
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Digite um código de cupom');
+      return;
+    }
+
+    setValidatingCoupon(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiConfig.baseURL}/api/coupons/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({ code: couponCode.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || 'Cupom inválido');
+        setCouponDiscount(0);
+        setCouponType(null);
+        return;
+      }
+
+      setCouponDiscount(data.coupon.value);
+      setCouponType(data.coupon.type);
+      toast.success(
+        data.coupon.type === 'PERCENTAGE'
+          ? `✅ Cupom aplicado! ${data.coupon.value}% de desconto`
+          : `✅ Cupom aplicado! R$ ${data.coupon.value.toFixed(2)} de desconto`
+      );
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      toast.error('Erro ao validar cupom');
+      setCouponDiscount(0);
+      setCouponType(null);
+    } finally {
+      setValidatingCoupon(false);
+    }
   };
 
   /**
@@ -138,12 +203,15 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
           size: item.size,
           color: item.color,
         })),
+        couponCode: couponDiscount > 0 ? couponCode.trim().toUpperCase() : undefined,
       };
 
       if (import.meta.env.DEV) console.log('CheckoutWithBrick - Criando pedido no backend...', orderPayload);
 
       // Criar pedido no backend
-      const orderResponse = await createOrder(orderPayload);
+      const orderResponse = await createOrder(orderPayload, {
+        token: token ?? localStorage.getItem('token') ?? undefined,
+      });
       
       if (import.meta.env.DEV) console.log('CheckoutWithBrick - Pedido criado:', orderResponse);
 
@@ -428,6 +496,38 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
               </div>
             </div>
 
+            {/* Cupom de Desconto */}
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3">🎟️ Cupom de Desconto</h3>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="Digite o código do cupom"
+                  className="flex-1"
+                  disabled={validatingCoupon}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleApplyCoupon}
+                  disabled={validatingCoupon}
+                >
+                  {validatingCoupon ? 'Validando...' : 'Aplicar'}
+                </Button>
+              </div>
+              {couponDiscount > 0 && (
+                <p className="text-green-600 text-sm mt-2">
+                  ✅ Cupom &quot;{couponCode}&quot; aplicado:{' '}
+                  {couponType === 'PERCENTAGE'
+                    ? `${couponDiscount}%`
+                    : `R$ ${couponDiscount.toFixed(2)}`}{' '}
+                  de desconto
+                </p>
+              )}
+            </div>
+
             {/* Resumo do Pedido */}
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -436,17 +536,40 @@ export function CheckoutWithBrick({ isOpen, onClose, onSuccess }: CheckoutWithBr
               </div>
               {(orderData?.totals.discountTotal ?? cart.discount) > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Desconto</span>
+                  <span>Desconto (quantidade)</span>
                   <span>-{formatPrice(orderData?.totals.discountTotal ?? cart.discount)}</span>
+                </div>
+              )}
+              {calculateCouponDiscount() > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Desconto ({couponCode})</span>
+                  <span>- {formatPrice(calculateCouponDiscount())}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
                 <span>Frete</span>
-                <span>{(orderData?.totals.shippingCost ?? cart.shipping) === 0 ? 'Grátis' : formatPrice(orderData?.totals.shippingCost ?? cart.shipping)}</span>
+                <span>
+                  {(orderData?.totals.shippingCost ?? cart.shipping) === 0
+                    ? 'Grátis'
+                    : formatPrice(orderData?.totals.shippingCost ?? cart.shipping)}
+                </span>
               </div>
               <div className="flex justify-between font-display text-xl text-[#00843D] pt-2 border-t">
                 <span>TOTAL</span>
-                <span>{formatPrice(orderData?.totals.total ?? cart.total)}</span>
+                <span>
+                  {formatPrice(
+                    orderData?.totals.total ??
+                      Math.max(
+                        0,
+                        cart.subtotal -
+                          cart.discount -
+                          calculateCouponDiscount() +
+                          (cart.subtotal - cart.discount - calculateCouponDiscount() > 200
+                            ? 0
+                            : 15)
+                      )
+                  )}
+                </span>
               </div>
             </div>
 

@@ -75,6 +75,10 @@ model Order {
   riskFlag    Boolean? @default(false) @map("risk_flag")
   riskReasons String?  @map("risk_reasons") // motivos curtos separados por vírgula (sem PII)
 
+  // Cupom
+  couponCode         String? @map("coupon_code")
+  couponDiscountAmount Float? @map("coupon_discount_amount")
+
   // Auth + créditos (estampas)
   buyerId        String? @map("buyer_id")
   buyer          User?   @relation("UserPurchases", fields: [buyerId], references: [id])
