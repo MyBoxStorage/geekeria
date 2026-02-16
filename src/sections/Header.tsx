@@ -111,6 +111,12 @@ export function Header() {
             {user ? (
               <div className="flex items-center gap-2 sm:gap-4">
                 <Link
+                  to="/order"
+                  className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'}`}
+                >
+                  Meus Pedidos
+                </Link>
+                <Link
                   to="/minhas-estampas"
                   className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'}`}
                 >
@@ -309,15 +315,26 @@ export function Header() {
           <nav className="lg:hidden mt-4 pb-4 border-t border-white/20 pt-4">
             <div className="flex flex-col gap-3">
               {user && (
-                <Link
-                  to="/minhas-estampas"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`font-body text-sm font-medium tracking-wider py-2 transition-colors ${
-                    isScrolled ? 'text-gray-800' : 'text-white'
-                  }`}
-                >
-                  Minhas Estampas
-                </Link>
+                <>
+                  <Link
+                    to="/order"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`font-body text-sm font-medium tracking-wider py-2 transition-colors ${
+                      isScrolled ? 'text-gray-800' : 'text-white'
+                    }`}
+                  >
+                    Meus Pedidos
+                  </Link>
+                  <Link
+                    to="/minhas-estampas"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`font-body text-sm font-medium tracking-wider py-2 transition-colors ${
+                      isScrolled ? 'text-gray-800' : 'text-white'
+                    }`}
+                  >
+                    Minhas Estampas
+                  </Link>
+                </>
               )}
               {navLinks.map((link) => (
                 <a
