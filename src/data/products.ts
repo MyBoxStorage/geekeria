@@ -104,7 +104,71 @@ export const featuredProducts: Product[] = [
   },
 ];
 
+const testProducts: Product[] = [
+  {
+    id: 'prod_test_001',
+    name: 'TESTE 1 centavo',
+    category: 'TESTES',
+    price: 0.01,
+    image: 'https://via.placeholder.com/300x300?text=TESTE+R%240.01',
+    description: 'Produto de teste para pagamento',
+    sizes: ['Único'],
+    colors: ['Teste'],
+    rating: 0,
+    reviews: 0,
+  },
+  {
+    id: 'prod_test_002',
+    name: 'TESTE 2 centavos',
+    category: 'TESTES',
+    price: 0.02,
+    image: 'https://via.placeholder.com/300x300?text=TESTE+R%240.02',
+    description: 'Produto de teste para pagamento',
+    sizes: ['Único'],
+    colors: ['Teste'],
+    rating: 0,
+    reviews: 0,
+  },
+  {
+    id: 'prod_test_003',
+    name: 'TESTE 3 centavos',
+    category: 'TESTES',
+    price: 0.03,
+    image: 'https://via.placeholder.com/300x300?text=TESTE+R%240.03',
+    description: 'Produto de teste para pagamento',
+    sizes: ['Único'],
+    colors: ['Teste'],
+    rating: 0,
+    reviews: 0,
+  },
+  {
+    id: 'prod_test_004',
+    name: 'TESTE 4 centavos',
+    category: 'TESTES',
+    price: 0.04,
+    image: 'https://via.placeholder.com/300x300?text=TESTE+R%240.04',
+    description: 'Produto de teste para pagamento',
+    sizes: ['Único'],
+    colors: ['Teste'],
+    rating: 0,
+    reviews: 0,
+  },
+  {
+    id: 'prod_test_005',
+    name: 'TESTE 5 centavos',
+    category: 'TESTES',
+    price: 0.05,
+    image: 'https://via.placeholder.com/300x300?text=TESTE+R%240.05',
+    description: 'Produto de teste para pagamento',
+    sizes: ['Único'],
+    colors: ['Teste'],
+    rating: 0,
+    reviews: 0,
+  },
+];
+
 export const allProducts: Product[] = [
+  ...testProducts,
   ...featuredProducts,
   {
     id: '9',
@@ -349,7 +413,8 @@ export const faqs: FAQ[] = [
 ];
 
 export const categories = [
-  { id: 'all', name: 'Todos', count: 40 },
+  { id: 'all', name: 'Todos', count: 45 },
+  { id: 'TESTES', name: 'Testes', count: 5 },
   { id: 'camisetas', name: 'Camisetas', count: 25 },
   { id: 'bone', name: 'Bonés', count: 8 },
   { id: 'moletom', name: 'Moletons', count: 6 },
