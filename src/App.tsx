@@ -8,6 +8,7 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutFailure from "@/pages/CheckoutFailure";
 import CheckoutPending from "@/pages/CheckoutPending";
 import OrderTracking from "@/pages/OrderTracking";
+import UserDashboard from "@/pages/UserDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import { AdminGenerationsPage } from "@/pages/AdminGenerationsPage";
 import { AdminPromptsPage } from "@/pages/AdminPromptsPage";
@@ -28,6 +29,7 @@ function App() {
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/checkout/failure" element={<CheckoutFailure />} />
         <Route path="/checkout/pending" element={<CheckoutPending />} />
+        <Route path="/minha-conta" element={<UserDashboard />} />
         <Route path="/order" element={<OrderTracking />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />

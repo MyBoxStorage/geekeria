@@ -111,22 +111,13 @@ export function Header() {
             {user ? (
               <div className="flex items-center gap-2 sm:gap-4">
                 <Link
-                  to="/order"
+                  to="/minha-conta"
                   className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'}`}
                 >
-                  Meus Pedidos
-                </Link>
-                <Link
-                  to="/minhas-estampas"
-                  className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'}`}
-                >
-                  Minhas Estampas
-                </Link>
-                <span className={`text-sm hidden sm:block ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
                   Olá, {user.name || user.email.split('@')[0]}
                   <br />
                   <span className={`text-xs ${isScrolled ? 'text-green-600' : 'text-green-300'}`}>💳 {user.credits} créditos</span>
-                </span>
+                </Link>
                 <button
                   onClick={logout}
                   className={`p-2 rounded-full transition-colors ${isScrolled ? 'hover:bg-gray-100 text-gray-800' : 'hover:bg-white/10 text-white'}`}
@@ -317,22 +308,13 @@ export function Header() {
               {user && (
                 <>
                   <Link
-                    to="/order"
+                    to="/minha-conta"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`font-body text-sm font-medium tracking-wider py-2 transition-colors ${
-                      isScrolled ? 'text-gray-800' : 'text-white'
+                    className={`font-body text-sm font-medium tracking-wider py-2 transition-colors font-semibold ${
+                      isScrolled ? 'text-[#00843D]' : 'text-[#FFCC29]'
                     }`}
                   >
-                    Meus Pedidos
-                  </Link>
-                  <Link
-                    to="/minhas-estampas"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`font-body text-sm font-medium tracking-wider py-2 transition-colors ${
-                      isScrolled ? 'text-gray-800' : 'text-white'
-                    }`}
-                  >
-                    Minhas Estampas
+                    Minha Conta
                   </Link>
                 </>
               )}
