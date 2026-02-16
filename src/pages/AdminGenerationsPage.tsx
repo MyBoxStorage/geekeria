@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { AdminNav } from '@/components/AdminNav';
 import { Download, RefreshCw } from 'lucide-react';
 import { apiConfig } from '@/config/api';
 
@@ -124,35 +124,7 @@ export function AdminGenerationsPage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold">📊 Estampas Geradas</h1>
-            <div className="flex gap-4 items-center">
-              <Link
-                to="/admin"
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Painel admin
-              </Link>
-              <Link
-                to="/admin/prompts"
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Prompts
-              </Link>
-              <Link
-                to="/admin/coupons"
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Cupons
-              </Link>
-              <button
-              onClick={() => {
-                localStorage.removeItem('admin_token');
-                setIsAuthenticated(false);
-              }}
-              className="text-red-600 hover:text-red-700 text-sm"
-            >
-              Sair
-            </button>
-            </div>
+            <AdminNav />
           </div>
 
           <div className="flex gap-4 mb-6">

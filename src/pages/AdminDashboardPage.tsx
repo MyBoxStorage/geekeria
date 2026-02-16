@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AdminNav } from '@/components/AdminNav';
 import { apiConfig } from '@/config/api';
 import {
   LineChart,
@@ -141,15 +142,7 @@ export function AdminDashboardPage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold">📊 Dashboard de Vendas</h1>
-            <button
-              onClick={() => {
-                localStorage.removeItem('admin_token');
-                setIsAuthenticated(false);
-              }}
-              className="text-red-600 hover:text-red-700 text-sm"
-            >
-              Sair
-            </button>
+            <AdminNav />
           </div>
 
           {/* Filtro de data */}
