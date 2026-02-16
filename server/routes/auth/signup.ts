@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../utils/prisma.js';
+import { sendWelcomeEmail } from '../../utils/email.js';
 import { signupSchema } from './schemas.js';
 import { generateToken } from '../../utils/authMiddleware.js';
 
@@ -54,6 +55,12 @@ export async function signup(req: Request, res: Response): Promise<void> {
     const token = generateToken(user.id, user.email);
 
     console.log(`✅ New user registered: ${user.email} (${user.id})`);
+
+    // Enviar email de boas-vindas (não bloqueia o response)
+    sendWelcomeEmail({
+      name: user.name || 'Cliente',
+      email: user.email,
+    }).catch((err) => console.error('Email error:', err));
 
     res.status(201).json({
       success: true,
