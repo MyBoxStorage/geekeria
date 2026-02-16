@@ -349,9 +349,6 @@ export function Header() {
       <CheckoutWithBrick
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
-        onSuccess={(paymentId) => {
-          if (import.meta.env.DEV) console.log('Pagamento processado com sucesso:', paymentId);
-        }}
       />
     </header>
   );
