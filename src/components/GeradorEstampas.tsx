@@ -5,7 +5,8 @@ import { useCart } from '@/hooks/useCart';
 import { AuthModal } from './AuthModal';
 import { ProductSelector } from './ProductSelector';
 import { apiConfig } from '../config/api';
-import { Sparkles, MessageCircle, Clock } from 'lucide-react';
+import { Sparkles, MessageCircle, Clock, ImageIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const API_URL = apiConfig.baseURL;
 const WHATSAPP_NUMBER = '5524992796969';
@@ -236,31 +237,44 @@ export function GeradorEstampas() {
               </div>
             )}
 
-            <button
+            <Button
               onClick={handleGenerate}
               disabled={loading || (!!user && user.credits < 1)}
-              className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              size="lg"
+              className="w-full bg-gradient-green-yellow text-[#002776] hover:opacity-90 font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105 hover:shadow-xl"
             >
-              <Sparkles size={20} />
-              {loading ? 'Gerando...' : '✨ GERAR ESTAMPA COM IA'}
-            </button>
+              <Sparkles className="w-5 h-5" />
+              {loading ? 'GERANDO...' : 'GERAR ESTAMPA COM IA'}
+            </Button>
 
             {/* Botões fixos - sempre visíveis */}
             <div className="flex gap-4 mt-4">
-              <Link
-                to="/minhas-estampas"
-                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              <Button
+                asChild
+                size="lg"
+                className="flex-1 bg-[#002776] hover:bg-[#001F5C] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
               >
-                🎨 Minhas Estampas
-              </Link>
-              <a
-                href="https://wa.me/5524992796969?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20as%20estampas%20personalizadas"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                <Link to="/minhas-estampas" className="flex items-center justify-center gap-2">
+                  <ImageIcon className="w-5 h-5" />
+                  MINHAS ESTAMPAS
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="flex-1 border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white font-display text-lg px-8 py-6 rounded-full transition-all"
               >
-                💬 Dúvidas no WhatsApp
-              </a>
+                <a
+                  href="https://wa.me/5524992796969?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20as%20estampas%20personalizadas"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  WHATSAPP
+                </a>
+              </Button>
             </div>
 
             {!user && (
@@ -292,20 +306,26 @@ export function GeradorEstampas() {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <button
+                <div className="space-y-3">
+                  <Button
                     onClick={handleWhatsApp}
-                    className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2"
+                    size="lg"
+                    className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
                   >
-                    <MessageCircle size={18} />
-                    Fazer Pedido no WhatsApp
-                  </button>
-                  <Link
-                    to="/minhas-estampas"
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                    <MessageCircle className="w-5 h-5" />
+                    FAZER PEDIDO NO WHATSAPP
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-2 border-[#002776] text-[#002776] hover:bg-[#002776] hover:text-white font-display text-lg px-8 py-6 rounded-full transition-all"
                   >
-                    🎨 Ver Todas Minhas Estampas
-                  </Link>
+                    <Link to="/minhas-estampas" className="flex items-center justify-center gap-2">
+                      <ImageIcon className="w-5 h-5" />
+                      VER TODAS MINHAS ESTAMPAS
+                    </Link>
+                  </Button>
                 </div>
 
                 {generatedImage && lastGenerationId && (
