@@ -41,6 +41,9 @@ const createPaymentSchema = z.object({
   }),
   amount: z.number().positive(),
   paymentMethod: z.enum(['pix', 'bolbradesco']),
+  // Campos opcionais: se fornecidos, reutiliza o pedido existente (evita duplicação)
+  existingOrderId: z.string().optional(),
+  existingExternalReference: z.string().optional(),
 });
 
 export async function createPayment(req: Request, res: Response) {
@@ -55,7 +58,7 @@ export async function createPayment(req: Request, res: Response) {
       });
     }
 
-    const { items, payer, amount, paymentMethod } = validationResult.data;
+    const { items, payer, amount, paymentMethod, existingOrderId, existingExternalReference } = validationResult.data;
 
     // Verificar Access Token
     const accessToken = process.env.MP_ACCESS_TOKEN;
@@ -67,27 +70,98 @@ export async function createPayment(req: Request, res: Response) {
       });
     }
 
-    // Gerar referência externa única
-    const externalReference = `BRAVOS-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    // Reutilizar pedido existente (se fornecido pelo checkout) ou criar novo
+    let orderId: string;
+    let externalReference: string;
 
-    // Telemetria e risco (não bloqueia; se falhar, persiste sem risco)
-    const ipAddress = getClientIp(req) ?? null;
-    const userAgent = getClientUserAgent(req) ?? null;
-    let risk: { riskScore: number; riskFlag: boolean; riskReasons: string | null } = {
-      riskScore: 0,
-      riskFlag: false,
-      riskReasons: null,
-    };
-    try {
-      risk = computeOrderRiskSimple({
-        ipAddress,
-        userAgent,
-        payerCpf: payer.cpf,
-        shippingCep: null,
-        shippingState: null,
+    if (existingOrderId && existingExternalReference) {
+      // Modo reutilização: pedido já foi criado por /api/checkout/create-order
+      const existingOrder = await prisma.order.findUnique({
+        where: { id: existingOrderId },
+        select: { id: true, externalReference: true, status: true },
       });
-    } catch {
-      // não bloquear
+
+      if (!existingOrder) {
+        return res.status(404).json({
+          error: 'Order not found',
+          message: 'Pedido existente não encontrado. Tente novamente.',
+        });
+      }
+
+      if (existingOrder.externalReference !== existingExternalReference) {
+        return res.status(400).json({
+          error: 'External reference mismatch',
+          message: 'Referência do pedido não confere.',
+        });
+      }
+
+      orderId = existingOrder.id;
+      externalReference = existingOrder.externalReference;
+      logger.info(`Reusing existing order: ${orderId}, External Ref: ${externalReference}`);
+
+      // Atualizar paymentMethod no pedido existente
+      await prisma.order.update({
+        where: { id: orderId },
+        data: { paymentMethod },
+      });
+    } else {
+      // Modo legado: criar novo pedido (backward-compatible)
+      // Gerar referência externa única
+      externalReference = `BRAVOS-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+      // Telemetria e risco (não bloqueia; se falhar, persiste sem risco)
+      const ipAddress = getClientIp(req) ?? null;
+      const userAgent = getClientUserAgent(req) ?? null;
+      let risk: { riskScore: number; riskFlag: boolean; riskReasons: string | null } = {
+        riskScore: 0,
+        riskFlag: false,
+        riskReasons: null,
+      };
+      try {
+        risk = computeOrderRiskSimple({
+          ipAddress,
+          userAgent,
+          payerCpf: payer.cpf,
+          shippingCep: null,
+          shippingState: null,
+        });
+      } catch {
+        // não bloquear
+      }
+
+      const newOrder = await prisma.order.create({
+        data: {
+          total: amount,
+          subtotal: amount,
+          status: 'PENDING',
+          payerName: payer.name,
+          payerEmail: payer.email,
+          payerCpf: payer.cpf,
+          payerPhone: payer.phone,
+          paymentMethod: paymentMethod,
+          externalReference: externalReference,
+          ipAddress: truncateForDb(ipAddress ?? undefined),
+          userAgent: truncateForDb(userAgent ?? undefined),
+          riskScore: risk.riskScore,
+          riskFlag: risk.riskFlag,
+          riskReasons: risk.riskReasons,
+          items: {
+            create: items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              size: item.size,
+              color: item.color,
+            })),
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      orderId = newOrder.id;
+      logger.info(`Order created: ${orderId}, External Ref: ${externalReference}`);
     }
 
     // Preparar dados para o Mercado Pago
@@ -138,40 +212,6 @@ export async function createPayment(req: Request, res: Response) {
       mpPaymentData.date_of_expiration = expirationDate.toISOString();
     }
 
-    // Criar pedido no banco de dados (status: PENDING)
-    const order = await prisma.order.create({
-      data: {
-        total: amount,
-        subtotal: amount,
-        status: 'PENDING',
-        payerName: payer.name,
-        payerEmail: payer.email,
-        payerCpf: payer.cpf,
-        payerPhone: payer.phone,
-        paymentMethod: paymentMethod,
-        externalReference: externalReference,
-        ipAddress: truncateForDb(ipAddress ?? undefined),
-        userAgent: truncateForDb(userAgent ?? undefined),
-        riskScore: risk.riskScore,
-        riskFlag: risk.riskFlag,
-        riskReasons: risk.riskReasons,
-        items: {
-          create: items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            size: item.size,
-            color: item.color,
-          })),
-        },
-      },
-      include: {
-        items: true,
-      },
-    });
-
-    logger.info(`Order created: ${order.id}, External Ref: ${externalReference}`);
-
     // Chamar API do Mercado Pago
     // Gerar idempotency key baseado na external reference
     const idempotencyKey = `bravos-${externalReference}-${Date.now()}`;
@@ -193,7 +233,7 @@ export async function createPayment(req: Request, res: Response) {
       
       // Atualizar pedido com status FAILED
       await prisma.order.update({
-        where: { id: order.id },
+        where: { id: orderId },
         data: { status: 'FAILED' },
       });
 
@@ -221,15 +261,15 @@ export async function createPayment(req: Request, res: Response) {
     }
 
     await prisma.order.update({
-      where: { id: order.id },
+      where: { id: orderId },
       data: updateData,
     });
 
-    logger.info(`Payment created: MP ID ${mpData.id}, Order ${order.id}`);
+    logger.info(`Payment created: MP ID ${mpData.id}, Order ${orderId}`);
 
     // Retornar dados para o frontend
     const responseData: any = {
-      orderId: order.id,
+      orderId: orderId,
       paymentId: mpData.id,
       status: mpData.status,
       paymentMethod: paymentMethod,

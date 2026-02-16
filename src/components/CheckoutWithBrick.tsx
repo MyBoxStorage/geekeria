@@ -370,9 +370,12 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
             },
             amount: orderData.totals.total,
             paymentMethod: 'pix',
+            // Reutilizar pedido existente (criado em create-order) para evitar duplicação
+            existingOrderId: orderData.orderId,
+            existingExternalReference: orderData.externalReference,
           };
 
-          console.log('📤 Enviando para /api/mp/create-payment:', paymentPayload);
+          console.log('📤 Enviando para /api/mp/create-payment (reusing order):', paymentPayload);
 
           const paymentResponse = await fetch(`${apiConfig.baseURL}/api/mp/create-payment`, {
             method: 'POST',
@@ -399,32 +402,16 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
               qrCode: paymentData.pix.copyPaste,
               qrCodeBase64: paymentData.pix.qrCode,
               paymentId: paymentData.paymentId,
-              externalReference: paymentData.orderId,
+              externalReference: orderData.externalReference,
               timestamp: Date.now(),
             };
             localStorage.setItem('pixPaymentData', JSON.stringify(pixPaymentData));
             console.log('💾 Dados PIX salvos no localStorage:', pixPaymentData);
           }
 
-          // Atualizar order com payment_id
-          if (paymentData.paymentId && orderData.externalReference) {
-            try {
-              await fetch(
-                `${apiConfig.baseURL}/api/orders/${encodeURIComponent(orderData.externalReference)}/update-payment`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    paymentId: String(paymentData.paymentId),
-                    status: paymentData.status,
-                  }),
-                }
-              );
-              console.log('✅ Payment ID salvo no pedido');
-            } catch (err) {
-              console.warn('⚠️ Erro ao atualizar payment_id (não crítico):', err);
-            }
-          }
+          // NÃO chamar update-payment separadamente!
+          // O create-payment já atualizou o pedido existente com mpPaymentId.
+          // Isso evita a duplicação de mpPaymentId que causava o bug do webhook ignorado.
 
           // Limpar carrinho e fechar modal
           clearCart();
@@ -435,8 +422,8 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
           setCustomerData(null);
           setOrderData(null);
 
-          // Redirecionar para pending com payment_id correto
-          const redirectUrl = `/checkout/pending?order_id=${paymentData.orderId}&payment_id=${paymentData.paymentId}&external_reference=${paymentData.orderId}&payment_type_id=pix`;
+          // Redirecionar para pending com dados corretos do pedido original
+          const redirectUrl = `/checkout/pending?order_id=${orderData.orderId}&payment_id=${paymentData.paymentId}&external_reference=${encodeURIComponent(orderData.externalReference)}&payment_type_id=pix`;
           
           console.log('🔀 Redirecionando para:', redirectUrl);
           toast.success('Pagamento PIX processado! Aguardando confirmação.');
