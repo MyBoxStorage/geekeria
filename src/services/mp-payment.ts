@@ -4,7 +4,7 @@
  * Retorna ok + status para tratamento de 429 e outros erros.
  */
 
-import { API_URL } from '@/config/api';
+import { apiConfig } from '@/config/api';
 
 export interface MpPaymentResponse {
   ok: boolean;
@@ -26,7 +26,7 @@ export interface MpPaymentResponse {
  * Não engole status HTTP: retorna { ok, status, ...data } para o cliente tratar 429 etc.
  */
 export async function getPaymentDetails(paymentId: string): Promise<MpPaymentResponse> {
-  const r = await fetch(`${API_URL}/api/mp/payment/${encodeURIComponent(paymentId)}`, {
+  const r = await fetch(`${apiConfig.baseURL}/api/mp/payment/${encodeURIComponent(paymentId)}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });

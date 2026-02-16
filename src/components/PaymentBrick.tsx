@@ -5,10 +5,12 @@
  * Suporta múltiplos métodos de pagamento: cartão, PIX, boleto, etc.
  * 
  * Documentação: https://github.com/mercadopago/sdk-react
+ * MCP: mercadopago-mcp-server (quality_checklist, search_documentation)
  */
 
 import { Payment } from '@mercadopago/sdk-react';
 import { useMemo } from 'react';
+import { apiConfig } from '@/config/api';
 import type { CartItem } from '@/types';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -75,8 +77,10 @@ export function PaymentBrick({
       console.log('PaymentBrick - Usando externalReference do pedido:', externalReference);
     }
 
+    const webhookUrl = apiConfig.baseURL ? `${apiConfig.baseURL}/api/mp/webhooks` : undefined;
+
     return {
-      amount: amount,
+      amount: Number(amount),
       payer: {
         email: payerEmail,
         ...(payerName && {
@@ -102,9 +106,7 @@ export function PaymentBrick({
         failure: `${window.location.origin}/checkout/failure`,
         pending: `${window.location.origin}/checkout/pending`,
       },
-      ...(import.meta.env.VITE_MERCADOPAGO_WEBHOOK_URL && {
-        notification_url: import.meta.env.VITE_MERCADOPAGO_WEBHOOK_URL,
-      }),
+      notification_url: webhookUrl ?? import.meta.env.VITE_MERCADOPAGO_WEBHOOK_URL ?? undefined,
     };
   }, [amount, items, payerEmail, payerName, externalReference]);
 
@@ -126,13 +128,18 @@ export function PaymentBrick({
         </p>
       </div>
       <Payment
-        initialization={initialization}
+        initialization={initialization as any}
         customization={{
           paymentMethods: {
             creditCard: 'all',
             debitCard: 'all',
             ticket: 'all',
             bankTransfer: ['pix'],
+          },
+          visual: {
+            style: {
+              theme: 'default',
+            },
           },
         }}
         onSubmit={async (formData: any) => {
@@ -153,9 +160,10 @@ export function PaymentBrick({
               if (import.meta.env.DEV) console.log('✅ PaymentBrick - Pagamento aprovado, redirecionando...');
               const successUrl = `${window.location.origin}/checkout/success?payment_id=${formData.id}&status=approved&external_reference=${formData.external_reference || ''}`;
               window.location.href = successUrl;
-            } else if (formData?.status === 'pending') {
+            } else             if (formData?.status === 'pending') {
               if (import.meta.env.DEV) console.log('⏳ PaymentBrick - Pagamento pendente, redirecionando...');
-              const pendingUrl = `${window.location.origin}/checkout/pending?payment_id=${formData.id}&status=pending&external_reference=${formData.external_reference || ''}`;
+              const paymentMethod = formData.payment_method_id || formData.payment_type_id || 'pix';
+              const pendingUrl = `${window.location.origin}/checkout/pending?payment_id=${formData.id}&status=pending&external_reference=${formData.external_reference || ''}&payment_type_id=${paymentMethod}`;
               window.location.href = pendingUrl;
             } else if (formData?.status === 'rejected' || formData?.status === 'cancelled') {
               if (import.meta.env.DEV) console.log('❌ PaymentBrick - Pagamento rejeitado, redirecionando...');
