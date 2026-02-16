@@ -135,7 +135,13 @@ export function AdminGenerationsPage() {
                 to="/admin/prompts"
                 className="text-sm text-gray-500 hover:text-gray-700"
               >
-                Gerenciar Prompts
+                Prompts
+              </Link>
+              <Link
+                to="/admin/coupons"
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Cupons
               </Link>
               <button
               onClick={() => {

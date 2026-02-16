@@ -188,7 +188,14 @@ export default function AdminDashboard() {
                 size="sm"
                 onClick={() => navigate('/admin/prompts')}
               >
-                Gerenciar Prompts
+                Prompts
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/admin/coupons')}
+              >
+                Cupons
               </Button>
               <Button
                 variant="outline"

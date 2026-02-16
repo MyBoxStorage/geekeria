@@ -192,6 +192,12 @@ export function AdminPromptsPage() {
               >
                 Gerações
               </Link>
+              <Link
+                to="/admin/coupons"
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Cupons
+              </Link>
               <button
                 onClick={() => setShowCreateForm(!showCreateForm)}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"

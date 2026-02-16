@@ -11,6 +11,7 @@ import OrderTracking from "@/pages/OrderTracking";
 import AdminDashboard from "@/pages/AdminDashboard";
 import { AdminGenerationsPage } from "@/pages/AdminGenerationsPage";
 import { AdminPromptsPage } from "@/pages/AdminPromptsPage";
+import { AdminCouponsPage } from "@/pages/AdminCouponsPage";
 import { MinhasEstampasPage } from "@/pages/MinhasEstampasPage";
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/generations" element={<AdminGenerationsPage />} />
         <Route path="/admin/prompts" element={<AdminPromptsPage />} />
+        <Route path="/admin/coupons" element={<AdminCouponsPage />} />
         <Route path="/minhas-estampas" element={<MinhasEstampasPage />} />
         </Routes>
       </BrowserRouter>
