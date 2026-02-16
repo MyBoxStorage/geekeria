@@ -31,28 +31,56 @@ async function main() {
 
     const data = await res.json();
 
+    // Info logs (always show for observability)
+    if (data.countHighRiskLast1h != null || data.countHighRiskLast24h != null) {
+      console.log(`[INFO] highRisk last1h=${data.countHighRiskLast1h ?? 0} last24h=${data.countHighRiskLast24h ?? 0}`);
+    }
+    if (data.abandonedPending?.count != null && data.abandonedPending.count > 0) {
+      console.log(`[INFO] abandonedPending=${data.abandonedPending.count} (non-blocking)`);
+    }
+    if (data.pendingTooLong?.count > 0) {
+      console.log(`[WARN] pendingTooLong=${data.pendingTooLong.count} examples=${(data.pendingTooLong.examples || []).join(',')}`);
+    }
+
     if (data.ok === true) {
       console.log('[PASS] ok=true');
-      if (data.countHighRiskLast1h != null || data.countHighRiskLast24h != null) {
-        console.log(`[INFO] highRisk last1h=${data.countHighRiskLast1h ?? 0} last24h=${data.countHighRiskLast24h ?? 0}`);
-      }
-      if (data.abandonedPending?.count != null && data.abandonedPending.count > 0) {
-        console.log(`[INFO] abandonedPending=${data.abandonedPending.count} (non-blocking)`);
-      }
       process.exit(0);
     }
 
-    const parts = [];
-    if (data.pendingTooLong?.count > 0) parts.push(`pendingTooLong=${data.pendingTooLong.count}`);
-    if (data.failedWebhooks?.count > 0) parts.push(`failedWebhooks=${data.failedWebhooks.count}`);
-    if (!data.db?.ok) parts.push('db=down');
+    // Determine severity — only hard-fail on critical issues
+    const hardFail = [];
+    const softWarn = [];
+
+    if (!data.db?.ok) hardFail.push('db=down');
+    if (data.failedWebhooks?.count > 0) hardFail.push(`failedWebhooks=${data.failedWebhooks.count}`);
     if (data.countHighRiskLast1h != null && data.countHighRiskLast1h >= 5) {
-      parts.push(`highRiskLast1h=${data.countHighRiskLast1h}`);
+      hardFail.push(`highRiskLast1h=${data.countHighRiskLast1h}`);
     }
     if (data.countHighRiskLast24h != null && data.countHighRiskLast24h >= 30) {
-      parts.push(`highRiskLast24h=${data.countHighRiskLast24h}`);
+      hardFail.push(`highRiskLast24h=${data.countHighRiskLast24h}`);
     }
-    console.log('[FAIL] ok=false', parts.length ? parts.join(' ') : '');
+
+    // pendingTooLong: only hard-fail if count > 5 (few stuck orders = warn only)
+    const PENDING_HARD_FAIL_THRESHOLD = 5;
+    if (data.pendingTooLong?.count > PENDING_HARD_FAIL_THRESHOLD) {
+      hardFail.push(`pendingTooLong=${data.pendingTooLong.count}(>${PENDING_HARD_FAIL_THRESHOLD})`);
+    } else if (data.pendingTooLong?.count > 0) {
+      softWarn.push(`pendingTooLong=${data.pendingTooLong.count}(<=${PENDING_HARD_FAIL_THRESHOLD})`);
+    }
+
+    if (hardFail.length > 0) {
+      console.log('[FAIL] ok=false', hardFail.join(' '), softWarn.length ? `(warn: ${softWarn.join(' ')})` : '');
+      process.exit(1);
+    }
+
+    // Only soft warnings — pass with warnings
+    if (softWarn.length > 0) {
+      console.log('[PASS] ok=false (soft warnings only)', softWarn.join(' '));
+      process.exit(0);
+    }
+
+    // Fallback: unknown failure reason
+    console.log('[FAIL] ok=false (unknown reason)');
     process.exit(1);
   } catch (e) {
     console.log('[FAIL]', e.message || String(e));

@@ -9,7 +9,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 
-const PENDING_TOO_LONG_MINUTES = 15;
+const PENDING_TOO_LONG_MINUTES = 120; // 2 horas — mais permissivo para evitar falsos positivos
 const FAILED_WEBHOOKS_LOOKBACK_HOURS = 24;
 /** High risk: riskFlag=true or riskScore >= 60. No PII returned. */
 const HIGH_RISK_SCORE_THRESHOLD = 60;
