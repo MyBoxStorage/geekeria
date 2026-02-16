@@ -1,0 +1,8 @@
+﻿[
+  {
+    "origin": ["https://bravosbrasil.com.br", "https://www.bravosbrasil.com.br"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

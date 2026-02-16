@@ -21,6 +21,10 @@ import { markMontink, validateAdminToken } from './routes/orders/mark-montink.js
 import { listAdminOrders, exportAdminOrder } from './routes/admin/orders.js';
 import { getOrderAudit } from './routes/admin/audit.js';
 import { listGenerations } from './routes/admin/list-generations.js';
+import { listPromptTemplates } from './routes/admin/prompt-templates/list.js';
+import { createPromptTemplate } from './routes/admin/prompt-templates/create.js';
+import { updatePromptTemplate } from './routes/admin/prompt-templates/update.js';
+import { activatePromptTemplate } from './routes/admin/prompt-templates/activate.js';
 import { monitorStatus } from './routes/internal/monitor.js';
 import { reconcilePending } from './routes/internal/reconcile-pending.js';
 import { cancelAbandoned } from './routes/internal/cancel-abandoned.js';
@@ -179,6 +183,10 @@ app.get(
   getOrderAudit
 );
 app.get('/api/admin/generations', validateAdminToken, listGenerations);
+app.get('/api/admin/prompt-templates', validateAdminToken, listPromptTemplates);
+app.post('/api/admin/prompt-templates', validateAdminToken, createPromptTemplate);
+app.put('/api/admin/prompt-templates/:id', validateAdminToken, updatePromptTemplate);
+app.post('/api/admin/prompt-templates/:id/activate', validateAdminToken, activatePromptTemplate);
 app.get(
   '/api/internal/monitor',
   validateAdminToken,

@@ -74,22 +74,26 @@ export async function generateStamp(
     );
 
     try {
-      const model = genAI.getGenerativeModel({
-        model: 'gemini-3-pro-image-preview',
-        generationConfig: {
-          temperature: 1,
-          topP: 0.95,
-          topK: 40,
-          maxOutputTokens: 8192,
-          responseMimeType: 'text/plain',
-        },
-      });
+      const hasTextRequest =
+        prompt.toLowerCase().includes('texto') ||
+        prompt.toLowerCase().includes('frase') ||
+        prompt.toLowerCase().includes('palavra') ||
+        prompt.toLowerCase().includes('escrito') ||
+        prompt.toLowerCase().includes('escrita') ||
+        prompt.toLowerCase().includes('escrever') ||
+        prompt.toLowerCase().includes('letras') ||
+        !!prompt.toLowerCase().match(/"[^"]+"/) ||
+        !!prompt.toLowerCase().match(/'[^']+'/);
 
-      const fullPrompt = `TAREFA: Criar arte PROFISSIONAL para estampa de camiseta (impressão DTF, 300 DPI, PNG transparente, 3:4).
+      const defaultPrompt = `TAREFA: Criar arte PROFISSIONAL para estampa de camiseta (impressão DTF, 300 DPI, PNG transparente, 3:4).
 
 ESTILO: Ilustração digital vibrante inspirada em arte de camiseta premium.
 
-${uploadedImage ? `
+IMAGEM ENVIADA: {{UPLOADED_IMAGE}}
+{{UPLOADED_IMAGE}} = SIM: Use as instruções de imagem abaixo.
+{{UPLOADED_IMAGE}} = NÃO: Use as instruções sem foto abaixo.
+
+Se {{UPLOADED_IMAGE}} = SIM:
 IMAGEM ENVIADA - ANÁLISE E ADAPTAÇÃO:
 1. ANALISE o conteúdo: pessoa, família, pet, objeto, paisagem, etc.
 2. TRANSFORME em arte de estampa mantendo o TEMA CENTRAL reconhecível
@@ -112,46 +116,58 @@ ELEMENTOS BRASILEIROS (sutis):
 - Respingos de tinta verde (#00843D) e amarelo (#FFCC29)
 - Efeitos de luz dourada
 - Elementos decorativos discretos
-` : `
+
+Se {{UPLOADED_IMAGE}} = NÃO:
 SEM FOTO:
 - Criar ilustração original relacionada ao tema brasileiro
 - Estilo: arte de camiseta profissional
 - Composição equilibrada para impressão
-`}
 
 BANDEIRAS E ELEMENTOS VISUAIS:
 - Se o usuário pedir "bandeira do Brasil E Estados Unidos" ou similar: mostrar AMBAS as bandeiras
 - Se pedir "bandeira do Brasil" apenas: mostrar só bandeira do Brasil
 - Se pedir elementos de múltiplos países: incluir TODOS os elementos pedidos
 
-PEDIDO DO USUÁRIO: "${prompt}"
+PEDIDO DO USUÁRIO: "{{USER_PROMPT}}"
 
-${
-  prompt.toLowerCase().includes('texto') ||
-  prompt.toLowerCase().includes('frase') ||
-  prompt.toLowerCase().includes('palavra') ||
-  prompt.toLowerCase().includes('escrito') ||
-  prompt.toLowerCase().includes('escrita') ||
-  prompt.toLowerCase().includes('escrever') ||
-  prompt.toLowerCase().includes('letras') ||
-  prompt.toLowerCase().match(/"[^"]+"/) || // Detecta texto entre aspas
-  prompt.toLowerCase().match(/'[^']+'/) // Detecta texto entre aspas simples
-    ? `
-TEXTO SOLICITADO:
+TEXTO SOLICITADO: {{HAS_TEXT}}
+Se {{HAS_TEXT}} = SIM:
 - Texto em dourado 3D com contorno
 - Fonte bold, impactante
 - Posição: embaixo ou conforme pedido
 - Efeito: relevo, sombra, brilho metálico
 - IMPORTANTE: Incluir exatamente o texto que o usuário pediu
-` : `
-SEM TEXTO: Não adicione textos, palavras ou frases (usuário não pediu).
-`}
+
+Se {{HAS_TEXT}} = NÃO:
+- Não adicione textos, palavras ou frases (usuário não pediu).
 
 OBRIGATÓRIO:
 - Fundo 100% transparente (PNG com canal alfa)
 - Sem mockups, modelos ou marcas d'água
 - Qualidade profissional de impressão
 - Proporção adequada para camiseta`;
+
+      const activeTemplate = await prisma.promptTemplate.findFirst({
+        where: { isActive: true },
+      });
+
+      const systemPrompt = activeTemplate?.content ?? defaultPrompt;
+
+      const fullPrompt = systemPrompt
+        .replace(/\{\{UPLOADED_IMAGE\}\}/g, uploadedImage ? 'SIM' : 'NÃO')
+        .replace(/\{\{USER_PROMPT\}\}/g, prompt)
+        .replace(/\{\{HAS_TEXT\}\}/g, hasTextRequest ? 'SIM' : 'NÃO');
+
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-3-pro-image-preview',
+        generationConfig: {
+          temperature: 1,
+          topP: 0.95,
+          topK: 40,
+          maxOutputTokens: 8192,
+          responseMimeType: 'text/plain',
+        },
+      });
 
       const result = await model.generateContent({
         contents: [
