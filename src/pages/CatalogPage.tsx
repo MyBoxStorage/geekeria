@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Helmet } from 'react-helmet-async';
 import {
   Filter,
   Star,
@@ -485,33 +484,43 @@ function CatalogContent() {
     categoryCounts,
   };
 
+  /* 1: SEO Meta Tags (native, no external dependency) */
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Catálogo Completo - Bravos Brasil | Moda Patriótica';
+
+    const metas: HTMLMetaElement[] = [];
+    const links: HTMLLinkElement[] = [];
+
+    const setMeta = (attr: string, value: string, content: string) => {
+      const el = document.createElement('meta');
+      el.setAttribute(attr, value);
+      el.content = content;
+      document.head.appendChild(el);
+      metas.push(el);
+    };
+
+    setMeta('name', 'description', 'Explore nossa coleção completa de roupas patrióticas brasileiras. +45 produtos com frete grátis. Camisetas, moletons, bonés e mais.');
+    setMeta('property', 'og:title', 'Catálogo Bravos Brasil - Moda Patriótica');
+    setMeta('property', 'og:description', 'Coleção completa de roupas patrióticas brasileiras. Camisetas, moletons, bonés e acessórios com frete grátis.');
+    setMeta('property', 'og:type', 'website');
+    setMeta('property', 'og:url', 'https://bravosbrasil.com.br/catalogo');
+
+    const canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    canonical.href = 'https://bravosbrasil.com.br/catalogo';
+    document.head.appendChild(canonical);
+    links.push(canonical);
+
+    return () => {
+      document.title = prev;
+      metas.forEach((el) => el.remove());
+      links.forEach((el) => el.remove());
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 1: SEO Meta Tags */}
-      <Helmet>
-        <title>
-          Catálogo Completo - Bravos Brasil | Moda Patriótica
-        </title>
-        <meta
-          name="description"
-          content="Explore nossa coleção completa de roupas patrióticas brasileiras. +45 produtos com frete grátis. Camisetas, moletons, bonés e mais."
-        />
-        <meta
-          property="og:title"
-          content="Catálogo Bravos Brasil - Moda Patriótica"
-        />
-        <meta
-          property="og:description"
-          content="Coleção completa de roupas patrióticas brasileiras. Camisetas, moletons, bonés e acessórios com frete grátis."
-        />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content="https://bravosbrasil.com.br/catalogo"
-        />
-        <link rel="canonical" href="https://bravosbrasil.com.br/catalogo" />
-      </Helmet>
-
       <Header />
 
       {/* Hero Banner with GSAP parallax + fade */}
