@@ -78,21 +78,31 @@ const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'] as const;
 type SizeName = (typeof SIZES)[number];
 type ColorId = (typeof PRODUCT_COLORS)[number]['id'];
 
+interface GenderStock {
+  enabled: boolean;
+  sizes: Record<SizeName, boolean>;
+}
+
 interface ColorStock {
   colorId: ColorId;
   image: DraftImage | null;
-  enabled: boolean;
-  gender: 'masculino' | 'feminino' | 'ambos';
-  sizes: Record<SizeName, boolean>;
+  feminino: GenderStock;
+  masculino: GenderStock;
+}
+
+function emptyGenderStock(): GenderStock {
+  return {
+    enabled: false,
+    sizes: { PP: false, P: false, M: false, G: false, GG: false, XG: false },
+  };
 }
 
 function emptyColorStock(colorId: ColorId): ColorStock {
   return {
     colorId,
     image: null,
-    enabled: false,
-    gender: 'ambos',
-    sizes: { PP: false, P: false, M: false, G: false, GG: false, XG: false },
+    feminino: emptyGenderStock(),
+    masculino: emptyGenderStock(),
   };
 }
 
@@ -266,125 +276,119 @@ function ColorStockCard({
   cs,
   color,
   onUpdate,
+  onUpdateGender,
   onToggleSize,
   onImageUpload,
 }: {
   cs: ColorStock;
   color: (typeof PRODUCT_COLORS)[number];
   onUpdate: (patch: Partial<ColorStock>) => void;
-  onToggleSize: (size: SizeName) => void;
+  onUpdateGender: (gender: 'feminino' | 'masculino', patch: Partial<GenderStock>) => void;
+  onToggleSize: (gender: 'feminino' | 'masculino', size: SizeName) => void;
   onImageUpload: (files: FileList | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const active = cs.feminino.enabled || cs.masculino.enabled;
 
   return (
     <div
       style={{
-        border: `2px solid ${cs.enabled ? color.hex : '#222'}`,
+        border: `2px solid ${active ? color.hex : '#222'}`,
         borderRadius: 10,
         padding: 12,
-        background: cs.enabled ? `${color.hex}08` : '#0f0f0f',
+        background: active ? `${color.hex}08` : '#0f0f0f',
         transition: 'all 0.2s',
-        opacity: cs.enabled ? 1 : 0.5,
       }}
     >
-      {/* Header: color + toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 16, height: 16, borderRadius: '50%', background: color.hex,
-            border: color.hex === '#F5F5F5' ? '1px solid #444' : 'none', flexShrink: 0,
-          }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: cs.enabled ? '#fff' : '#555' }}>
-            {color.name}
-          </span>
-        </div>
-        <button
-          onClick={() => onUpdate({ enabled: !cs.enabled })}
-          style={{
-            width: 36, height: 20, borderRadius: 10,
-            background: cs.enabled ? color.hex : '#333',
-            border: 'none', cursor: 'pointer',
-            position: 'relative', transition: 'background 0.2s', flexShrink: 0,
-          }}
-        >
-          <div style={{
-            position: 'absolute', top: 2, left: cs.enabled ? 18 : 2,
-            width: 16, height: 16, borderRadius: '50%', background: '#fff',
-            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-          }} />
-        </button>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <div style={{
+          width: 14, height: 14, borderRadius: '50%', background: color.hex,
+          border: color.hex === '#F5F5F5' ? '1px solid #444' : 'none', flexShrink: 0,
+        }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#fff' : '#555', flex: 1 }}>
+          {color.name}
+        </span>
       </div>
 
-      {cs.enabled && (
-        <>
-          {/* Image upload */}
-          <div
-            style={{
-              border: `1px dashed ${cs.image ? color.hex : '#333'}`,
-              borderRadius: 8, marginBottom: 10, cursor: 'pointer', overflow: 'hidden',
-              aspectRatio: cs.image ? '3/4' : 'auto', minHeight: cs.image ? 'auto' : 60,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: '#0a0a0a', position: 'relative',
-            }}
-            onClick={() => inputRef.current?.click()}
-          >
-            {cs.image ? (
-              <>
-                <img src={cs.image.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <button
-                  style={{
-                    position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.7)',
-                    color: '#fff', border: 'none', borderRadius: '50%',
-                    width: 20, height: 20, cursor: 'pointer', fontSize: 10, fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                  onClick={(e) => { e.stopPropagation(); onUpdate({ image: null }); }}
-                >✕</button>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '10px 8px' }}>
-                <div style={{ fontSize: 20, marginBottom: 2 }}>📸</div>
-                <div style={{ fontSize: 10, color: '#555' }}>Foto {color.name}</div>
-              </div>
-            )}
-            <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onImageUpload(e.target.files)} />
+      {/* Photo upload */}
+      <div
+        style={{
+          border: `1px dashed ${cs.image ? color.hex : '#333'}`,
+          borderRadius: 8, marginBottom: 10, cursor: 'pointer', overflow: 'hidden',
+          aspectRatio: cs.image ? '3/4' : 'auto', minHeight: cs.image ? 'auto' : 56,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#0a0a0a', position: 'relative',
+        }}
+        onClick={() => inputRef.current?.click()}
+      >
+        {cs.image ? (
+          <>
+            <img src={cs.image.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <button
+              style={{
+                position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.7)',
+                color: '#fff', border: 'none', borderRadius: '50%',
+                width: 20, height: 20, cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+              onClick={(e) => { e.stopPropagation(); onUpdate({ image: null }); }}
+            >✕</button>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: 8 }}>
+            <div style={{ fontSize: 18 }}>📸</div>
+            <div style={{ fontSize: 9, color: '#444', marginTop: 2 }}>foto {color.name}</div>
           </div>
+        )}
+        <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onImageUpload(e.target.files)} />
+      </div>
 
+      {/* Gender sections */}
+      {(['feminino', 'masculino'] as const).map((gender) => (
+        <div
+          key={gender}
+          style={{
+            marginBottom: gender === 'feminino' ? 8 : 0,
+            padding: '8px 10px', borderRadius: 8,
+            background: cs[gender].enabled ? '#ffffff08' : 'transparent',
+            border: `1px solid ${cs[gender].enabled ? '#333' : '#1a1a1a'}`,
+          }}
+        >
           {/* Gender toggle */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 0.5 }}>GÊNERO</div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {(['ambos', 'masculino', 'feminino'] as const).map((g) => (
-                <button
-                  key={g}
-                  onClick={() => onUpdate({ gender: g })}
-                  style={{
-                    flex: 1, padding: '4px 2px', borderRadius: 5, border: 'none',
-                    fontSize: 9, fontWeight: 700, cursor: 'pointer',
-                    background: cs.gender === g ? color.hex : '#1a1a1a',
-                    color: cs.gender === g ? '#fff' : '#555', transition: 'all 0.15s',
-                  }}
-                >
-                  {g === 'ambos' ? '⚥' : g === 'masculino' ? '♂' : '♀'}
-                </button>
-              ))}
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: cs[gender].enabled ? 8 : 0 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: cs[gender].enabled ? '#fff' : '#444' }}>
+              {gender === 'feminino' ? '♀ Feminino' : '♂ Masculino'}
+            </span>
+            <button
+              onClick={() => onUpdateGender(gender, { enabled: !cs[gender].enabled })}
+              style={{
+                width: 32, height: 18, borderRadius: 9,
+                background: cs[gender].enabled ? color.hex : '#333',
+                border: 'none', cursor: 'pointer',
+                position: 'relative', transition: 'background 0.2s',
+              }}
+            >
+              <div style={{
+                position: 'absolute', top: 2, left: cs[gender].enabled ? 16 : 2,
+                width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                transition: 'left 0.2s',
+              }} />
+            </button>
           </div>
 
-          {/* Size toggles */}
-          <div>
-            <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 0.5 }}>TAMANHOS</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {/* Sizes (only when gender enabled) */}
+          {cs[gender].enabled && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
               {SIZES.map((size) => (
                 <button
                   key={size}
-                  onClick={() => onToggleSize(size)}
+                  onClick={() => onToggleSize(gender, size)}
                   style={{
-                    padding: '4px 8px', borderRadius: 5,
-                    border: `1px solid ${cs.sizes[size] ? color.hex : '#333'}`,
-                    background: cs.sizes[size] ? color.hex : 'transparent',
-                    color: cs.sizes[size] ? '#fff' : '#555',
+                    padding: '3px 7px', borderRadius: 5,
+                    border: `1px solid ${cs[gender].sizes[size] ? color.hex : '#333'}`,
+                    background: cs[gender].sizes[size] ? color.hex : 'transparent',
+                    color: cs[gender].sizes[size] ? '#fff' : '#555',
                     fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
                   }}
                 >
@@ -392,9 +396,9 @@ function ColorStockCard({
                 </button>
               ))}
             </div>
-          </div>
-        </>
-      )}
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -411,9 +415,16 @@ function ColorStockSection({
     onChange(colorStock.map((cs) => (cs.colorId === colorId ? { ...cs, ...patch } : cs)));
   };
 
-  const toggleSize = (colorId: ColorId, size: SizeName) => {
+  const updateGenderStock = (colorId: ColorId, gender: 'feminino' | 'masculino', patch: Partial<GenderStock>) => {
     const cs = colorStock.find((c) => c.colorId === colorId)!;
-    updateColor(colorId, { sizes: { ...cs.sizes, [size]: !cs.sizes[size] } });
+    updateColor(colorId, { [gender]: { ...cs[gender], ...patch } });
+  };
+
+  const toggleSize = (colorId: ColorId, gender: 'feminino' | 'masculino', size: SizeName) => {
+    const cs = colorStock.find((c) => c.colorId === colorId)!;
+    updateGenderStock(colorId, gender, {
+      sizes: { ...cs[gender].sizes, [size]: !cs[gender].sizes[size] },
+    });
   };
 
   const handleImageUpload = (colorId: ColorId, files: FileList | null) => {
@@ -427,22 +438,22 @@ function ColorStockSection({
       gender: undefined,
       isMain: false,
     };
-    updateColor(colorId, { image, enabled: true });
+    updateColor(colorId, { image });
   };
 
-  const enabledCount = colorStock.filter((cs) => cs.enabled).length;
+  const activeCount = colorStock.filter((cs) => cs.feminino.enabled || cs.masculino.enabled).length;
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#888', letterSpacing: 0.5 }}>🎨 Produto por Cor</span>
-        {enabledCount > 0 && (
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#888', letterSpacing: 0.5 }}>🎨 Cores e Estoque</span>
+        {activeCount > 0 && (
           <span style={{ fontSize: 10, background: '#00843D20', color: '#00843D', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>
-            {enabledCount} cor{enabledCount !== 1 ? 'es' : ''} ativa{enabledCount !== 1 ? 's' : ''}
+            {activeCount} cor{activeCount !== 1 ? 'es' : ''} ativa{activeCount !== 1 ? 's' : ''}
           </span>
         )}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
         {PRODUCT_COLORS.map((color) => {
           const cs = colorStock.find((c) => c.colorId === color.id)!;
           return (
@@ -451,7 +462,8 @@ function ColorStockSection({
               cs={cs}
               color={color}
               onUpdate={(patch) => updateColor(color.id, patch)}
-              onToggleSize={(size) => toggleSize(color.id, size)}
+              onUpdateGender={(gender, patch) => updateGenderStock(color.id, gender, patch)}
+              onToggleSize={(gender, size) => toggleSize(color.id, gender, size)}
               onImageUpload={(files) => handleImageUpload(color.id, files)}
             />
           );
@@ -753,16 +765,19 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         ? typedImages[mainIdx]?.url ?? typedImages[0].url
         : draft.image || '/products/placeholder.webp';
 
-    const activeColors = draft.colorStock.filter((cs) => cs.enabled);
+    const activeColors = draft.colorStock.filter((cs) => cs.feminino.enabled || cs.masculino.enabled);
     const derivedColors = activeColors.map((cs) => cs.colorId);
     const derivedSizes = Array.from(
-      new Set(activeColors.flatMap((cs) => SIZES.filter((sz) => cs.sizes[sz])))
+      new Set(activeColors.flatMap((cs) => [
+        ...SIZES.filter((sz) => cs.feminino.sizes[sz]),
+        ...SIZES.filter((sz) => cs.masculino.sizes[sz]),
+      ]))
     );
 
     const colorImages: NonNullable<Product['images']> = activeColors
       .filter((cs) => cs.image)
       .map((cs) => ({
-        url: `/products/${slug}_${cs.colorId}_product_01.webp`,
+        url: `/products/${slug}_${cs.colorId}_01.webp`,
         alt: draft.name,
         type: 'product' as const,
         gender: undefined,
@@ -797,9 +812,17 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         id: cs.colorId,
         name: def.name,
         hex: def.hex,
-        gender: cs.gender,
-        sizes: SIZES.filter((sz) => cs.sizes[sz]).map((sz) => ({ name: sz, available: true })),
-        image: cs.image ? `/products/${slug}_${cs.colorId}_product_01.webp` : null,
+        image: cs.image ? `/products/${slug}_${cs.colorId}_01.webp` : null,
+        stock: {
+          feminino: {
+            available: cs.feminino.enabled,
+            sizes: SIZES.filter((sz) => cs.feminino.sizes[sz]),
+          },
+          masculino: {
+            available: cs.masculino.enabled,
+            sizes: SIZES.filter((sz) => cs.masculino.sizes[sz]),
+          },
+        },
       };
     });
 
@@ -820,15 +843,36 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   };
 
   const handleEdit = (product: Product) => {
+    const savedStock = (product as any)._colorStock as any[] | undefined;
     const restoredStock = PRODUCT_COLORS.map((c) => {
-      const isActive = product.colors.includes(c.id);
       const base = emptyColorStock(c.id);
-      if (!isActive) return base;
-      const sizeRecord = { ...base.sizes };
+      if (savedStock) {
+        const saved = savedStock.find((s: any) => s.id === c.id);
+        if (saved?.stock) {
+          const fem = { ...base.feminino };
+          const masc = { ...base.masculino };
+          if (saved.stock.feminino?.available) {
+            fem.enabled = true;
+            (saved.stock.feminino.sizes || []).forEach((sz: string) => {
+              if (sz in fem.sizes) fem.sizes[sz as SizeName] = true;
+            });
+          }
+          if (saved.stock.masculino?.available) {
+            masc.enabled = true;
+            (saved.stock.masculino.sizes || []).forEach((sz: string) => {
+              if (sz in masc.sizes) masc.sizes[sz as SizeName] = true;
+            });
+          }
+          return { ...base, feminino: fem, masculino: masc };
+        }
+      }
+      if (!product.colors.includes(c.id)) return base;
+      const fem = { ...base.feminino, enabled: true };
+      const masc = { ...base.masculino, enabled: true };
       product.sizes.forEach((sz) => {
-        if (sz in sizeRecord) sizeRecord[sz as SizeName] = true;
+        if (sz in fem.sizes) { fem.sizes[sz as SizeName] = true; masc.sizes[sz as SizeName] = true; }
       });
-      return { ...base, enabled: true, sizes: sizeRecord };
+      return { ...base, feminino: fem, masculino: masc };
     });
     setDraft({
       name: product.name,
@@ -1361,16 +1405,21 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
 
             {/* Color/Size info summary */}
             {(() => {
-              const active = draft.colorStock.filter((cs) => cs.enabled);
+              const active = draft.colorStock.filter((cs) => cs.feminino.enabled || cs.masculino.enabled);
               if (active.length === 0) return null;
-              const allSizes = new Set<string>();
-              active.forEach((cs) => SIZES.forEach((sz) => { if (cs.sizes[sz]) allSizes.add(sz); }));
+              const femSizes = new Set<string>();
+              const mascSizes = new Set<string>();
+              active.forEach((cs) => SIZES.forEach((sz) => {
+                if (cs.feminino.sizes[sz]) femSizes.add(sz);
+                if (cs.masculino.sizes[sz]) mascSizes.add(sz);
+              }));
               return (
                 <div style={{ ...s.card, padding: 16 }}>
                   <label style={s.label}>Resumo de Cores e Tamanhos</label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
                     {active.map((cs) => {
                       const def = PRODUCT_COLORS.find((c) => c.id === cs.colorId)!;
+                      const badges = [cs.feminino.enabled && '♀', cs.masculino.enabled && '♂'].filter(Boolean).join('');
                       return (
                         <span key={cs.colorId} style={{
                           display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -1381,14 +1430,19 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                             width: 10, height: 10, borderRadius: '50%', background: def.hex,
                             border: def.hex === '#F5F5F5' ? '1px solid #999' : 'none',
                           }} />
-                          {def.name}
+                          {def.name} {badges}
                         </span>
                       );
                     })}
                   </div>
-                  {allSizes.size > 0 && (
+                  {femSizes.size > 0 && (
+                    <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                      ♀ Feminino: {Array.from(femSizes).join(', ')}
+                    </div>
+                  )}
+                  {mascSizes.size > 0 && (
                     <div style={{ fontSize: 12, color: '#666' }}>
-                      Tamanhos: {Array.from(allSizes).join(', ')}
+                      ♂ Masculino: {Array.from(mascSizes).join(', ')}
                     </div>
                   )}
                 </div>
