@@ -1,0 +1,4 @@
+-- NO-OP migration
+-- The database already contains these columns in public.products:
+-- slug, gender, original_price, images, color_stock, badge, is_new, is_bestseller, rating, reviews
+-- This migration exists only to align Prisma schema history with the existing DB schema.

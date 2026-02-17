@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Plus,
   Trash2,
@@ -10,8 +10,23 @@ import {
   Package,
   List,
   FileJson,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import type { Product } from '@/types';
+import {
+  adminListProducts,
+  adminGetProduct,
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminUploadImage,
+  type AdminProductSummary,
+} from '@/services/adminProducts';
+import {
+  buildProductPayload,
+  collectFilesToUpload,
+  type UploadedUrlsMap,
+} from '@/utils/productPayload';
 
 interface ProductAdminProps {
   onLogout: () => void;
@@ -21,7 +36,7 @@ type TabId = 'list' | 'add' | 'export';
 
 interface DraftImage {
   id: string;
-  file: File;
+  file?: File;
   preview: string;
   type: 'model' | 'product' | 'detail';
   gender?: 'masculino' | 'feminino';
@@ -717,6 +732,48 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isLoadingList, setIsLoadingList] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveProgress, setSaveProgress] = useState('');
+
+  const getToken = () => localStorage.getItem('admin_token') || '';
+
+  // ── Load products from backend on mount ──
+  const loadProducts = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    setIsLoadingList(true);
+    try {
+      const res = await adminListProducts(token, 100, 0);
+      if (res.ok && res.products) {
+        const mapped: Product[] = res.products.map((p: AdminProductSummary) => ({
+          id: p.id,
+          name: p.name,
+          description: '',
+          price: p.price,
+          image: p.image,
+          category: p.category,
+          gender: (p.gender as Product['gender']) || 'unissex',
+          sizes: [],
+          colors: [],
+          rating: 0,
+          reviews: 0,
+          isNew: p.isNew,
+          isBestseller: p.isBestseller,
+          slug: p.slug,
+        }));
+        setProducts(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to load products:', err);
+    } finally {
+      setIsLoadingList(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -739,115 +796,126 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     setImages((prev) => prev.map((img) => ({ ...img, isMain: img.id === id })));
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!draft.name || !draft.price || !draft.category) {
       showToast('Preencha nome, preço e categoria');
       return;
     }
 
-    const slug = generateSlug(draft.name);
-
-    const typedImages: NonNullable<Product['images']> = images.map((img, i) => ({
-      url: `/products/${slug}_${img.gender ? img.gender + '_' : ''}${img.type}_${String(i + 1).padStart(2, '0')}.webp`,
-      alt: img.type === 'model' && img.gender
-        ? `Modelo ${img.gender} usando ${draft.name}`
-        : img.type === 'detail'
-          ? `Detalhe ${draft.name}`
-          : draft.name,
-      type: img.type,
-      gender: img.gender,
-    }));
-
-    const mainImg = images.find((i) => i.isMain);
-    const mainIdx = mainImg ? images.indexOf(mainImg) : 0;
-    const imagePath =
-      typedImages.length > 0
-        ? typedImages[mainIdx]?.url ?? typedImages[0].url
-        : draft.image || '/products/placeholder.webp';
-
-    const activeColors = draft.colorStock.filter((cs) => cs.feminino.enabled || cs.masculino.enabled);
-    const derivedColors = activeColors.map((cs) => cs.colorId);
-    const derivedSizes = Array.from(
-      new Set(activeColors.flatMap((cs) => [
-        ...SIZES.filter((sz) => cs.feminino.sizes[sz]),
-        ...SIZES.filter((sz) => cs.masculino.sizes[sz]),
-      ]))
-    );
-
-    const colorImages: NonNullable<Product['images']> = activeColors
-      .filter((cs) => cs.image)
-      .map((cs) => ({
-        url: `/products/${slug}_${cs.colorId}_01.webp`,
-        alt: draft.name,
-        type: 'product' as const,
-        gender: undefined,
-      }));
-
-    const allImages = [...typedImages, ...colorImages];
-
-    const product: Product = {
-      id: editingId || generateId(),
-      name: draft.name,
-      description: draft.description,
-      price: parseFloat(draft.price) || 0,
-      originalPrice: draft.originalPrice
-        ? parseFloat(draft.originalPrice)
-        : undefined,
-      image: imagePath,
-      images: allImages.length > 0 ? allImages : undefined,
-      category: draft.category,
-      gender: draft.gender,
-      sizes: derivedSizes.length > 0 ? derivedSizes : draft.sizes,
-      colors: derivedColors.length > 0 ? derivedColors : draft.colors,
-      rating: parseFloat(draft.rating) || 4.8,
-      reviews: parseInt(draft.reviews, 10) || 0,
-      badge: draft.badge || undefined,
-      isNew: draft.isNew || undefined,
-      isBestseller: draft.isBestseller || undefined,
-    };
-
-    (product as any)._colorStock = activeColors.map((cs) => {
-      const def = PRODUCT_COLORS.find((c) => c.id === cs.colorId)!;
-      return {
-        id: cs.colorId,
-        name: def.name,
-        hex: def.hex,
-        image: cs.image ? `/products/${slug}_${cs.colorId}_01.webp` : null,
-        stock: {
-          feminino: {
-            available: cs.feminino.enabled,
-            sizes: SIZES.filter((sz) => cs.feminino.sizes[sz]),
-          },
-          masculino: {
-            available: cs.masculino.enabled,
-            sizes: SIZES.filter((sz) => cs.masculino.sizes[sz]),
-          },
-        },
-      };
-    });
-
-    if (editingId) {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === editingId ? product : p))
-      );
-      showToast('Produto atualizado!');
-    } else {
-      setProducts((prev) => [...prev, product]);
-      showToast('Produto adicionado!');
+    const token = getToken();
+    if (!token) {
+      showToast('Token de admin não encontrado.');
+      return;
     }
 
-    setDraft({ ...emptyDraft });
-    setImages([]);
-    setEditingId(null);
-    setActiveTab('list');
+    setIsSaving(true);
+    setSaveProgress('Preparando...');
+
+    try {
+      const slug = generateSlug(draft.name);
+      const productIdForUpload = editingId || slug;
+
+      // 1) Upload pending files (images + color swatch images)
+      const filesToUpload = collectFilesToUpload(images, draft.colorStock, slug);
+      const uploadedUrls: UploadedUrlsMap = new Map();
+
+      if (filesToUpload.length > 0) {
+        setSaveProgress(`Enviando imagens (0/${filesToUpload.length})...`);
+        for (let i = 0; i < filesToUpload.length; i++) {
+          const { id, file, kind } = filesToUpload[i];
+          setSaveProgress(`Enviando imagens (${i + 1}/${filesToUpload.length})...`);
+          try {
+            const result = await adminUploadImage(token, file, {
+              productId: productIdForUpload,
+              kind,
+            });
+            if (result.ok && result.publicUrl) {
+              uploadedUrls.set(id, result.publicUrl);
+            }
+          } catch (uploadErr) {
+            console.error(`Upload failed for ${kind}:`, uploadErr);
+            showToast(`Erro ao enviar imagem: ${kind}`);
+          }
+        }
+      }
+
+      // 2) Build payload
+      setSaveProgress('Salvando produto...');
+      const payload = buildProductPayload(draft, images, uploadedUrls, PRODUCT_COLORS);
+
+      // 3) Create or update
+      if (editingId) {
+        const res = await adminUpdateProduct(token, editingId, payload as unknown as Record<string, unknown>);
+        if (res.ok) {
+          showToast('Produto atualizado no banco!');
+        }
+      } else {
+        const res = await adminCreateProduct(token, payload as unknown as Record<string, unknown>);
+        if (res.ok) {
+          showToast('Produto criado no banco!');
+        }
+      }
+
+      // 4) Reset form and reload list
+      setDraft({ ...emptyDraft });
+      setImages([]);
+      setEditingId(null);
+      setActiveTab('list');
+      await loadProducts();
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err
+        ? (err as { message: string }).message
+        : 'Erro ao salvar produto';
+      console.error('handleSave error:', err);
+      showToast(msg);
+    } finally {
+      setIsSaving(false);
+      setSaveProgress('');
+    }
   };
 
-  const handleEdit = (product: Product) => {
-    const savedStock = (product as any)._colorStock as any[] | undefined;
+  const handleEdit = async (product: Product) => {
+    const token = getToken();
+
+    // Try to load full product from backend
+    let fullProduct = product;
+    if (token) {
+      try {
+        const res = await adminGetProduct(token, product.id);
+        if (res.ok && res.product) {
+          fullProduct = {
+            id: res.product.id,
+            name: res.product.name,
+            description: res.product.description || '',
+            price: res.product.price,
+            originalPrice: res.product.originalPrice,
+            image: res.product.image,
+            images: Array.isArray(res.product.images) ? res.product.images : undefined,
+            category: res.product.category,
+            gender: (res.product.gender as Product['gender']) || 'unissex',
+            sizes: res.product.sizes || [],
+            colors: res.product.colors || [],
+            rating: res.product.rating,
+            reviews: res.product.reviews,
+            badge: res.product.badge,
+            isNew: res.product.isNew,
+            isBestseller: res.product.isBestseller,
+            colorStock: Array.isArray(res.product.colorStock) ? res.product.colorStock : undefined,
+          } as Product;
+        }
+      } catch (err) {
+        console.warn('Failed to load full product from backend, using list data:', err);
+      }
+    }
+
+    // Restore colorStock from backend data or legacy _colorStock
+    const savedStock = (fullProduct as any).colorStock ?? (fullProduct as any)._colorStock;
+    const csArray = Array.isArray(savedStock) ? savedStock : undefined;
+
     const restoredStock = PRODUCT_COLORS.map((c) => {
       const base = emptyColorStock(c.id);
-      if (savedStock) {
-        const saved = savedStock.find((s: any) => s.id === c.id);
+      if (csArray) {
+        const saved = csArray.find((s: any) => s.id === c.id);
         if (saved?.stock) {
           const fem = { ...base.feminino };
           const masc = { ...base.masculino };
@@ -863,35 +931,62 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               if (sz in masc.sizes) masc.sizes[sz as SizeName] = true;
             });
           }
-          return { ...base, feminino: fem, masculino: masc };
+          // Restore color image as preview (already uploaded URL)
+          let colorImage: DraftImage | null = null;
+          if (saved.image) {
+            colorImage = {
+              id: `restored_color_${c.id}`,
+              preview: saved.image,
+              type: 'product',
+              isMain: false,
+            };
+          }
+          return { ...base, image: colorImage, feminino: fem, masculino: masc };
         }
       }
-      if (!product.colors.includes(c.id)) return base;
+      if (!fullProduct.colors.includes(c.id)) return base;
       const fem = { ...base.feminino, enabled: true };
       const masc = { ...base.masculino, enabled: true };
-      product.sizes.forEach((sz) => {
+      fullProduct.sizes.forEach((sz) => {
         if (sz in fem.sizes) { fem.sizes[sz as SizeName] = true; masc.sizes[sz as SizeName] = true; }
       });
       return { ...base, feminino: fem, masculino: masc };
     });
+
+    // Restore model/detail images as DraftImage previews
+    const restoredImages: DraftImage[] = [];
+    const imgArray = Array.isArray((fullProduct as any).images) ? (fullProduct as any).images : [];
+    for (const img of imgArray) {
+      if (img?.url && (img.type === 'model' || img.type === 'detail')) {
+        restoredImages.push({
+          id: `restored_${restoredImages.length}`,
+          preview: img.url,
+          type: img.type,
+          gender: img.gender,
+          isMain: restoredImages.length === 0,
+        });
+      }
+    }
+
     setDraft({
-      name: product.name,
-      description: product.description,
-      price: product.price.toString(),
-      originalPrice: product.originalPrice?.toString() || '',
-      image: product.image,
-      category: product.category,
-      gender: product.gender || 'unissex',
-      sizes: product.sizes,
-      colors: product.colors,
+      name: fullProduct.name,
+      description: fullProduct.description,
+      price: fullProduct.price.toString(),
+      originalPrice: fullProduct.originalPrice?.toString() || '',
+      image: fullProduct.image || '',
+      category: fullProduct.category,
+      gender: fullProduct.gender || 'unissex',
+      sizes: fullProduct.sizes,
+      colors: fullProduct.colors,
       colorStock: restoredStock,
-      badge: product.badge || '',
-      isNew: product.isNew || false,
-      isBestseller: product.isBestseller || false,
-      rating: product.rating.toString(),
-      reviews: product.reviews.toString(),
+      badge: fullProduct.badge || '',
+      isNew: fullProduct.isNew || false,
+      isBestseller: fullProduct.isBestseller || false,
+      rating: fullProduct.rating.toString(),
+      reviews: fullProduct.reviews.toString(),
     });
-    setEditingId(product.id);
+    setImages(restoredImages);
+    setEditingId(fullProduct.id);
     setActiveTab('add');
   };
 
@@ -1011,16 +1106,36 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                 marginBottom: 20,
               }}
             >
-              <h2
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: 28,
-                  letterSpacing: 2,
-                  color: '#fff',
-                }}
-              >
-                PRODUTOS ({products.length})
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <h2
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: 28,
+                    letterSpacing: 2,
+                    color: '#fff',
+                  }}
+                >
+                  PRODUTOS ({products.length})
+                </h2>
+                <button
+                  onClick={loadProducts}
+                  disabled={isLoadingList}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid #333',
+                    color: '#666',
+                    borderRadius: 6,
+                    padding: '4px 8px',
+                    cursor: isLoadingList ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                  title="Recarregar lista do banco"
+                >
+                  {isLoadingList ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                </button>
+              </div>
               <button
                 style={s.btnPrimary}
                 onClick={() => {
@@ -1489,9 +1604,26 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               >
                 CANCELAR
               </button>
-              <button style={s.btnPrimary} onClick={handleSave}>
-                <Check size={16} />
-                {editingId ? 'ATUALIZAR PRODUTO' : 'SALVAR PRODUTO'}
+              <button
+                style={{
+                  ...s.btnPrimary,
+                  opacity: isSaving ? 0.6 : 1,
+                  cursor: isSaving ? 'not-allowed' : 'pointer',
+                }}
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    {saveProgress || 'Salvando...'}
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    {editingId ? 'ATUALIZAR PRODUTO' : 'SALVAR PRODUTO'}
+                  </>
+                )}
               </button>
             </div>
           </div>

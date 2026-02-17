@@ -7,23 +7,41 @@ export interface ProductImage {
   gender?: 'masculino' | 'feminino';
 }
 
+export interface GenderStock {
+  available: boolean;
+  sizes: string[];
+}
+
+export interface ColorStockItem {
+  id: string;
+  name: string;
+  hex: string;
+  image: string | null;
+  stock: {
+    feminino: GenderStock;
+    masculino: GenderStock;
+  };
+}
+
 export interface Product {
   id: string;
+  slug?: string | null;
   name: string;
   description: string;
   price: number;
-  originalPrice?: number;
-  image: string;
-  images?: ProductImage[];
+  originalPrice?: number | null;
+  image: string | null;
+  images?: ProductImage[] | null;
   category: string;
   gender: Gender;
   sizes: string[];
   colors: string[];
   rating: number;
   reviews: number;
-  badge?: string;
+  badge?: string | null;
   isNew?: boolean;
   isBestseller?: boolean;
+  colorStock?: ColorStockItem[] | null;
 }
 
 export interface CartItem {

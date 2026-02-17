@@ -25,6 +25,18 @@ model Product {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  // Campos adicionais já existentes no DB (alinhamento Prisma ↔ Supabase)
+  slug          String?
+  gender        String  @default("unissex")
+  originalPrice Float?  @map("original_price")
+  images        Json?
+  colorStock    Json?   @map("color_stock")
+  badge         String?
+  isNew         Boolean @default(false) @map("is_new")
+  isBestseller  Boolean @default(false) @map("is_bestseller")
+  rating        Float   @default(4.8)
+  reviews       Int     @default(0)
+
   orderItems OrderItem[]
 
   @@map("products")
@@ -76,8 +88,8 @@ model Order {
   riskReasons String?  @map("risk_reasons") // motivos curtos separados por vírgula (sem PII)
 
   // Cupom
-  couponCode         String? @map("coupon_code")
-  couponDiscountAmount Float? @map("coupon_discount_amount")
+  couponCode           String? @map("coupon_code")
+  couponDiscountAmount Float?  @map("coupon_discount_amount")
 
   // Auth + créditos (estampas)
   buyerId        String? @map("buyer_id")
@@ -170,7 +182,7 @@ model User {
 
   generations     Generation[]
   creditLogs      CreditLog[]
-  purchasedOrders Order[]      @relation("UserPurchases")
+  purchasedOrders Order[]       @relation("UserPurchases")
   couponUsages    CouponUsage[]
 
   @@index([email])

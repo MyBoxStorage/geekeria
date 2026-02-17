@@ -32,6 +32,9 @@ import { createCoupon } from './routes/admin/coupons/create.js';
 import { updateCoupon } from './routes/admin/coupons/update.js';
 import { deleteCoupon } from './routes/admin/coupons/delete.js';
 import { getAnalyticsOverview } from './routes/admin/analytics/overview.js';
+import { uploadMiddleware, uploadProductImage } from './routes/admin/storage.js';
+import { listAdminProducts, getAdminProduct, createAdminProduct, updateAdminProduct } from './routes/admin/products.js';
+import { listCatalogProducts, getCatalogProduct } from './routes/catalog/products.js';
 import { validateCoupon } from './routes/coupons/validate.js';
 import { monitorStatus } from './routes/internal/monitor.js';
 import { reconcilePending } from './routes/internal/reconcile-pending.js';
@@ -118,6 +121,11 @@ const rateLimitGenerateStamp = createRateLimiter({
   maxRequests: 5,
   windowMs: 60 * 1000,
 });
+const rateLimitCatalog = createRateLimiter({
+  routeKey: 'GET:/api/catalog',
+  maxRequests: 120,
+  windowMs: WINDOW_MS,
+});
 
 // Middlewares
 // CORS: Support multiple origins (production + staging if needed)
@@ -168,6 +176,8 @@ app.get('/api/mp/webhooks', (_req, res) => {
 });
 app.post('/api/mp/webhooks', webhookHandler);
 app.post('/api/shipping/quote', shippingQuote);
+app.get('/api/catalog/products', rateLimitCatalog, listCatalogProducts);
+app.get('/api/catalog/products/:slug', rateLimitCatalog, getCatalogProduct);
 app.post('/api/checkout/create-order', createOrder);
 app.get('/api/orders/:externalReference', rateLimitGetOrder, getOrder);
 app.post('/api/orders/:externalReference/update-payment', updateOrderPayment);
@@ -206,6 +216,11 @@ app.post('/api/admin/coupons', validateAdminToken, createCoupon);
 app.put('/api/admin/coupons/:id', validateAdminToken, updateCoupon);
 app.delete('/api/admin/coupons/:id', validateAdminToken, deleteCoupon);
 app.get('/api/admin/analytics/overview', validateAdminToken, getAnalyticsOverview);
+app.post('/api/admin/storage/upload', validateAdminToken, uploadMiddleware, uploadProductImage);
+app.get('/api/admin/products', validateAdminToken, listAdminProducts);
+app.get('/api/admin/products/:id', validateAdminToken, getAdminProduct);
+app.post('/api/admin/products', validateAdminToken, createAdminProduct);
+app.put('/api/admin/products/:id', validateAdminToken, updateAdminProduct);
 app.post('/api/coupons/validate', optionalAuth, validateCoupon);
 app.get(
   '/api/internal/monitor',
@@ -244,9 +259,16 @@ app.post(
   cleanupExpiredGenerations
 );
 
-// Error handling middleware
+// Error handling middleware (includes Multer errors for file upload)
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   const timestamp = new Date().toISOString();
+
+  // Multer-specific errors (file too large, wrong type, etc.)
+  if (err.name === 'MulterError' || err.message?.includes('Tipo de arquivo não permitido')) {
+    console.error(`[${timestamp}] Upload error:`, err.message);
+    return res.status(400).json({ ok: false, error: err.message });
+  }
+
   console.error(`[${timestamp}] Error:`, err);
   res.status(500).json({
     error: 'Internal server error',

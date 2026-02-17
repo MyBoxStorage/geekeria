@@ -25,6 +25,7 @@ import {
   computeOrderRiskSimple,
   truncateForDb,
 } from '../../services/risk/riskScoring.js';
+import { validateItemsStock, type ProductStockData } from '../../utils/stockValidation.js';
 
 // Schema de validação
 const createOrderSchema = z.object({
@@ -179,12 +180,63 @@ export async function createOrder(req: Request, res: Response) {
       }
     }
 
-    // Verificar se há produtos de teste (frete grátis)
+    // Buscar produtos com dados necessários para validação + frete
     const productIds = [...new Set(items.map((i) => i.productId))];
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { category: true },
+      select: {
+        id: true,
+        category: true,
+        colorStock: true,
+        colors: true,
+        sizes: true,
+      },
     });
+
+    // Verificar se todos os produtos existem
+    const foundIds = new Set(products.map((p) => p.id));
+    const missingIds = productIds.filter((pid) => !foundIds.has(pid));
+    if (missingIds.length > 0) {
+      return res.status(400).json({
+        ok: false,
+        error: 'PRODUCT_NOT_FOUND',
+        message: 'Um ou mais produtos não foram encontrados.',
+        details: missingIds.map((id) => ({ productId: id })),
+      });
+    }
+
+    // Validar estoque (color + size) contra colorStock do DB
+    const productMap = new Map<string, ProductStockData>(
+      products.map((p) => [
+        p.id,
+        {
+          id: p.id,
+          colorStock: p.colorStock,
+          colors: p.colors,
+          sizes: p.sizes,
+        },
+      ]),
+    );
+
+    const stockViolations = validateItemsStock(
+      items.map((i) => ({
+        productId: i.productId,
+        color: i.color,
+        size: i.size,
+      })),
+      productMap,
+    );
+
+    if (stockViolations.length > 0) {
+      logger.warn(`Stock validation failed: ${JSON.stringify(stockViolations)}`);
+      return res.status(400).json({
+        ok: false,
+        error: 'OUT_OF_STOCK_VARIANT',
+        message: 'Uma ou mais combinações de cor/tamanho não estão disponíveis.',
+        details: stockViolations,
+      });
+    }
+
     const hasTestProducts = products.some((p) => p.category === 'TESTES');
 
     // Calcular totals no backend (source of truth)
