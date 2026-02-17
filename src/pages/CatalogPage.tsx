@@ -473,11 +473,13 @@ function ProductCard({
   onSelect,
   formatPrice,
   formatInstallment,
+  selectedGender,
 }: {
   product: Product;
   onSelect: (p: Product) => void;
   formatPrice: (n: number) => string;
   formatInstallment: (n: number) => string;
+  selectedGender: string;
 }) {
   const modelImages = useMemo(() => {
     const imgs = product.images ?? [];
@@ -497,14 +499,23 @@ function ProductCard({
 
   const initialGender = useMemo(() => {
     if (!hasBothGenders) return 'default' as const;
+    if (selectedGender === 'masculino') return 'masculino' as const;
+    if (selectedGender === 'feminino') return 'feminino' as const;
     return Math.random() > 0.5
       ? ('masculino' as const)
       : ('feminino' as const);
-  }, [hasBothGenders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasBothGenders, selectedGender]);
 
   const [currentGender, setCurrentGender] = useState<
     'masculino' | 'feminino' | 'default'
   >(initialGender);
+
+  useEffect(() => {
+    if (!hasBothGenders) return;
+    if (selectedGender === 'masculino') setCurrentGender('masculino');
+    else if (selectedGender === 'feminino') setCurrentGender('feminino');
+  }, [selectedGender, hasBothGenders]);
 
   const handleToggleGender = useCallback(() => {
     if (!hasBothGenders) return;
@@ -907,6 +918,7 @@ function CatalogContent() {
                     onSelect={setSelectedProduct}
                     formatPrice={formatPrice}
                     formatInstallment={formatInstallment}
+                    selectedGender={filters.gender}
                   />
                 ))}
               </div>
