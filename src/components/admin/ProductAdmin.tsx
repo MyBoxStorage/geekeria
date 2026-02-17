@@ -34,6 +34,7 @@ import {
   collectFilesToUpload,
   type UploadedUrlsMap,
 } from '@/utils/productPayload';
+import { invalidateCatalogCache } from '@/hooks/useCatalogProducts';
 
 interface ProductAdminProps {
   onLogout: () => void;
@@ -98,6 +99,8 @@ const PRODUCT_COLORS = [
 const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'] as const;
 type SizeName = (typeof SIZES)[number];
 type ColorId = (typeof PRODUCT_COLORS)[number]['id'];
+
+const DRAFT_STORAGE_KEY = 'bb_admin_draft_v1';
 
 interface GenderStock {
   enabled: boolean;
@@ -744,12 +747,29 @@ function issueLabel(code: string): string {
   return ISSUE_LABELS[code] ?? code;
 }
 
+function loadDraftFromStorage(): { draft: DraftProduct; editingId: string | null } | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.draft?.name && !parsed?.editingId) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
 export default function ProductAdmin({ onLogout }: ProductAdminProps) {
+  const _savedDraft = loadDraftFromStorage();
   const [activeTab, setActiveTab] = useState<TabId>('list');
   const [products, setProducts] = useState<Product[]>([]);
-  const [draft, setDraft] = useState<DraftProduct>({ ...emptyDraft });
+  const [draft, setDraft] = useState<DraftProduct>(
+    _savedDraft?.draft ?? { ...emptyDraft }
+  );
   const [images, setImages] = useState<DraftImage[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(
+    _savedDraft?.editingId ?? null
+  );
   const [toastMsg, setToastMsg] = useState('');
   const [copied, setCopied] = useState(false);
   const [debugOpen, setDebugOpen] = useState(false);
@@ -759,6 +779,26 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   const [healthCounts, setHealthCounts] = useState<CatalogHealthCounts | null>(null);
   const [healthItems, setHealthItems] = useState<CatalogHealthItem[]>([]);
   const [healthOpen, setHealthOpen] = useState(false);
+  const [restoredFromDraft, setRestoredFromDraft] = useState<boolean>(
+    () => loadDraftFromStorage() !== null
+  );
+
+  // Auto-salva rascunho enquanto o admin edita
+  useEffect(() => {
+    const hasContent = draft.name || draft.price || draft.description || editingId;
+    if (!hasContent) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return;
+    }
+    try {
+      localStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({ draft, editingId })
+      );
+    } catch {
+      // silently fail (quota exceeded, etc)
+    }
+  }, [draft, editingId]);
 
   const getToken = () => localStorage.getItem('admin_token') || '';
 
@@ -790,6 +830,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       }
     } catch (err) {
       console.error('Failed to load products:', err);
+      showToast(`ERRO loadProducts: ${err instanceof Error ? err.message : JSON.stringify(err)}`);
     } finally {
       setIsLoadingList(false);
     }
@@ -890,12 +931,17 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         }
       } else {
         const res = await adminCreateProduct(token, payload as unknown as Record<string, unknown>);
+        console.log('CREATE RESPONSE:', JSON.stringify(res));
         if (res.ok) {
           showToast('Produto criado no banco!');
+        } else {
+          showToast(`CREATE FALHOU: ${JSON.stringify(res)}`);
         }
       }
 
       // 4) Reset form and reload list + health
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      invalidateCatalogCache();
       setDraft({ ...emptyDraft });
       setImages([]);
       setEditingId(null);
@@ -1039,6 +1085,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     setImages(restoredImages);
     setEditingId(fullProduct.id);
     setActiveTab('add');
+    setRestoredFromDraft(false);
   };
 
   const handleDelete = (id: string) => {
@@ -1196,6 +1243,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               <button
                 style={s.btnPrimary}
                 onClick={() => {
+                  localStorage.removeItem(DRAFT_STORAGE_KEY);
                   setDraft({ ...emptyDraft });
                   setEditingId(null);
                   setImages([]);
@@ -1485,6 +1533,46 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               </h2>
             </div>
 
+            {restoredFromDraft && (draft.name || editingId) && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  background: '#FFCC2915',
+                  border: '1px solid #FFCC2940',
+                  marginBottom: 16,
+                  fontSize: 12,
+                  color: '#FFCC29',
+                }}
+              >
+                <span>⚡ Rascunho restaurado automaticamente</span>
+                <button
+                  onClick={() => {
+                    localStorage.removeItem(DRAFT_STORAGE_KEY);
+                    setDraft({ ...emptyDraft });
+                    setImages([]);
+                    setEditingId(null);
+                    setRestoredFromDraft(false);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: '1px solid #FFCC2940',
+                    color: '#FFCC29',
+                    borderRadius: 4,
+                    padding: '2px 10px',
+                    fontSize: 11,
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Descartar rascunho
+                </button>
+              </div>
+            )}
+
             {/* Image Upload — typed zones */}
             <div style={s.card}>
               <label style={s.label}>Fotos do Produto</label>
@@ -1770,6 +1858,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                   color: '#888',
                 }}
                 onClick={() => {
+                  localStorage.removeItem(DRAFT_STORAGE_KEY);
                   setDraft({ ...emptyDraft });
                   setImages([]);
                   setEditingId(null);
