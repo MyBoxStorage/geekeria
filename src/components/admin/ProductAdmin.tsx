@@ -3,7 +3,6 @@ import {
   Plus,
   Trash2,
   Image as ImageIcon,
-  Upload,
   Copy,
   Check,
   ChevronLeft,
@@ -11,7 +10,6 @@ import {
   Package,
   List,
   FileJson,
-  X,
 } from 'lucide-react';
 import type { Product } from '@/types';
 
@@ -25,6 +23,9 @@ interface DraftImage {
   id: string;
   file: File;
   preview: string;
+  type: 'model' | 'product' | 'detail';
+  gender?: 'masculino' | 'feminino';
+  isMain: boolean;
 }
 
 interface DraftProduct {
@@ -34,6 +35,7 @@ interface DraftProduct {
   originalPrice: string;
   image: string;
   category: string;
+  gender: 'masculino' | 'feminino' | 'unissex';
   sizes: string[];
   colors: string[];
   badge: string;
@@ -70,6 +72,7 @@ const emptyDraft: DraftProduct = {
   originalPrice: '',
   image: '',
   category: 'camisetas',
+  gender: 'unissex',
   sizes: [],
   colors: [],
   badge: '',
@@ -231,16 +234,6 @@ const s = {
       cursor: 'pointer',
       boxShadow: active ? '0 0 0 2px #00843D40' : 'none',
     }) as React.CSSProperties,
-  dropzone: (isDragOver: boolean) =>
-    ({
-      border: `2px dashed ${isDragOver ? '#00843D' : '#333'}`,
-      borderRadius: 12,
-      padding: 32,
-      textAlign: 'center' as const,
-      cursor: 'pointer',
-      background: isDragOver ? '#00843D10' : '#111',
-      transition: 'all 0.2s',
-    }) as React.CSSProperties,
   toast: {
     position: 'fixed' as const,
     bottom: 24,
@@ -259,49 +252,279 @@ const s = {
   } as React.CSSProperties,
 };
 
+/* ─── UploadZone (single typed drop area) ─── */
+function UploadZone({
+  label,
+  hint,
+  color,
+  photos,
+  inputRef,
+  onDrop,
+  onRemove,
+  onSetMain,
+  badge,
+}: {
+  label: string;
+  hint: string;
+  color: string;
+  photos: DraftImage[];
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onDrop: (files: FileList) => void;
+  onRemove: (id: string) => void;
+  onSetMain: (id: string) => void;
+  badge: string | null;
+}) {
+  const [dragActive, setDragActive] = useState(false);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color, letterSpacing: 0.5 }}>{label}</span>
+        {badge && (
+          <span style={{ fontSize: 10, background: `${color}20`, color, padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <div
+        style={{
+          border: `2px dashed ${dragActive ? color : '#333'}`,
+          borderRadius: 10,
+          padding: photos.length > 0 ? '10px' : '20px 12px',
+          textAlign: 'center' as const,
+          background: dragActive ? `${color}08` : '#0f0f0f',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          minHeight: 80,
+        }}
+        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+        onDragLeave={() => setDragActive(false)}
+        onDrop={(e) => { e.preventDefault(); setDragActive(false); onDrop(e.dataTransfer.files); }}
+        onClick={() => inputRef.current?.click()}
+      >
+        {photos.length === 0 ? (
+          <>
+            <div style={{ fontSize: 24, marginBottom: 4 }}>📸</div>
+            <div style={{ fontSize: 11, color: '#555' }}>{hint}</div>
+            <div style={{ fontSize: 10, color: '#333', marginTop: 2 }}>Arraste ou clique</div>
+          </>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))', gap: 6 }}>
+            {photos.map((img) => (
+              <div key={img.id} style={{ position: 'relative' }}>
+                <img
+                  src={img.preview}
+                  alt=""
+                  style={{
+                    width: '100%', aspectRatio: '3/4', objectFit: 'cover',
+                    borderRadius: 6, border: `2px solid ${img.isMain ? color : '#333'}`, display: 'block',
+                  }}
+                />
+                {img.isMain && (
+                  <span style={{
+                    position: 'absolute', top: 3, left: 3, background: color, color: '#fff',
+                    fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 3,
+                  }}>CAPA</span>
+                )}
+                <button
+                  style={{
+                    position: 'absolute', top: 3, right: 3, background: 'rgba(0,0,0,0.7)',
+                    color: '#fff', border: 'none', borderRadius: '50%', width: 18, height: 18,
+                    cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  onClick={(e) => { e.stopPropagation(); onRemove(img.id); }}
+                >✕</button>
+                {!img.isMain && (
+                  <button
+                    style={{
+                      position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)',
+                      background: 'rgba(0,0,0,0.7)', color: '#fff', border: 'none', borderRadius: 3,
+                      padding: '1px 5px', cursor: 'pointer', fontSize: 8, whiteSpace: 'nowrap' as const,
+                    }}
+                    onClick={(e) => { e.stopPropagation(); onSetMain(img.id); }}
+                  >★ capa</button>
+                )}
+              </div>
+            ))}
+            <div style={{
+              aspectRatio: '3/4', border: '1px dashed #333', borderRadius: 6,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444', fontSize: 20,
+            }}>+</div>
+          </div>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={(e) => e.target.files && onDrop(e.target.files)}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─── ImageUploadSection (4 typed zones) ─── */
+function ImageUploadSection({
+  images,
+  onImagesAdd,
+  onImageRemove,
+  onSetMain,
+  gender,
+}: {
+  images: DraftImage[];
+  onImagesAdd: (imgs: DraftImage[]) => void;
+  onImageRemove: (id: string) => void;
+  onSetMain: (id: string) => void;
+  gender: 'masculino' | 'feminino' | 'unissex';
+}) {
+  const inputRefMasc = useRef<HTMLInputElement>(null);
+  const inputRefFem = useRef<HTMLInputElement>(null);
+  const inputRefProduct = useRef<HTMLInputElement>(null);
+  const inputRefDetail = useRef<HTMLInputElement>(null);
+
+  const processFiles = (files: FileList, type: DraftImage['type'], imgGender?: DraftImage['gender']) => {
+    const imgs: DraftImage[] = Array.from(files)
+      .filter((f) => f.type.startsWith('image/'))
+      .map((file) => ({
+        id: generateId(),
+        file,
+        preview: URL.createObjectURL(file),
+        type,
+        gender: imgGender,
+        isMain: false,
+      }));
+    onImagesAdd(imgs);
+  };
+
+  const photosMasc = images.filter((i) => i.type === 'model' && i.gender === 'masculino');
+  const photosFem = images.filter((i) => i.type === 'model' && i.gender === 'feminino');
+  const photosProduct = images.filter((i) => i.type === 'product');
+  const photosDetail = images.filter((i) => i.type === 'detail');
+
+  const showMasc = gender !== 'feminino';
+  const showFem = gender !== 'masculino';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Model photos */}
+      <div style={{ display: 'grid', gridTemplateColumns: showMasc && showFem ? '1fr 1fr' : '1fr', gap: 12 }}>
+        {showMasc && (
+          <UploadZone
+            label="♂ Modelo Masculino"
+            hint="Foto do modelo homem usando a peça"
+            color="#002776"
+            photos={photosMasc}
+            inputRef={inputRefMasc}
+            onDrop={(files) => processFiles(files, 'model', 'masculino')}
+            onRemove={onImageRemove}
+            onSetMain={onSetMain}
+            badge={photosMasc.length > 0 ? `${photosMasc.length} foto(s)` : null}
+          />
+        )}
+        {showFem && (
+          <UploadZone
+            label="♀ Modelo Feminina"
+            hint="Foto da modelo mulher usando a peça"
+            color="#00843D"
+            photos={photosFem}
+            inputRef={inputRefFem}
+            onDrop={(files) => processFiles(files, 'model', 'feminino')}
+            onRemove={onImageRemove}
+            onSetMain={onSetMain}
+            badge={photosFem.length > 0 ? `${photosFem.length} foto(s)` : null}
+          />
+        )}
+      </div>
+
+      {/* Product + Detail photos */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <UploadZone
+          label="🎨 Produto por Cor"
+          hint="Foto do produto em fundo neutro"
+          color="#888"
+          photos={photosProduct}
+          inputRef={inputRefProduct}
+          onDrop={(files) => processFiles(files, 'product')}
+          onRemove={onImageRemove}
+          onSetMain={onSetMain}
+          badge={photosProduct.length > 0 ? `${photosProduct.length} foto(s)` : null}
+        />
+        <UploadZone
+          label="🔍 Detalhe / Estampa"
+          hint="Close-up da estampa ou acabamento"
+          color="#888"
+          photos={photosDetail}
+          inputRef={inputRefDetail}
+          onDrop={(files) => processFiles(files, 'detail')}
+          onRemove={onImageRemove}
+          onSetMain={onSetMain}
+          badge={photosDetail.length > 0 ? `${photosDetail.length} foto(s)` : null}
+        />
+      </div>
+
+      {/* Status banner for unissex */}
+      {gender === 'unissex' && (() => {
+        const okMasc = photosMasc.length > 0;
+        const okFem = photosFem.length > 0;
+        if (okMasc && okFem) return (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8,
+            background: '#00843D15', border: '1px solid #00843D40',
+            fontSize: 12, color: '#00843D',
+          }}>
+            ✅ Toggle ativo — o catálogo vai alternar entre ♂ e ♀ ao passar o mouse
+          </div>
+        );
+        return (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8,
+            background: '#FFCC2915', border: '1px solid #FFCC2940',
+            fontSize: 12, color: '#FFCC29',
+          }}>
+            ⚠️ Produto unissex — adicione foto{' '}
+            {!okMasc && '♂ masculino'}
+            {!okMasc && !okFem && ' e '}
+            {!okFem && '♀ feminino'}
+            {' '}para ativar o toggle no catálogo
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   const [activeTab, setActiveTab] = useState<TabId>('list');
   const [products, setProducts] = useState<Product[]>([]);
   const [draft, setDraft] = useState<DraftProduct>({ ...emptyDraft });
   const [images, setImages] = useState<DraftImage[]>([]);
-  const [isDragOver, setIsDragOver] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [copied, setCopied] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 3000);
   };
 
-  const handleFiles = useCallback((files: FileList | File[]) => {
-    const newImages: DraftImage[] = Array.from(files)
-      .filter((f) => f.type.startsWith('image/'))
-      .map((file) => ({
-        id: generateId(),
-        file,
-        preview: URL.createObjectURL(file),
-      }));
-    setImages((prev) => [...prev, ...newImages]);
+  const handleImagesAdd = useCallback((newImgs: DraftImage[]) => {
+    setImages((prev) => [...prev, ...newImgs]);
   }, []);
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-      handleFiles(e.dataTransfer.files);
-    },
-    [handleFiles]
-  );
-
-  const removeImage = (id: string) => {
+  const handleImageRemove = useCallback((id: string) => {
     setImages((prev) => {
       const img = prev.find((i) => i.id === id);
       if (img) URL.revokeObjectURL(img.preview);
       return prev.filter((i) => i.id !== id);
     });
-  };
+  }, []);
+
+  const handleSetMain = useCallback((id: string) => {
+    setImages((prev) => prev.map((img) => ({ ...img, isMain: img.id === id })));
+  }, []);
 
   const handleSave = () => {
     if (!draft.name || !draft.price || !draft.category) {
@@ -310,9 +533,23 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     }
 
     const slug = generateSlug(draft.name);
+
+    const typedImages: NonNullable<Product['images']> = images.map((img, i) => ({
+      url: `/products/${slug}_${img.gender ? img.gender + '_' : ''}${img.type}_${String(i + 1).padStart(2, '0')}.webp`,
+      alt: img.type === 'model' && img.gender
+        ? `Modelo ${img.gender} usando ${draft.name}`
+        : img.type === 'detail'
+          ? `Detalhe ${draft.name}`
+          : draft.name,
+      type: img.type,
+      gender: img.gender,
+    }));
+
+    const mainImg = images.find((i) => i.isMain);
+    const mainIdx = mainImg ? images.indexOf(mainImg) : 0;
     const imagePath =
-      images.length > 0
-        ? `/products/${slug}_01.webp`
+      typedImages.length > 0
+        ? typedImages[mainIdx]?.url ?? typedImages[0].url
         : draft.image || '/products/placeholder.webp';
 
     const product: Product = {
@@ -324,8 +561,9 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         ? parseFloat(draft.originalPrice)
         : undefined,
       image: imagePath,
+      images: typedImages.length > 0 ? typedImages : undefined,
       category: draft.category,
-      gender: (draft as any).gender || 'unissex',
+      gender: draft.gender,
       sizes: draft.sizes,
       colors: draft.colors,
       rating: parseFloat(draft.rating) || 4.8,
@@ -359,6 +597,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       originalPrice: product.originalPrice?.toString() || '',
       image: product.image,
       category: product.category,
+      gender: product.gender || 'unissex',
       sizes: product.sizes,
       colors: product.colors,
       badge: product.badge || '',
@@ -395,8 +634,26 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   };
 
   const exportJson = () => {
-    const json = JSON.stringify(products, null, 2);
-    return `// Generated by Bravos Brasil Admin - ${new Date().toLocaleDateString('pt-BR')}\n// Paste into src/data/products.ts\n\nimport type { Product } from '@/types';\n\nexport const allProducts: Product[] = ${json};\n`;
+    const enriched = products.map((p) => {
+      const slug = generateSlug(p.name);
+      return {
+        ...p,
+        images: p.images
+          ? p.images.map((img, i) => ({
+              url: `/products/${slug}_${img.gender ? img.gender + '_' : ''}${img.type || 'product'}_${String(i + 1).padStart(2, '0')}.webp`,
+              alt: img.type === 'model' && img.gender
+                ? `Modelo ${img.gender} usando ${p.name}`
+                : img.type === 'detail'
+                  ? `Detalhe ${p.name}`
+                  : p.name,
+              type: img.type,
+              gender: img.gender || undefined,
+            }))
+          : undefined,
+      };
+    });
+    const json = JSON.stringify(enriched, null, 2);
+    return `// Generated by Bravos Brasil Admin - ${new Date().toLocaleDateString('pt-BR')}\n// Paste into src/data/products.ts\n// File naming: slug_masculino_model_01.webp, slug_feminino_model_01.webp\n//              slug_verde_product_01.webp, slug_detail_01.webp\n\nimport type { Product } from '@/types';\n\nexport const allProducts: Product[] = ${json};\n`;
   };
 
   const handleCopy = async () => {
@@ -670,95 +927,16 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               </h2>
             </div>
 
-            {/* Image Upload */}
+            {/* Image Upload — typed zones */}
             <div style={s.card}>
               <label style={s.label}>Fotos do Produto</label>
-              <div
-                style={s.dropzone(isDragOver)}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragOver(true);
-                }}
-                onDragLeave={() => setIsDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileRef.current?.click()}
-              >
-                <Upload
-                  size={32}
-                  color={isDragOver ? '#00843D' : '#444'}
-                  style={{ margin: '0 auto 12px' }}
-                />
-                <p style={{ color: '#888', fontSize: 14 }}>
-                  Arraste fotos aqui ou clique para selecionar
-                </p>
-                <p style={{ color: '#555', fontSize: 12, marginTop: 4 }}>
-                  JPG, PNG ou WebP
-                </p>
-              </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: 'none' }}
-                onChange={(e) => e.target.files && handleFiles(e.target.files)}
+              <ImageUploadSection
+                images={images}
+                onImagesAdd={handleImagesAdd}
+                onImageRemove={handleImageRemove}
+                onSetMain={handleSetMain}
+                gender={draft.gender}
               />
-
-              {images.length > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 8,
-                    marginTop: 12,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  {images.map((img) => (
-                    <div
-                      key={img.id}
-                      style={{
-                        position: 'relative',
-                        width: 80,
-                        height: 80,
-                        borderRadius: 8,
-                        overflow: 'hidden',
-                        border: '1px solid #333',
-                      }}
-                    >
-                      <img
-                        src={img.preview}
-                        alt=""
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                      <button
-                        onClick={() => removeImage(img.id)}
-                        style={{
-                          position: 'absolute',
-                          top: 2,
-                          right: 2,
-                          width: 20,
-                          height: 20,
-                          borderRadius: '50%',
-                          background: '#cc0000',
-                          border: 'none',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: 0,
-                        }}
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Basic Info */}
@@ -839,6 +1017,24 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                         {cat.name}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label style={s.label}>Gênero</label>
+                  <select
+                    style={{ ...s.input, cursor: 'pointer' }}
+                    value={draft.gender}
+                    onChange={(e) =>
+                      setDraft((p) => ({
+                        ...p,
+                        gender: e.target.value as DraftProduct['gender'],
+                      }))
+                    }
+                  >
+                    <option value="unissex">Unissex</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
                   </select>
                 </div>
 
