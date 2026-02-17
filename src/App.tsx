@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -9,14 +9,15 @@ import CheckoutFailure from "@/pages/CheckoutFailure";
 import CheckoutPending from "@/pages/CheckoutPending";
 import OrderTracking from "@/pages/OrderTracking";
 import UserDashboard from "@/pages/UserDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import { AdminGenerationsPage } from "@/pages/AdminGenerationsPage";
-import { AdminPromptsPage } from "@/pages/AdminPromptsPage";
-import { AdminCouponsPage } from "@/pages/AdminCouponsPage";
-import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { MinhasEstampasPage } from "@/pages/MinhasEstampasPage";
 import { CatalogPage } from "@/pages/CatalogPage";
-import { AdminProductsPage } from "@/pages/AdminProductsPage";
+
+// Admin — lazy loaded to avoid Supabase env crash in production
+const AdminUnifiedPage = lazy(() =>
+  import("@/pages/AdminUnifiedPage").then((m) => ({
+    default: m.AdminUnifiedPage,
+  }))
+);
 
 function App() {
   useEffect(() => {
@@ -34,12 +35,14 @@ function App() {
         <Route path="/checkout/pending" element={<CheckoutPending />} />
         <Route path="/minha-conta" element={<UserDashboard />} />
         <Route path="/order" element={<OrderTracking />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-        <Route path="/admin/generations" element={<AdminGenerationsPage />} />
-        <Route path="/admin/prompts" element={<AdminPromptsPage />} />
-        <Route path="/admin/coupons" element={<AdminCouponsPage />} />
-        <Route path="/admin/products" element={<AdminProductsPage />} />
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0a0a0a' }} />}>
+              <AdminUnifiedPage />
+            </Suspense>
+          }
+        />
         <Route path="/minhas-estampas" element={<MinhasEstampasPage />} />
         </Routes>
       </BrowserRouter>

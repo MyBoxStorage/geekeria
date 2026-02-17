@@ -1,29 +1,30 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export function AdminNav() {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'orders';
 
   const links = [
-    { path: '/admin/dashboard', label: 'Dashboard' },
-    { path: '/admin/generations', label: 'Gerações' },
-    { path: '/admin/prompts', label: 'Prompts' },
-    { path: '/admin/coupons', label: 'Cupons' },
-    { path: '/admin/products', label: 'Produtos' },
+    { tab: 'dashboard', label: 'Dashboard' },
+    { tab: 'generations', label: 'Gerações' },
+    { tab: 'prompts', label: 'Prompts' },
+    { tab: 'coupons', label: 'Cupons' },
+    { tab: 'products', label: 'Produtos' },
   ];
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
-    window.location.href = '/admin/dashboard';
+    window.location.href = '/admin?tab=dashboard';
   };
 
   return (
     <div className="flex gap-4 items-center flex-wrap">
       {links.map((link) => (
         <Link
-          key={link.path}
-          to={link.path}
+          key={link.tab}
+          to={`/admin?tab=${link.tab}`}
           className={`text-sm font-medium ${
-            location.pathname === link.path
+            currentTab === link.tab
               ? 'text-green-600 underline'
               : 'text-blue-600 hover:text-blue-700'
           }`}

@@ -5,9 +5,10 @@ interface AdminLoginProps {
   onLogin: (email: string, password: string) => Promise<boolean>;
   isLoading: boolean;
   error: string | null;
+  onBack?: () => void;
 }
 
-export function AdminLogin({ onLogin, isLoading, error: externalError }: AdminLoginProps) {
+export function AdminLogin({ onLogin, isLoading, error: externalError, onBack }: AdminLoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -263,6 +264,26 @@ export function AdminLogin({ onLogin, isLoading, error: externalError }: AdminLo
           )}
           {isLoading ? 'AUTENTICANDO...' : 'ENTRAR NO PAINEL'}
         </button>
+
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#444',
+              fontSize: 12,
+              cursor: 'pointer',
+              marginTop: 12,
+              textDecoration: 'underline',
+              fontFamily: "'Inter', sans-serif",
+              width: '100%',
+              textAlign: 'center',
+            }}
+          >
+            &larr; Voltar sem entrar
+          </button>
+        )}
 
         <p
           style={{
