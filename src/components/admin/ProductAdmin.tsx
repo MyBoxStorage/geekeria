@@ -38,6 +38,7 @@ interface DraftProduct {
   gender: 'masculino' | 'feminino' | 'unissex';
   sizes: string[];
   colors: string[];
+  colorStock: ColorStock[];
   badge: string;
   isNew: boolean;
   isBestseller: boolean;
@@ -55,15 +56,45 @@ const CATEGORIES = [
   { id: 'TESTES', name: 'Testes' },
 ];
 
-const ALL_SIZES = ['P', 'M', 'G', 'GG', 'XG'];
-const ALL_COLORS = [
-  { id: 'preto', name: 'Preto', hex: '#000' },
-  { id: 'branco', name: 'Branco', hex: '#fff' },
-  { id: 'verde', name: 'Verde', hex: '#00843D' },
-  { id: 'azul', name: 'Azul', hex: '#002776' },
-  { id: 'cinza', name: 'Cinza', hex: '#666' },
-  { id: 'amarelo', name: 'Amarelo', hex: '#FFCC29' },
-];
+const PRODUCT_COLORS = [
+  { id: 'vinho',           name: 'Vinho',           hex: '#722F37' },
+  { id: 'verde-musgo',     name: 'Verde Musgo',     hex: '#4A5C45' },
+  { id: 'verde-bandeira',  name: 'Verde Bandeira',  hex: '#00843D' },
+  { id: 'roxo',            name: 'Roxo',            hex: '#6B3FA0' },
+  { id: 'rosa-pink',       name: 'Rosa Pink',       hex: '#FF69B4' },
+  { id: 'preto',           name: 'Preto',           hex: '#111111' },
+  { id: 'laranja',         name: 'Laranja',         hex: '#FF6B00' },
+  { id: 'cinza-mescla',    name: 'Cinza Mescla',    hex: '#9E9E9E' },
+  { id: 'cinza-chumbo',    name: 'Cinza Chumbo',    hex: '#555555' },
+  { id: 'branco',          name: 'Branco',          hex: '#F5F5F5' },
+  { id: 'azul-turquesa',   name: 'Azul Turquesa',   hex: '#00BCD4' },
+  { id: 'azul-royal',      name: 'Azul Royal',      hex: '#4169E1' },
+  { id: 'azul-marinho',    name: 'Azul Marinho',    hex: '#002776' },
+  { id: 'amarelo-ouro',    name: 'Amarelo Ouro',    hex: '#FFCC29' },
+  { id: 'amarelo-canario', name: 'Amarelo Canário', hex: '#FFE135' },
+] as const;
+
+const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'] as const;
+type SizeName = (typeof SIZES)[number];
+type ColorId = (typeof PRODUCT_COLORS)[number]['id'];
+
+interface ColorStock {
+  colorId: ColorId;
+  image: DraftImage | null;
+  enabled: boolean;
+  gender: 'masculino' | 'feminino' | 'ambos';
+  sizes: Record<SizeName, boolean>;
+}
+
+function emptyColorStock(colorId: ColorId): ColorStock {
+  return {
+    colorId,
+    image: null,
+    enabled: false,
+    gender: 'ambos',
+    sizes: { PP: false, P: false, M: false, G: false, GG: false, XG: false },
+  };
+}
 
 const emptyDraft: DraftProduct = {
   name: '',
@@ -75,6 +106,7 @@ const emptyDraft: DraftProduct = {
   gender: 'unissex',
   sizes: [],
   colors: [],
+  colorStock: PRODUCT_COLORS.map((c) => emptyColorStock(c.id)),
   badge: '',
   isNew: false,
   isBestseller: false,
@@ -211,29 +243,6 @@ const s = {
     alignItems: 'center',
     gap: 4,
   } as React.CSSProperties,
-  sizeBtn: (active: boolean) =>
-    ({
-      width: 40,
-      height: 40,
-      borderRadius: 6,
-      border: `2px solid ${active ? '#00843D' : '#333'}`,
-      background: active ? '#00843D' : 'transparent',
-      color: active ? '#fff' : '#888',
-      cursor: 'pointer',
-      fontSize: 13,
-      fontWeight: 600,
-      fontFamily: "'Inter', sans-serif",
-    }) as React.CSSProperties,
-  colorBtn: (active: boolean, hex: string) =>
-    ({
-      width: 32,
-      height: 32,
-      borderRadius: '50%',
-      border: `3px solid ${active ? '#00843D' : '#333'}`,
-      background: hex,
-      cursor: 'pointer',
-      boxShadow: active ? '0 0 0 2px #00843D40' : 'none',
-    }) as React.CSSProperties,
   toast: {
     position: 'fixed' as const,
     bottom: 24,
@@ -251,6 +260,206 @@ const s = {
     animation: 'fadeIn 0.3s ease',
   } as React.CSSProperties,
 };
+
+/* ─── ColorStockCard (one card per color) ─── */
+function ColorStockCard({
+  cs,
+  color,
+  onUpdate,
+  onToggleSize,
+  onImageUpload,
+}: {
+  cs: ColorStock;
+  color: (typeof PRODUCT_COLORS)[number];
+  onUpdate: (patch: Partial<ColorStock>) => void;
+  onToggleSize: (size: SizeName) => void;
+  onImageUpload: (files: FileList | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div
+      style={{
+        border: `2px solid ${cs.enabled ? color.hex : '#222'}`,
+        borderRadius: 10,
+        padding: 12,
+        background: cs.enabled ? `${color.hex}08` : '#0f0f0f',
+        transition: 'all 0.2s',
+        opacity: cs.enabled ? 1 : 0.5,
+      }}
+    >
+      {/* Header: color + toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{
+            width: 16, height: 16, borderRadius: '50%', background: color.hex,
+            border: color.hex === '#F5F5F5' ? '1px solid #444' : 'none', flexShrink: 0,
+          }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: cs.enabled ? '#fff' : '#555' }}>
+            {color.name}
+          </span>
+        </div>
+        <button
+          onClick={() => onUpdate({ enabled: !cs.enabled })}
+          style={{
+            width: 36, height: 20, borderRadius: 10,
+            background: cs.enabled ? color.hex : '#333',
+            border: 'none', cursor: 'pointer',
+            position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+          }}
+        >
+          <div style={{
+            position: 'absolute', top: 2, left: cs.enabled ? 18 : 2,
+            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }} />
+        </button>
+      </div>
+
+      {cs.enabled && (
+        <>
+          {/* Image upload */}
+          <div
+            style={{
+              border: `1px dashed ${cs.image ? color.hex : '#333'}`,
+              borderRadius: 8, marginBottom: 10, cursor: 'pointer', overflow: 'hidden',
+              aspectRatio: cs.image ? '3/4' : 'auto', minHeight: cs.image ? 'auto' : 60,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#0a0a0a', position: 'relative',
+            }}
+            onClick={() => inputRef.current?.click()}
+          >
+            {cs.image ? (
+              <>
+                <img src={cs.image.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <button
+                  style={{
+                    position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.7)',
+                    color: '#fff', border: 'none', borderRadius: '50%',
+                    width: 20, height: 20, cursor: 'pointer', fontSize: 10, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  onClick={(e) => { e.stopPropagation(); onUpdate({ image: null }); }}
+                >✕</button>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '10px 8px' }}>
+                <div style={{ fontSize: 20, marginBottom: 2 }}>📸</div>
+                <div style={{ fontSize: 10, color: '#555' }}>Foto {color.name}</div>
+              </div>
+            )}
+            <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => onImageUpload(e.target.files)} />
+          </div>
+
+          {/* Gender toggle */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 0.5 }}>GÊNERO</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {(['ambos', 'masculino', 'feminino'] as const).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => onUpdate({ gender: g })}
+                  style={{
+                    flex: 1, padding: '4px 2px', borderRadius: 5, border: 'none',
+                    fontSize: 9, fontWeight: 700, cursor: 'pointer',
+                    background: cs.gender === g ? color.hex : '#1a1a1a',
+                    color: cs.gender === g ? '#fff' : '#555', transition: 'all 0.15s',
+                  }}
+                >
+                  {g === 'ambos' ? '⚥' : g === 'masculino' ? '♂' : '♀'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Size toggles */}
+          <div>
+            <div style={{ fontSize: 10, color: '#555', marginBottom: 4, letterSpacing: 0.5 }}>TAMANHOS</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {SIZES.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => onToggleSize(size)}
+                  style={{
+                    padding: '4px 8px', borderRadius: 5,
+                    border: `1px solid ${cs.sizes[size] ? color.hex : '#333'}`,
+                    background: cs.sizes[size] ? color.hex : 'transparent',
+                    color: cs.sizes[size] ? '#fff' : '#555',
+                    fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─── ColorStockSection (15 color cards) ─── */
+function ColorStockSection({
+  colorStock,
+  onChange,
+}: {
+  colorStock: ColorStock[];
+  onChange: (updated: ColorStock[]) => void;
+}) {
+  const updateColor = (colorId: ColorId, patch: Partial<ColorStock>) => {
+    onChange(colorStock.map((cs) => (cs.colorId === colorId ? { ...cs, ...patch } : cs)));
+  };
+
+  const toggleSize = (colorId: ColorId, size: SizeName) => {
+    const cs = colorStock.find((c) => c.colorId === colorId)!;
+    updateColor(colorId, { sizes: { ...cs.sizes, [size]: !cs.sizes[size] } });
+  };
+
+  const handleImageUpload = (colorId: ColorId, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const image: DraftImage = {
+      id: generateId(),
+      file,
+      preview: URL.createObjectURL(file),
+      type: 'product',
+      gender: undefined,
+      isMain: false,
+    };
+    updateColor(colorId, { image, enabled: true });
+  };
+
+  const enabledCount = colorStock.filter((cs) => cs.enabled).length;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#888', letterSpacing: 0.5 }}>🎨 Produto por Cor</span>
+        {enabledCount > 0 && (
+          <span style={{ fontSize: 10, background: '#00843D20', color: '#00843D', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>
+            {enabledCount} cor{enabledCount !== 1 ? 'es' : ''} ativa{enabledCount !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+        {PRODUCT_COLORS.map((color) => {
+          const cs = colorStock.find((c) => c.colorId === color.id)!;
+          return (
+            <ColorStockCard
+              key={color.id}
+              cs={cs}
+              color={color}
+              onUpdate={(patch) => updateColor(color.id, patch)}
+              onToggleSize={(size) => toggleSize(color.id, size)}
+              onImageUpload={(files) => handleImageUpload(color.id, files)}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ─── UploadZone (single typed drop area) ─── */
 function UploadZone({
@@ -366,23 +575,26 @@ function UploadZone({
   );
 }
 
-/* ─── ImageUploadSection (4 typed zones) ─── */
+/* ─── ImageUploadSection (model + color stock + detail) ─── */
 function ImageUploadSection({
   images,
   onImagesAdd,
   onImageRemove,
   onSetMain,
   gender,
+  colorStock,
+  onColorStockChange,
 }: {
   images: DraftImage[];
   onImagesAdd: (imgs: DraftImage[]) => void;
   onImageRemove: (id: string) => void;
   onSetMain: (id: string) => void;
   gender: 'masculino' | 'feminino' | 'unissex';
+  colorStock: ColorStock[];
+  onColorStockChange: (updated: ColorStock[]) => void;
 }) {
   const inputRefMasc = useRef<HTMLInputElement>(null);
   const inputRefFem = useRef<HTMLInputElement>(null);
-  const inputRefProduct = useRef<HTMLInputElement>(null);
   const inputRefDetail = useRef<HTMLInputElement>(null);
 
   const processFiles = (files: FileList, type: DraftImage['type'], imgGender?: DraftImage['gender']) => {
@@ -401,7 +613,6 @@ function ImageUploadSection({
 
   const photosMasc = images.filter((i) => i.type === 'model' && i.gender === 'masculino');
   const photosFem = images.filter((i) => i.type === 'model' && i.gender === 'feminino');
-  const photosProduct = images.filter((i) => i.type === 'product');
   const photosDetail = images.filter((i) => i.type === 'detail');
 
   const showMasc = gender !== 'feminino';
@@ -439,31 +650,21 @@ function ImageUploadSection({
         )}
       </div>
 
-      {/* Product + Detail photos */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <UploadZone
-          label="🎨 Produto por Cor"
-          hint="Foto do produto em fundo neutro"
-          color="#888"
-          photos={photosProduct}
-          inputRef={inputRefProduct}
-          onDrop={(files) => processFiles(files, 'product')}
-          onRemove={onImageRemove}
-          onSetMain={onSetMain}
-          badge={photosProduct.length > 0 ? `${photosProduct.length} foto(s)` : null}
-        />
-        <UploadZone
-          label="🔍 Detalhe / Estampa"
-          hint="Close-up da estampa ou acabamento"
-          color="#888"
-          photos={photosDetail}
-          inputRef={inputRefDetail}
-          onDrop={(files) => processFiles(files, 'detail')}
-          onRemove={onImageRemove}
-          onSetMain={onSetMain}
-          badge={photosDetail.length > 0 ? `${photosDetail.length} foto(s)` : null}
-        />
-      </div>
+      {/* Color stock section (replaces generic "Produto por Cor") */}
+      <ColorStockSection colorStock={colorStock} onChange={onColorStockChange} />
+
+      {/* Detail / Print photos */}
+      <UploadZone
+        label="🔍 Detalhe / Estampa"
+        hint="Close-up da estampa ou acabamento"
+        color="#888"
+        photos={photosDetail}
+        inputRef={inputRefDetail}
+        onDrop={(files) => processFiles(files, 'detail')}
+        onRemove={onImageRemove}
+        onSetMain={onSetMain}
+        badge={photosDetail.length > 0 ? `${photosDetail.length} foto(s)` : null}
+      />
 
       {/* Status banner for unissex */}
       {gender === 'unissex' && (() => {
@@ -552,6 +753,23 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         ? typedImages[mainIdx]?.url ?? typedImages[0].url
         : draft.image || '/products/placeholder.webp';
 
+    const activeColors = draft.colorStock.filter((cs) => cs.enabled);
+    const derivedColors = activeColors.map((cs) => cs.colorId);
+    const derivedSizes = Array.from(
+      new Set(activeColors.flatMap((cs) => SIZES.filter((sz) => cs.sizes[sz])))
+    );
+
+    const colorImages: NonNullable<Product['images']> = activeColors
+      .filter((cs) => cs.image)
+      .map((cs) => ({
+        url: `/products/${slug}_${cs.colorId}_product_01.webp`,
+        alt: draft.name,
+        type: 'product' as const,
+        gender: undefined,
+      }));
+
+    const allImages = [...typedImages, ...colorImages];
+
     const product: Product = {
       id: editingId || generateId(),
       name: draft.name,
@@ -561,17 +779,29 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         ? parseFloat(draft.originalPrice)
         : undefined,
       image: imagePath,
-      images: typedImages.length > 0 ? typedImages : undefined,
+      images: allImages.length > 0 ? allImages : undefined,
       category: draft.category,
       gender: draft.gender,
-      sizes: draft.sizes,
-      colors: draft.colors,
+      sizes: derivedSizes.length > 0 ? derivedSizes : draft.sizes,
+      colors: derivedColors.length > 0 ? derivedColors : draft.colors,
       rating: parseFloat(draft.rating) || 4.8,
       reviews: parseInt(draft.reviews, 10) || 0,
       badge: draft.badge || undefined,
       isNew: draft.isNew || undefined,
       isBestseller: draft.isBestseller || undefined,
     };
+
+    (product as any)._colorStock = activeColors.map((cs) => {
+      const def = PRODUCT_COLORS.find((c) => c.id === cs.colorId)!;
+      return {
+        id: cs.colorId,
+        name: def.name,
+        hex: def.hex,
+        gender: cs.gender,
+        sizes: SIZES.filter((sz) => cs.sizes[sz]).map((sz) => ({ name: sz, available: true })),
+        image: cs.image ? `/products/${slug}_${cs.colorId}_product_01.webp` : null,
+      };
+    });
 
     if (editingId) {
       setProducts((prev) =>
@@ -590,6 +820,16 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   };
 
   const handleEdit = (product: Product) => {
+    const restoredStock = PRODUCT_COLORS.map((c) => {
+      const isActive = product.colors.includes(c.id);
+      const base = emptyColorStock(c.id);
+      if (!isActive) return base;
+      const sizeRecord = { ...base.sizes };
+      product.sizes.forEach((sz) => {
+        if (sz in sizeRecord) sizeRecord[sz as SizeName] = true;
+      });
+      return { ...base, enabled: true, sizes: sizeRecord };
+    });
     setDraft({
       name: product.name,
       description: product.description,
@@ -600,6 +840,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       gender: product.gender || 'unissex',
       sizes: product.sizes,
       colors: product.colors,
+      colorStock: restoredStock,
       badge: product.badge || '',
       isNew: product.isNew || false,
       isBestseller: product.isBestseller || false,
@@ -615,23 +856,6 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     showToast('Produto removido');
   };
 
-  const toggleSize = (size: string) => {
-    setDraft((prev) => ({
-      ...prev,
-      sizes: prev.sizes.includes(size)
-        ? prev.sizes.filter((s) => s !== size)
-        : [...prev.sizes, size],
-    }));
-  };
-
-  const toggleColor = (color: string) => {
-    setDraft((prev) => ({
-      ...prev,
-      colors: prev.colors.includes(color)
-        ? prev.colors.filter((c) => c !== color)
-        : [...prev.colors, color],
-    }));
-  };
 
   const exportJson = () => {
     const enriched = products.map((p) => {
@@ -650,10 +874,11 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               gender: img.gender || undefined,
             }))
           : undefined,
+        colorStock: (p as any)._colorStock || undefined,
       };
     });
     const json = JSON.stringify(enriched, null, 2);
-    return `// Generated by Bravos Brasil Admin - ${new Date().toLocaleDateString('pt-BR')}\n// Paste into src/data/products.ts\n// File naming: slug_masculino_model_01.webp, slug_feminino_model_01.webp\n//              slug_verde_product_01.webp, slug_detail_01.webp\n\nimport type { Product } from '@/types';\n\nexport const allProducts: Product[] = ${json};\n`;
+    return `// Generated by Bravos Brasil Admin - ${new Date().toLocaleDateString('pt-BR')}\n// Paste into src/data/products.ts\n// File naming: slug_masculino_model_01.webp, slug_vinho_product_01.webp, slug_detail_01.webp\n\nimport type { Product } from '@/types';\n\nexport const allProducts: Product[] = ${json};\n`;
   };
 
   const handleCopy = async () => {
@@ -936,6 +1161,8 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                 onImageRemove={handleImageRemove}
                 onSetMain={handleSetMain}
                 gender={draft.gender}
+                colorStock={draft.colorStock}
+                onColorStockChange={(updated) => setDraft((p) => ({ ...p, colorStock: updated }))}
               />
             </div>
 
@@ -1132,51 +1359,41 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               </div>
             </div>
 
-            {/* Sizes */}
-            <div style={s.card}>
-              <label style={s.label}>Tamanhos Disponíveis</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {ALL_SIZES.map((size) => (
-                  <button
-                    key={size}
-                    style={s.sizeBtn(draft.sizes.includes(size))}
-                    onClick={() => toggleSize(size)}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Colors */}
-            <div style={s.card}>
-              <label style={s.label}>Cores Disponíveis</label>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                {ALL_COLORS.map((color) => (
-                  <div
-                    key={color.id}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <button
-                      style={s.colorBtn(
-                        draft.colors.includes(color.id),
-                        color.hex
-                      )}
-                      onClick={() => toggleColor(color.id)}
-                      title={color.name}
-                    />
-                    <span style={{ fontSize: 10, color: '#666' }}>
-                      {color.name}
-                    </span>
+            {/* Color/Size info summary */}
+            {(() => {
+              const active = draft.colorStock.filter((cs) => cs.enabled);
+              if (active.length === 0) return null;
+              const allSizes = new Set<string>();
+              active.forEach((cs) => SIZES.forEach((sz) => { if (cs.sizes[sz]) allSizes.add(sz); }));
+              return (
+                <div style={{ ...s.card, padding: 16 }}>
+                  <label style={s.label}>Resumo de Cores e Tamanhos</label>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                    {active.map((cs) => {
+                      const def = PRODUCT_COLORS.find((c) => c.id === cs.colorId)!;
+                      return (
+                        <span key={cs.colorId} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          background: `${def.hex}20`, padding: '3px 10px', borderRadius: 12,
+                          fontSize: 11, fontWeight: 600, color: def.hex === '#F5F5F5' ? '#333' : def.hex,
+                        }}>
+                          <span style={{
+                            width: 10, height: 10, borderRadius: '50%', background: def.hex,
+                            border: def.hex === '#F5F5F5' ? '1px solid #999' : 'none',
+                          }} />
+                          {def.name}
+                        </span>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                  {allSizes.size > 0 && (
+                    <div style={{ fontSize: 12, color: '#666' }}>
+                      Tamanhos: {Array.from(allSizes).join(', ')}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Image URL fallback */}
             <div style={s.card}>
