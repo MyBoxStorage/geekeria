@@ -8,6 +8,7 @@ export function AdminNav() {
     { path: '/admin/generations', label: 'Gerações' },
     { path: '/admin/prompts', label: 'Prompts' },
     { path: '/admin/coupons', label: 'Cupons' },
+    { path: '/admin/products', label: 'Produtos' },
   ];
 
   const handleLogout = () => {

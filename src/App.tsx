@@ -16,6 +16,7 @@ import { AdminCouponsPage } from "@/pages/AdminCouponsPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { MinhasEstampasPage } from "@/pages/MinhasEstampasPage";
 import { CatalogPage } from "@/pages/CatalogPage";
+import { AdminProductsPage } from "@/pages/AdminProductsPage";
 
 function App() {
   useEffect(() => {
@@ -38,6 +39,7 @@ function App() {
         <Route path="/admin/generations" element={<AdminGenerationsPage />} />
         <Route path="/admin/prompts" element={<AdminPromptsPage />} />
         <Route path="/admin/coupons" element={<AdminCouponsPage />} />
+        <Route path="/admin/products" element={<AdminProductsPage />} />
         <Route path="/minhas-estampas" element={<MinhasEstampasPage />} />
         </Routes>
       </BrowserRouter>
