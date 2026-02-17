@@ -15,6 +15,7 @@ import { AdminPromptsPage } from "@/pages/AdminPromptsPage";
 import { AdminCouponsPage } from "@/pages/AdminCouponsPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { MinhasEstampasPage } from "@/pages/MinhasEstampasPage";
+import { CatalogPage } from "@/pages/CatalogPage";
 
 function App() {
   useEffect(() => {
@@ -25,6 +26,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+        <Route path="/catalogo" element={<CatalogPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/checkout/failure" element={<CheckoutFailure />} />

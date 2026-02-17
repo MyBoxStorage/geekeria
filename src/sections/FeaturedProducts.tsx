@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Star, ShoppingCart, Sparkles, TrendingUp } from 'lucide-react';
@@ -325,14 +326,13 @@ export function FeaturedProducts() {
         {/* CTA */}
         <div className="text-center mt-12">
           <Button
+            asChild
             size="lg"
-            onClick={() => {
-              const element = document.querySelector('#catalog');
-              element?.scrollIntoView({ behavior: 'smooth' });
-            }}
             className="bg-[#002776] hover:bg-[#001F5C] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
           >
-            VER TODA A COLEÇÃO (40+ produtos)
+            <Link to="/catalogo">
+              VER TODA A COLEÇÃO (40+ produtos)
+            </Link>
           </Button>
         </div>
       </div>

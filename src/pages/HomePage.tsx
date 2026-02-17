@@ -9,7 +9,6 @@ import { VideoShowcase } from '@/sections/VideoShowcase';
 import { GeradorEstampas } from '@/components/GeradorEstampas';
 import { Values } from '@/sections/Values';
 import { Testimonials } from '@/sections/Testimonials';
-import { Catalog } from '@/sections/Catalog';
 import { FAQ } from '@/sections/FAQ';
 import { Newsletter } from '@/sections/Newsletter';
 import { Footer } from '@/sections/Footer';
@@ -28,7 +27,6 @@ export default function HomePage() {
             <GeradorEstampas />
             <Values />
             <Testimonials />
-            <Catalog />
             <FAQ />
             <Newsletter />
           </main>
