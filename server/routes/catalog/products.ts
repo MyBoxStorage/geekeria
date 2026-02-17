@@ -8,6 +8,13 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendCachedJson } from '../../utils/httpCache.js';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Test-category products are internal-only and never served via public catalog. */
+const isTestCategory = (c: string | null | undefined): boolean =>
+  (c ?? '').toUpperCase() === 'TESTES';
 
 // ─── Shared select (fields exposed to the public catalog) ───────────────────
 
@@ -115,6 +122,9 @@ export async function listCatalogProducts(req: Request, res: Response) {
       }
     }
 
+    // Always exclude test-category products from the public catalog
+    where.NOT = { category: { equals: 'TESTES', mode: 'insensitive' } };
+
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -132,11 +142,13 @@ export async function listCatalogProducts(req: Request, res: Response) {
       image: deriveCoverImage(p.image, p.images),
     }));
 
-    return res.json({
+    const payload = {
       ok: true,
       products: mapped,
       pagination: { limit, offset, total },
-    });
+    };
+
+    return sendCachedJson(req, res, payload);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro desconhecido';
     logger.error(`listCatalogProducts error: ${message}`);
@@ -164,12 +176,19 @@ export async function getCatalogProduct(req: Request, res: Response) {
       return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
     }
 
+    // Test-category products are never served via the public catalog
+    if (isTestCategory(product.category)) {
+      return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
+    }
+
     const mapped = {
       ...product,
       image: deriveCoverImage(product.image, product.images),
     };
 
-    return res.json({ ok: true, product: mapped });
+    const payload = { ok: true, product: mapped };
+
+    return sendCachedJson(req, res, payload);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro desconhecido';
     logger.error(`getCatalogProduct error: ${message}`);

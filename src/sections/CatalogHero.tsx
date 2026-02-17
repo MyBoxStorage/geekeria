@@ -9,9 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 interface CatalogHeroProps {
   totalProducts: number;
   hasActiveFilters: boolean;
+  isLoading?: boolean;
 }
 
-export function CatalogHero({ totalProducts, hasActiveFilters }: CatalogHeroProps) {
+export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: CatalogHeroProps) {
   const heroRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -124,9 +125,11 @@ export function CatalogHero({ totalProducts, hasActiveFilters }: CatalogHeroProp
             ref={countRef}
             className="font-body text-lg text-white/90 drop-shadow-md"
           >
-            {hasActiveFilters
-              ? `${totalProducts} produto${totalProducts !== 1 ? 's' : ''} encontrado${totalProducts !== 1 ? 's' : ''}`
-              : `${totalProducts}+ produtos disponíveis`}
+            {isLoading && totalProducts === 0
+              ? 'Carregando coleção…'
+              : hasActiveFilters
+                ? `${totalProducts} produto${totalProducts !== 1 ? 's' : ''} encontrado${totalProducts !== 1 ? 's' : ''}`
+                : `${totalProducts}+ produtos disponíveis`}
           </p>
         </div>
       </div>

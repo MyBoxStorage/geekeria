@@ -12,6 +12,7 @@ import { Testimonials } from '@/sections/Testimonials';
 import { FAQ } from '@/sections/FAQ';
 import { Newsletter } from '@/sections/Newsletter';
 import { Footer } from '@/sections/Footer';
+import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 
 export default function HomePage() {
   return (
@@ -31,6 +32,7 @@ export default function HomePage() {
             <Newsletter />
           </main>
           <Footer />
+          <FloatingWhatsApp />
         </div>
         <Toaster position="bottom-right" richColors />
       </CartProvider>

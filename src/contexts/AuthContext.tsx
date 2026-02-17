@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from 'react';
 import { authService, type AuthUser, type LoginInput, type SignupInput } from '../services/auth';
@@ -25,21 +26,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadUser = async () => {
       const savedToken = authService.getToken();
       if (savedToken) {
         try {
           const userData = await authService.getMe(savedToken);
+          if (cancelled) return;
           setUser(userData);
           setToken(savedToken);
         } catch {
+          if (cancelled) return;
           authService.removeToken();
+          setUser(null);
+          setToken(null);
         }
       }
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     };
 
     loadUser();
+
+    return () => { cancelled = true; };
   }, []);
 
   const login = async (data: LoginInput) => {
@@ -56,21 +65,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(response.user);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.removeToken();
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
-  const refreshUser = async () => {
-    if (!token) return;
+  const refreshUser = useCallback(async () => {
+    const currentToken = authService.getToken();
+    if (!currentToken) return;
     try {
-      const userData = await authService.getMe(token);
+      const userData = await authService.getMe(currentToken);
       setUser(userData);
     } catch {
       logout();
     }
-  };
+  }, [logout]);
 
   return (
     <AuthContext.Provider

@@ -138,6 +138,9 @@ export async function exportAdminOrder(req: Request, res: Response) {
               select: {
                 id: true,
                 name: true,
+                image: true,
+                images: true,
+                colorStock: true,
               },
             },
           },
@@ -184,6 +187,15 @@ export async function exportAdminOrder(req: Request, res: Response) {
         size: item.size,
         color: item.color,
         unitPrice: item.unitPrice,
+        product: item.product
+          ? {
+              id: item.product.id,
+              name: item.product.name,
+              image: item.product.image ?? null,
+              images: item.product.images ?? null,
+              colorStock: item.product.colorStock ?? null,
+            }
+          : null,
       })),
       totals: {
         subtotal: order.subtotal ?? 0,

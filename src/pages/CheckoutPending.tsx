@@ -1,5 +1,5 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin, PackageSearch } from 'lucide-react';
+import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin, PackageSearch, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,6 +9,7 @@ import { getOrder } from '@/services/orders';
 import { getPaymentDetails } from '@/services/mp-payment';
 import type { OrderResponse } from '@/types/order';
 import { formatCurrency } from '@/lib/utils';
+import { buildWhatsAppLink } from '@/utils/whatsapp';
 
 interface PixPaymentData {
   qrCode: string;
@@ -358,7 +359,7 @@ export default function CheckoutPending() {
                     style={{ imageRendering: 'crisp-edges' }}
                   />
                   <p className="text-xs text-[#002776]/60 mt-3 font-body">
-                    Escaneie este QR Code com o app do seu banco
+                    Abra o app do seu banco e pague via PIX
                   </p>
                 </div>
               ) : (
@@ -395,12 +396,12 @@ export default function CheckoutPending() {
                     {copied ? (
                       <>
                         <Check className="w-4 h-4 mr-2" />
-                        Copiado!
+                        COPIADO!
                       </>
                     ) : (
                       <>
                         <Copy className="w-4 h-4 mr-2" />
-                        Copiar Código PIX
+                        COPIAR CÓDIGO PIX
                       </>
                     )}
                   </Button>
@@ -461,13 +462,6 @@ export default function CheckoutPending() {
                 <strong className="font-semibold">Boleto:</strong> Você pode pagar até a data de vencimento. O prazo de compensação é de <span className="font-semibold">1 a 3 dias úteis</span>.
               </AlertDescription>
             </Alert>
-          )}
-
-          {/* ID do Pagamento */}
-          {paymentId && (
-            <p className="text-sm text-[#002776]/50 mb-6 font-body">
-              ID do Pagamento: <span className="font-mono">{paymentId}</span>
-            </p>
           )}
 
           {/* Resumo do Pedido */}
@@ -581,29 +575,52 @@ export default function CheckoutPending() {
                 aria-label="Acompanhar meu pedido"
               >
                 <PackageSearch className="w-4 h-4 mr-2" />
-                Acompanhar meu pedido
+                ACOMPANHAR PEDIDO
               </Button>
             ) : (
               <p className="text-sm text-[#002776]/60 py-2 font-body">
-                Consulte seu e-mail para acompanhar o pedido.
+                Verifique seu e-mail para instruções de pagamento e acompanhamento.
               </p>
             )}
-            <Link to="/" className="block">
+            <Link to="/catalogo" className="block">
               <Button
                 className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
                 variant="outline"
-                aria-label="Voltar para a Loja"
+                aria-label="Voltar ao catálogo"
               >
                 <Home className="w-4 h-4 mr-2" />
-                Voltar para a Loja
+                VOLTAR AO CATÁLOGO
               </Button>
             </Link>
+            <Button
+              variant="ghost"
+              className="w-full text-[#25D366] hover:text-[#128C7E] hover:bg-[#25D366]/10 rounded-lg transition-all duration-300"
+              size="lg"
+              asChild
+            >
+              <a
+                href={buildWhatsAppLink(
+                  (() => {
+                    const ref = externalReference || order?.externalReference;
+                    const tipo = isPix ? ' (PIX)' : '';
+                    return ref
+                      ? `Olá! Estou com um pagamento pendente${tipo} e quero confirmar o status do meu pedido. Referência: ${ref}. Pode me ajudar?`
+                      : `Olá! Estou com um pagamento pendente${tipo} e preciso de ajuda. Pode me orientar?`;
+                  })()
+                )}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                FALAR NO WHATSAPP
+              </a>
+            </Button>
           </div>
 
           {/* Footer */}
           <p className="text-xs text-[#002776]/50 mt-6 font-body">
-            Assim que o pagamento for confirmado, você receberá uma notificação por email.
+            Após o pagamento, a confirmação pode levar alguns instantes. Você receberá uma notificação por e-mail.
           </p>
         </CardContent>
       </Card>

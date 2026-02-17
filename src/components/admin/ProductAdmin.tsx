@@ -14,6 +14,8 @@ import {
   FileJson,
   Loader2,
   RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import type { Product } from '@/types';
 import {
@@ -22,7 +24,10 @@ import {
   adminCreateProduct,
   adminUpdateProduct,
   adminUploadImage,
+  adminGetCatalogHealth,
   type AdminProductSummary,
+  type CatalogHealthCounts,
+  type CatalogHealthItem,
 } from '@/services/adminProducts';
 import {
   buildProductPayload,
@@ -70,7 +75,6 @@ const CATEGORIES = [
   { id: 'polo', name: 'Polos' },
   { id: 'infantil', name: 'Infantil' },
   { id: 'acessorios', name: 'Acessórios' },
-  { id: 'TESTES', name: 'Testes' },
 ];
 
 const PRODUCT_COLORS = [
@@ -726,6 +730,20 @@ function ImageUploadSection({
   );
 }
 
+const ISSUE_LABELS: Record<string, string> = {
+  MISSING_SLUG: 'Sem slug (link)',
+  MISSING_IMAGE: 'Sem imagem',
+  INVALID_PRICE: 'Preço inválido',
+  INVALID_CATEGORY: 'Categoria vazia',
+  INVALID_COLOR_STOCK: 'Estoque (cor/tamanho) inválido',
+  DERIVED_MISMATCH: 'Sizes/colors vazios',
+  TEST_CATEGORY: 'TESTE (não aparece no catálogo)',
+};
+
+function issueLabel(code: string): string {
+  return ISSUE_LABELS[code] ?? code;
+}
+
 export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   const [activeTab, setActiveTab] = useState<TabId>('list');
   const [products, setProducts] = useState<Product[]>([]);
@@ -738,6 +756,9 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
   const [isLoadingList, setIsLoadingList] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveProgress, setSaveProgress] = useState('');
+  const [healthCounts, setHealthCounts] = useState<CatalogHealthCounts | null>(null);
+  const [healthItems, setHealthItems] = useState<CatalogHealthItem[]>([]);
+  const [healthOpen, setHealthOpen] = useState(false);
 
   const getToken = () => localStorage.getItem('admin_token') || '';
 
@@ -774,9 +795,24 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     }
   }, []);
 
+  const loadHealth = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await adminGetCatalogHealth(token);
+      if (res.ok) {
+        setHealthCounts(res.counts);
+        setHealthItems(res.items);
+      }
+    } catch (err) {
+      console.error('Failed to load catalog health:', err);
+    }
+  }, []);
+
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+    loadHealth();
+  }, [loadProducts, loadHealth]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -859,16 +895,23 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         }
       }
 
-      // 4) Reset form and reload list
+      // 4) Reset form and reload list + health
       setDraft({ ...emptyDraft });
       setImages([]);
       setEditingId(null);
       setActiveTab('list');
       await loadProducts();
+      loadHealth();
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'message' in err
-        ? (err as { message: string }).message
-        : 'Erro ao salvar produto';
+      const errObj = err as { error?: string; message?: string } | undefined;
+      let msg = 'Erro ao salvar produto';
+      if (errObj && typeof errObj === 'object') {
+        if (errObj.error === 'CATEGORY_NOT_ALLOWED') {
+          msg = "Categoria 'TESTES' não é permitida. Escolha outra categoria.";
+        } else if (typeof errObj.message === 'string') {
+          msg = errObj.message;
+        }
+      }
       console.error('handleSave error:', err);
       showToast(msg);
     } finally {
@@ -971,13 +1014,18 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       }
     }
 
+    const validCategoryIds = CATEGORIES.map((c) => c.id);
+    const safeCategory = validCategoryIds.includes(fullProduct.category)
+      ? fullProduct.category
+      : CATEGORIES[0].id;
+
     setDraft({
       name: fullProduct.name,
       description: fullProduct.description,
       price: fullProduct.price.toString(),
       originalPrice: fullProduct.originalPrice?.toString() || '',
       image: fullProduct.image || '',
-      category: fullProduct.category,
+      category: safeCategory,
       gender: fullProduct.gender || 'unissex',
       sizes: fullProduct.sizes,
       colors: fullProduct.colors,
@@ -1159,6 +1207,111 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               </button>
             </div>
 
+            {/* ─── Catalog Health Banner ─── */}
+            {healthCounts !== null && (
+              <div
+                style={{
+                  ...s.card,
+                  padding: 16,
+                  marginBottom: 16,
+                  border: healthCounts.withIssues > 0 ? '1px solid #b4540080' : '1px solid #00843D60',
+                  background: healthCounts.withIssues > 0 ? '#b4540010' : '#00843D10',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {healthCounts.withIssues > 0 ? (
+                      <AlertTriangle size={18} style={{ color: '#b45400' }} />
+                    ) : (
+                      <CheckCircle2 size={18} style={{ color: '#00843D' }} />
+                    )}
+                    <span style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: healthCounts.withIssues > 0 ? '#b45400' : '#00843D',
+                    }}>
+                      {healthCounts.withIssues > 0
+                        ? `Atenção: ${healthCounts.withIssues} produto(s) com ajustes pendentes para ficar premium.`
+                        : 'Catálogo pronto para publicar'}
+                    </span>
+                  </div>
+                  {healthCounts.withIssues > 0 && (
+                    <button
+                      onClick={() => setHealthOpen(!healthOpen)}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid #b4540040',
+                        color: '#b45400',
+                        borderRadius: 6,
+                        padding: '4px 12px',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontFamily: "'Inter', sans-serif",
+                      }}
+                    >
+                      {healthOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                      {healthOpen ? 'Fechar' : 'Ver detalhes'}
+                    </button>
+                  )}
+                </div>
+
+                {healthOpen && healthItems.length > 0 && (
+                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {healthItems.slice(0, 20).map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '8px 12px',
+                          background: '#0a0a0a',
+                          borderRadius: 8,
+                          border: '1px solid #222',
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.name}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>
+                            {item.id.slice(0, 8)}…
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          {item.issues.map((issue) => (
+                            <span
+                              key={issue}
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 600,
+                                padding: '2px 8px',
+                                borderRadius: 10,
+                                whiteSpace: 'nowrap',
+                                background: issue === 'TEST_CATEGORY' ? '#cc444420' : '#b4540020',
+                                color: issue === 'TEST_CATEGORY' ? '#cc4444' : '#b45400',
+                              }}
+                            >
+                              {issueLabel(issue)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {healthItems.length > 20 && (
+                      <div style={{ fontSize: 11, color: '#666', textAlign: 'center', paddingTop: 4 }}>
+                        … e mais {healthItems.length - 20} produto(s)
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {products.length === 0 ? (
               <div
                 style={{
@@ -1255,6 +1408,18 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                           {formatPrice(product.price)}
                         </span>
                         <span>{product.category}</span>
+                        {product.category.toUpperCase() === 'TESTES' && (
+                          <span style={{
+                            background: '#cc444420',
+                            color: '#cc4444',
+                            padding: '1px 8px',
+                            borderRadius: 10,
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}>
+                            TESTE — não aparece no catálogo
+                          </span>
+                        )}
                         <span>{product.sizes.join(', ')}</span>
                       </div>
                     </div>

@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { getOrder } from '@/services/orders';
 import type { OrderResponse, OrderStatus } from '@/types/order';
 import { getOrderStatusLabel, getOrderStatusHint } from '@/types/order';
+import { pickOrderItemImage } from '@/utils/productImages';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -39,7 +40,7 @@ function buildMockOrder(status: OrderStatus): OrderResponse {
     status,
     totals: { subtotal: 10000, discountTotal: 0, shippingCost: 1000, total: 11000 },
     shipping: { cep: '01310-100', address1: 'Av. Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP', complement: null, service: null, deadline: null },
-    items: [{ productId: 'prod-sim', quantity: 1, unitPrice: 10000, size: 'M', color: null, name: 'Produto simulado' }],
+    items: [{ productId: 'prod-sim', quantity: 1, unitPrice: 10000, size: 'M', color: null, name: 'Produto simulado', product: { name: 'Produto simulado', image: 'https://via.placeholder.com/300x300?text=Simulado' } }],
     mpStatus: null,
     mpPaymentId: null,
     montinkStatus: status === 'SENT_TO_MONTINK' || status === 'FAILED_MONTINK' ? 'sim' : null,
@@ -480,14 +481,35 @@ export default function OrderTracking() {
                   {order.items.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-[#002776]/10">
                       <p className="text-xs font-medium text-[#002776]/70 mb-2 font-body">Itens ({order.items.length}):</p>
-                      <div className="space-y-2">
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className="text-xs text-[#002776]/60 font-body">
-                            {item.quantity}x {item.name || `Produto ${item.productId.substring(0, 8)}`}
-                            {item.size && <span className="text-[#002776]/40"> — Tamanho: {item.size}</span>}
-                            {item.color && <span className="text-[#002776]/40"> — Cor: {item.color}</span>}
-                          </div>
-                        ))}
+                      <div className="space-y-3">
+                        {order.items.map((item, idx) => {
+                          const thumb = pickOrderItemImage(item);
+                          return (
+                            <div key={idx} className="flex items-center gap-3">
+                              {thumb ? (
+                                <img
+                                  src={thumb}
+                                  alt={item.name || 'Produto'}
+                                  className="w-12 h-12 rounded-lg object-cover border border-[#002776]/10 flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-lg bg-[#002776]/5 flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-5 h-5 text-[#002776]/30" />
+                                </div>
+                              )}
+                              <div className="text-xs text-[#002776]/60 font-body min-w-0">
+                                <p className="font-medium text-[#002776]/80 truncate">
+                                  {item.quantity}x {item.name || `Produto ${item.productId.substring(0, 8)}`}
+                                </p>
+                                <p className="text-[#002776]/40">
+                                  {item.size && <>Tamanho: {item.size}</>}
+                                  {item.size && item.color && ' — '}
+                                  {item.color && <>Cor: {item.color}</>}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

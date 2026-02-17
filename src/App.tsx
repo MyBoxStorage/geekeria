@@ -11,6 +11,7 @@ import OrderTracking from "@/pages/OrderTracking";
 import UserDashboard from "@/pages/UserDashboard";
 import { MinhasEstampasPage } from "@/pages/MinhasEstampasPage";
 import { CatalogPage } from "@/pages/CatalogPage";
+import ProductPage from "@/pages/ProductPage";
 
 // Admin — lazy loaded to avoid Supabase env crash in production
 const AdminUnifiedPage = lazy(() =>
@@ -29,6 +30,7 @@ function App() {
       <BrowserRouter>
         <Routes>
         <Route path="/catalogo" element={<CatalogPage />} />
+        <Route path="/produto/:slug" element={<ProductPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
         <Route path="/checkout/failure" element={<CheckoutFailure />} />

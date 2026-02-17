@@ -9,7 +9,7 @@ import { Sparkles, MessageCircle, Clock, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const API_URL = apiConfig.baseURL;
-const WHATSAPP_NUMBER = '5524992796969';
+const WHATSAPP_NUMBER = '5524981313689';
 
 const EXEMPLOS = {
   upload: '/assets/exemplo-upload.jpg',
@@ -266,7 +266,7 @@ export function GeradorEstampas() {
                 className="flex-1 border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white font-display text-lg px-8 py-6 rounded-full transition-all"
               >
                 <a
-                  href="https://wa.me/5524992796969?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20as%20estampas%20personalizadas"
+                  href="https://wa.me/5524981313689?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20as%20estampas%20personalizadas"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2"

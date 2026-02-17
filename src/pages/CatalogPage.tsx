@@ -1,25 +1,20 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Filter,
   Star,
   ShoppingCart,
   TrendingUp,
   Sparkles,
-  Share2,
   Eye,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { CatalogHero } from '@/sections/CatalogHero';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -40,23 +35,14 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
 import { categories, sizes, colors } from '@/data/products';
-import { useProductFilters } from '@/hooks/useProductFilters';
 import { useCatalogProducts } from '@/hooks/useCatalogProducts';
-import { useCart } from '@/hooks/useCart';
 import { Header } from '@/sections/Header';
 import { Footer } from '@/sections/Footer';
+import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
 import { CartProvider } from '@/hooks/useCart';
 import { MercadoPagoProvider } from '@/components/MercadoPagoProvider';
 import { Toaster } from '@/components/ui/sonner';
-import { toast } from 'sonner';
 import type { Product, Category, Size, Color, Gender, SortOption } from '@/types';
-import {
-  getAvailableColors,
-  getAvailableSizesFor,
-  getAllProductSizes,
-  isVariantAvailable,
-  type BinaryGender,
-} from '@/utils/productStock';
 
 /* ── Analytics helper (safe - no-op if gtag unavailable) ── */
 function trackEvent(eventName: string, params: Record<string, string>) {
@@ -282,288 +268,20 @@ function FiltersContent({
 }
 
 /* ══════════════════════════════════════════════════════════
-   PRODUCT DIALOG  (with share + sticky mobile CTA)
-   ══════════════════════════════════════════════════════════ */
-function ProductDialog({
-  product,
-  isOpen,
-  onClose,
-  pageGender,
-  cardGender,
-}: {
-  product: Product | null;
-  isOpen: boolean;
-  onClose: () => void;
-  pageGender: '' | Gender;
-  cardGender: 'masculino' | 'feminino' | 'default';
-}) {
-  const { addToCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-
-  // Determine binary gender for stock lookups:
-  // 1. Explicit page filter takes priority
-  // 2. Card's visual gender (from toggle) if filter is "Todos"
-  // 3. Default: masculino
-  const uiGender: BinaryGender = (() => {
-    if (pageGender === 'feminino') return 'feminino';
-    if (pageGender === 'masculino') return 'masculino';
-    if (cardGender === 'feminino') return 'feminino';
-    if (cardGender === 'masculino') return 'masculino';
-    return 'masculino';
-  })();
-
-  // Derive colors and sizes from colorStock (or fallback)
-  const colorOptions = useMemo(
-    () => (product ? getAvailableColors(product) : []),
-    [product],
-  );
-
-  const allSizes = useMemo(
-    () => (product ? getAllProductSizes(product) : []),
-    [product],
-  );
-
-  const availableSizes = useMemo(
-    () =>
-      product && selectedColor
-        ? getAvailableSizesFor(product, selectedColor, uiGender)
-        : [],
-    [product, selectedColor, uiGender],
-  );
-
-  // Reset selections when product changes
-  useEffect(() => {
-    setSelectedSize('');
-    setSelectedColor('');
-  }, [product?.id]);
-
-  // If selected size becomes unavailable after color/gender change, clear it
-  useEffect(() => {
-    if (selectedSize && availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
-      setSelectedSize('');
-    }
-  }, [availableSizes, selectedSize]);
-
-  if (!product) return null;
-
-  const hasColorStock = Array.isArray(product.colorStock) && product.colorStock.length > 0;
-
-  const canAdd =
-    !!selectedColor &&
-    !!selectedSize &&
-    (!hasColorStock || isVariantAvailable(product, selectedColor, selectedSize, uiGender));
-
-  const handleAddToCart = () => {
-    if (!selectedColor || !selectedSize) {
-      toast.error('Selecione o tamanho e a cor');
-      return;
-    }
-    if (hasColorStock && !isVariantAvailable(product, selectedColor, selectedSize, uiGender)) {
-      toast.error('Combinação indisponível no momento');
-      return;
-    }
-    addToCart(product, 1, selectedSize, selectedColor);
-    toast.success(`${product.name} adicionado ao carrinho!`);
-    onClose();
-  };
-
-  const formatPrice = (price: number) =>
-    price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-  const handleShare = async () => {
-    const shareData = {
-      title: product.name,
-      text: `Veja este produto: ${product.name} - ${formatPrice(product.price)}`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        /* user cancelled */
-      }
-    } else {
-      await navigator.clipboard.writeText(
-        `${shareData.text}\n${shareData.url}`
-      );
-      toast.success('Link copiado!');
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto pb-24 md:pb-6">
-        <DialogHeader>
-          <div className="flex items-start justify-between gap-4">
-            <DialogTitle className="font-display text-2xl text-[#00843D]">
-              {product.name}
-            </DialogTitle>
-            {/* 10: Share button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="shrink-0"
-            >
-              <Share2 className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Compartilhar</span>
-            </Button>
-          </div>
-        </DialogHeader>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <img
-            src={product.image ?? undefined}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-80 object-cover rounded-lg"
-          />
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 fill-[#FFCC29] text-[#FFCC29]" />
-              <span className="font-body">
-                {product.rating} ({product.reviews} avaliações)
-              </span>
-            </div>
-
-            <p className="font-display text-3xl text-[#00843D]">
-              {formatPrice(product.price)}
-            </p>
-
-            <p className="text-gray-600 font-body text-sm">
-              {product.description}
-            </p>
-
-            {/* ── Color selector ── */}
-            <div>
-              <Label className="font-body font-medium mb-2 block">Cor</Label>
-              <RadioGroup
-                value={selectedColor}
-                onValueChange={(val) => {
-                  setSelectedColor(val);
-                  setSelectedSize(''); // reset size when color changes
-                }}
-                className="flex flex-wrap gap-2"
-              >
-                {colorOptions.map((co) => (
-                  <div key={co.id}>
-                    <RadioGroupItem
-                      value={co.id}
-                      id={`cat-color-${co.id}`}
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor={`cat-color-${co.id}`}
-                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D]/10 hover:bg-gray-100 transition-colors font-body capitalize"
-                    >
-                      {co.hex && (
-                        <span
-                          className="w-4 h-4 rounded-full border border-gray-300"
-                          style={{ backgroundColor: co.hex }}
-                        />
-                      )}
-                      {co.name}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* ── Size selector ── */}
-            <div>
-              <Label className="font-body font-medium mb-2 block">
-                Tamanho
-                {selectedColor && hasColorStock && availableSizes.length === 0 && (
-                  <span className="text-xs text-red-500 ml-2 font-normal">
-                    Sem estoque para essa cor
-                  </span>
-                )}
-              </Label>
-              <RadioGroup
-                value={selectedSize}
-                onValueChange={setSelectedSize}
-                className="flex flex-wrap gap-2"
-              >
-                {allSizes.map((size) => {
-                  const disabled = hasColorStock && selectedColor
-                    ? !availableSizes.includes(size)
-                    : false;
-                  return (
-                    <div key={size}>
-                      <RadioGroupItem
-                        value={size}
-                        id={`cat-size-${size}`}
-                        className="peer sr-only"
-                        disabled={disabled}
-                      />
-                      <Label
-                        htmlFor={`cat-size-${size}`}
-                        className={`flex items-center justify-center w-10 h-10 border-2 rounded-md transition-colors font-body
-                          ${disabled
-                            ? 'opacity-30 cursor-not-allowed line-through'
-                            : 'cursor-pointer hover:bg-gray-100 peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D] peer-data-[state=checked]:text-white'
-                          }`}
-                      >
-                        {size}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-              {!selectedColor && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Selecione uma cor para ver os tamanhos disponíveis
-                </p>
-              )}
-            </div>
-
-            {/* Desktop CTA */}
-            <Button
-              onClick={handleAddToCart}
-              disabled={!canAdd}
-              className="hidden md:flex w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              ADICIONAR AO CARRINHO
-            </Button>
-          </div>
-        </div>
-
-        {/* 4: Sticky Mobile CTA */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 md:hidden z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
-          <Button
-            onClick={handleAddToCart}
-            disabled={!canAdd}
-            className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ShoppingCart className="w-5 h-5 mr-2" />
-            COMPRAR &mdash; {formatPrice(product.price)}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   PRODUCT CARD (with gender toggle)
+   PRODUCT CARD (with gender toggle — navigates to PDP)
    ══════════════════════════════════════════════════════════ */
 function ProductCard({
   product,
-  onSelect,
   formatPrice,
   formatInstallment,
   selectedGender,
 }: {
   product: Product;
-  onSelect: (p: Product, cardGender: 'masculino' | 'feminino' | 'default') => void;
   formatPrice: (n: number) => string;
   formatInstallment: (n: number) => string;
   selectedGender: string;
 }) {
+  const navigate = useNavigate();
   const modelImages = useMemo(() => {
     const imgs = product.images ?? [];
     return {
@@ -584,10 +302,10 @@ function ProductCard({
     if (!hasBothGenders) return 'default' as const;
     if (selectedGender === 'masculino') return 'masculino' as const;
     if (selectedGender === 'feminino') return 'feminino' as const;
+    // eslint-disable-next-line react-hooks/purity
     return Math.random() > 0.5
       ? ('masculino' as const)
       : ('feminino' as const);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasBothGenders, selectedGender]);
 
   const [currentGender, setCurrentGender] = useState<
@@ -628,7 +346,7 @@ function ProductCard({
   return (
     <div
       className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
-      onClick={() => onSelect(product, currentGender)}
+      onClick={() => navigate(`/produto/${product.slug}`)}
     >
       {/* Image */}
       <div
@@ -710,7 +428,7 @@ function ProductCard({
             className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
             onClick={(e) => {
               e.stopPropagation();
-              onSelect(product, currentGender);
+              navigate(`/produto/${product.slug}`);
             }}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
@@ -791,50 +509,142 @@ function ProductCard({
 /* ══════════════════════════════════════════════════════════
    CATALOG CONTENT
    ══════════════════════════════════════════════════════════ */
+const PAGE_SIZE = 12;
+
 function CatalogContent() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedProductGender, setSelectedProductGender] = useState<'masculino' | 'feminino' | 'default'>('default');
-  const { products: catalogProducts, isLoading: catalogLoading, source: catalogSource } = useCatalogProducts();
-  const categoryCounts = useCategoryCounts(catalogProducts);
+  // ── Server-side filter state (sent as query params) ──
+  const [category, _setCategory] = useState<Category>('all');
+  const [gender, _setGender] = useState<'' | Gender>('');
+  const [sortBy, _setSortBy] = useState<SortOption>('bestsellers');
+
+  // ── Client-side filter state (applied on current page) ──
+  const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
+  const [selectedColors, setSelectedColors] = useState<Color[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
+
+  // ── Pagination ──
+  const [page, setPage] = useState(1);
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+
+  // Reset page to 1 when server-side filters change (batched with the setter)
+  const setCategory = useCallback((cat: Category) => { _setCategory(cat); setPage(1); }, []);
+  const setGender = useCallback((g: '' | Gender) => { _setGender(g); setPage(1); }, []);
+  const setSortBy = useCallback((s: SortOption) => { _setSortBy(s); setPage(1); }, []);
+
+  const toggleSize = useCallback((size: Size) => {
+    setSelectedSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
+  }, []);
+  const toggleColor = useCallback((color: Color) => {
+    setSelectedColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    _setCategory('all');
+    _setGender('');
+    _setSortBy('bestsellers');
+    setSelectedSizes([]);
+    setSelectedColors([]);
+    setPriceRange(null);
+    setPage(1);
+  }, []);
+
+  // ── Server params → hook ──
+  const serverParams = useMemo(() => ({
+    category: category !== 'all' ? category : undefined,
+    gender: gender || undefined,
+    sort: sortBy,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  }), [category, gender, sortBy, page]);
 
   const {
-    filters,
-    sortBy,
-    setCategory,
-    setGender,
-    toggleSize,
-    toggleColor,
-    setPriceRange,
-    setSortBy,
-    clearFilters,
-    filteredProducts,
-    hasActiveFilters,
-  } = useProductFilters(catalogProducts);
+    products: serverProducts,
+    pagination,
+    isLoading: catalogLoading,
+  } = useCatalogProducts(serverParams);
+
+  // ── Hide products without slug (no PDP available) ──
+  const publicProducts = useMemo(
+    () => serverProducts.filter((p) => !!p.slug),
+    [serverProducts],
+  );
+
+  // ── Client-side filtering (sizes, colors, priceRange only) ──
+  const filteredProducts = useMemo(() => {
+    let result = [...publicProducts];
+
+    if (selectedSizes.length > 0) {
+      result = result.filter((p) =>
+        p.sizes.some((s) => selectedSizes.includes(s as Size)),
+      );
+    }
+    if (selectedColors.length > 0) {
+      result = result.filter((p) =>
+        p.colors.some((c) => selectedColors.includes(c as Color)),
+      );
+    }
+    if (priceRange) {
+      const [min, max] = priceRange;
+      result = result.filter((p) => p.price >= min && p.price <= max);
+    }
+
+    return result;
+  }, [publicProducts, selectedSizes, selectedColors, priceRange]);
+
+  // ── Derived values ──
+  const categoryCounts = useCategoryCounts(publicProducts);
+
+  const hasClientFilters = selectedSizes.length > 0 || selectedColors.length > 0 || priceRange !== null;
+  const hasServerFilters = category !== 'all' || gender !== '';
+  const hasActiveFilters = hasServerFilters || hasClientFilters;
+
+  const totalPages = Math.max(1, Math.ceil(pagination.total / PAGE_SIZE));
+  const showingFrom = pagination.total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const showingTo = Math.min(page * PAGE_SIZE, pagination.total);
+
+  // Build filters object for FiltersContent
+  const filters = useMemo(() => ({
+    category,
+    gender,
+    sizes: selectedSizes,
+    colors: selectedColors,
+    priceRange,
+  }), [category, gender, selectedSizes, selectedColors, priceRange]);
+
+  // Scroll to grid top when page changes (not on initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    gridContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [page]);
 
   /* 3: Analytics - track filter changes */
   useEffect(() => {
-    if (filters.category !== 'all') {
-      trackEvent('filter_category', { category: filters.category });
+    if (category !== 'all') {
+      trackEvent('filter_category', { category });
     }
-  }, [filters.category]);
+  }, [category]);
 
   useEffect(() => {
-    if (filters.sizes.length > 0) {
-      trackEvent('filter_size', { sizes: filters.sizes.join(',') });
+    if (selectedSizes.length > 0) {
+      trackEvent('filter_size', { sizes: selectedSizes.join(',') });
     }
-  }, [filters.sizes]);
+  }, [selectedSizes]);
 
   useEffect(() => {
-    if (filters.colors.length > 0) {
-      trackEvent('filter_color', { colors: filters.colors.join(',') });
+    if (selectedColors.length > 0) {
+      trackEvent('filter_color', { colors: selectedColors.join(',') });
     }
-  }, [filters.colors]);
+  }, [selectedColors]);
 
   useEffect(() => {
-    if (filters.gender) {
-      trackEvent('filter_gender', { gender: filters.gender });
+    if (gender) {
+      trackEvent('filter_gender', { gender });
     }
-  }, [filters.gender]);
+  }, [gender]);
 
   const formatPrice = (price: number) =>
     price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -895,8 +705,9 @@ function CatalogContent() {
 
       {/* Hero Banner with GSAP parallax + fade */}
       <CatalogHero
-        totalProducts={filteredProducts.length}
+        totalProducts={pagination.total}
         hasActiveFilters={hasActiveFilters}
+        isLoading={catalogLoading}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -945,7 +756,11 @@ function CatalogContent() {
               {/* Desktop: active filters count */}
               <div className="hidden lg:flex items-center gap-3">
                 <span className="font-body text-sm text-gray-500">
-                  {filteredProducts.length} produtos
+                  {catalogLoading && publicProducts.length === 0
+                    ? 'Carregando…'
+                    : hasClientFilters
+                      ? `${filteredProducts.length} de ${publicProducts.length} produtos`
+                      : `${publicProducts.length} produtos`}
                 </span>
                 {hasActiveFilters && (
                   <Button
@@ -982,33 +797,79 @@ function CatalogContent() {
             </div>
 
             {/* Products Grid */}
-            {filteredProducts.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
-                <p className="font-body text-lg text-gray-500 mb-4">
-                  Nenhum produto encontrado com esses filtros.
-                </p>
-                <Button
-                  onClick={clearFilters}
-                  className="bg-[#00843D] hover:bg-[#006633] text-white font-display"
-                >
-                  Limpar filtros
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onSelect={(p, cardGender) => {
-                      setSelectedProduct(p);
-                      setSelectedProductGender(cardGender);
-                    }}
-                    formatPrice={formatPrice}
-                    formatInstallment={formatInstallment}
-                    selectedGender={filters.gender}
-                  />
-                ))}
+            <div ref={gridContainerRef}>
+              {catalogLoading && publicProducts.length === 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                    <div key={`skel-${i}`} className="bg-white rounded-2xl overflow-hidden border border-gray-100">
+                      <Skeleton className="aspect-[3/4] w-full" />
+                      <div className="p-4 space-y-3">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-6 w-28" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                  <p className="font-body text-lg text-gray-500 mb-4">
+                    Nenhum produto encontrado com esses filtros.
+                  </p>
+                  <Button
+                    onClick={clearFilters}
+                    className="bg-[#00843D] hover:bg-[#006633] text-white font-display"
+                  >
+                    Limpar filtros
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      formatPrice={formatPrice}
+                      formatInstallment={formatInstallment}
+                      selectedGender={filters.gender}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {pagination.total > PAGE_SIZE && (
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 gap-4">
+                <span className="text-sm text-gray-500 font-body">
+                  Mostrando {showingFrom}–{showingTo} de {pagination.total}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1 || catalogLoading}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="font-display"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Anterior
+                  </Button>
+                  <span className="flex items-center px-3 text-sm font-body text-gray-600 tabular-nums">
+                    {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= totalPages || catalogLoading}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="font-display"
+                  >
+                    Próxima
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -1016,14 +877,7 @@ function CatalogContent() {
       </div>
 
       <Footer />
-
-      <ProductDialog
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        pageGender={filters.gender || ''}
-        cardGender={selectedProductGender}
-      />
+      <FloatingWhatsApp />
     </div>
   );
 }

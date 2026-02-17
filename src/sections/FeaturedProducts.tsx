@@ -5,8 +5,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Star, ShoppingCart, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { featuredProducts } from '@/data/products';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCatalogProducts } from '@/hooks/useCatalogProducts';
 import { useCart } from '@/hooks/useCart';
+import type { Product } from '@/types';
 import {
   Dialog,
   DialogContent,
@@ -19,8 +21,11 @@ import { toast } from 'sonner';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/** Max products to show in the featured grid */
+const FEATURED_LIMIT = 8;
+
 interface ProductDialogProps {
-  product: typeof featuredProducts[0] | null;
+  product: Product | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -166,9 +171,25 @@ export function FeaturedProducts() {
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [selectedProduct, setSelectedProduct] = useState<typeof featuredProducts[0] | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const { products: allProducts, isLoading } = useCatalogProducts();
+
+  // Pick featured products: bestsellers first, then new, then the rest — capped at FEATURED_LIMIT
+  const featured = allProducts
+    .slice()
+    .sort((a, b) => {
+      if (a.isBestseller && !b.isBestseller) return -1;
+      if (!a.isBestseller && b.isBestseller) return 1;
+      if (a.isNew && !b.isNew) return -1;
+      if (!a.isNew && b.isNew) return 1;
+      return 0;
+    })
+    .slice(0, FEATURED_LIMIT);
 
   useEffect(() => {
+    if (isLoading || featured.length === 0) return;
+
     const ctx = gsap.context(() => {
       // Title animation
       gsap.fromTo(
@@ -208,7 +229,7 @@ export function FeaturedProducts() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isLoading, featured.length]);
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('pt-BR', {
@@ -252,7 +273,20 @@ export function FeaturedProducts() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           style={{ perspective: '1000px' }}
         >
-          {featuredProducts.map((product) => (
+          {isLoading && featured.length === 0
+            ? Array.from({ length: FEATURED_LIMIT }).map((_, i) => (
+                <div key={`skel-${i}`} className="product-card bg-white rounded-xl overflow-hidden border border-gray-100">
+                  <Skeleton className="aspect-[3/4] w-full" />
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                </div>
+              ))
+            : null}
+          {featured.map((product) => (
             <div
               key={product.id}
               className="product-card group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
@@ -331,7 +365,9 @@ export function FeaturedProducts() {
             className="bg-[#002776] hover:bg-[#001F5C] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
           >
             <Link to="/catalogo">
-              VER TODA A COLEÇÃO (40+ produtos)
+              {allProducts.length > 0
+                ? `VER TODA A COLEÇÃO (${allProducts.length}+ produtos)`
+                : 'VER TODA A COLEÇÃO'}
             </Link>
           </Button>
         </div>

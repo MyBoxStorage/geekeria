@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Sparkles,
 } from 'lucide-react';
+import { pickOrderItemImage } from '@/utils/productImages';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,6 +43,8 @@ interface OrderItem {
   product: {
     name: string;
     image: string | null;
+    images?: unknown[] | null;
+    colorStock?: unknown[] | null;
   };
 }
 
@@ -307,13 +310,28 @@ function OrdersList({ orders, loading, error, onRefresh }: {
                   )}
                 </div>
                 {order.items.length > 0 && (
-                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                    <Package className="w-3 h-3" />
-                    {order.items.map((item) => (
-                      <span key={item.id}>
-                        {item.product.name}{item.size ? ` (${item.size})` : ''}{item.quantity > 1 ? ` x${item.quantity}` : ''}
-                      </span>
-                    ))}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {order.items.map((item) => {
+                      const thumb = pickOrderItemImage(item);
+                      return (
+                        <div key={item.id} className="flex items-center gap-2">
+                          {thumb ? (
+                            <img
+                              src={thumb}
+                              alt={item.product.name}
+                              className="w-8 h-8 rounded object-cover border border-gray-200 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
+                              <Package className="w-4 h-4 text-gray-300" />
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {item.product.name}{item.size ? ` (${item.size})` : ''}{item.quantity > 1 ? ` x${item.quantity}` : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

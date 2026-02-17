@@ -52,6 +52,9 @@ export async function getOrder(req: Request, res: Response) {
               select: {
                 id: true,
                 name: true,
+                image: true,
+                images: true,
+                colorStock: true,
               },
             },
           },
@@ -114,6 +117,15 @@ export async function getOrder(req: Request, res: Response) {
         size: item.size,
         color: item.color,
         name: item.product?.name ?? null,
+        product: item.product
+          ? {
+              id: item.product.id,
+              name: item.product.name,
+              image: item.product.image ?? null,
+              images: item.product.images ?? null,
+              colorStock: item.product.colorStock ?? null,
+            }
+          : null,
       })),
       mpStatus: order.mpStatus,
       mpPaymentId: order.mpPaymentId,

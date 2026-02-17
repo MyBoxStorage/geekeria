@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { apiConfig } from '@/config/api';
-import { allProducts, categories } from '@/data/products';
+import { categories } from '@/data/products';
+import { useCatalogProducts } from '@/hooks/useCatalogProducts';
 import type { Product } from '@/types';
 import {
   Select,
@@ -12,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
   categories.filter((c) => c.id !== 'all').map((c) => [c.id, c.name])
@@ -35,8 +36,7 @@ export function ProductSelector({
   generationId,
   onAddToCart,
 }: ProductSelectorProps) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [groupedProducts, setGroupedProducts] = useState<Record<string, Product[]>>({});
+  const { products, isLoading } = useCatalogProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -44,16 +44,14 @@ export function ProductSelector({
   const [couponCode, setCouponCode] = useState('');
   const [couponDiscount, setCouponDiscount] = useState(0);
 
-  useEffect(() => {
-    setProducts(allProducts);
-    const grouped = allProducts.reduce<Record<string, Product[]>>((acc, p) => {
+  const groupedProducts = useMemo(() => {
+    return products.reduce<Record<string, Product[]>>((acc, p) => {
       const cat = p.category;
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(p);
       return acc;
     }, {});
-    setGroupedProducts(grouped);
-  }, []);
+  }, [products]);
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
@@ -119,6 +117,13 @@ export function ProductSelector({
         🎨 Escolha o Produto para Personalizar
       </h3>
 
+      {isLoading && products.length === 0 ? (
+        <div className="flex items-center justify-center py-8 text-gray-500">
+          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          Carregando produtos...
+        </div>
+      ) : null}
+
       {/* Seletor de Produto */}
       <div className="mb-6">
         <label className="block text-sm font-medium mb-2">Produto</label>
@@ -128,9 +133,10 @@ export function ProductSelector({
             const product = products.find((p) => p.id === value);
             if (product) handleProductSelect(product);
           }}
+          disabled={isLoading && products.length === 0}
         >
           <SelectTrigger className="w-full font-body text-base h-12 rounded-lg border-gray-300 focus:border-[#00843D] focus:ring-[#00843D]/30">
-            <SelectValue placeholder="Selecione um produto" />
+            <SelectValue placeholder={isLoading && products.length === 0 ? 'Carregando produtos…' : 'Selecione um produto'} />
           </SelectTrigger>
           <SelectContent className="font-body max-h-80">
             {Object.entries(groupedProducts).map(([category, items]) => (

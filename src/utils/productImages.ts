@@ -1,8 +1,10 @@
 /**
- * Pure helpers for picking product images based on gender preference.
+ * Pure helpers for picking product images based on gender preference
+ * and for order item thumbnail resolution.
  */
 
-import type { Product, ProductImage } from '@/types';
+import type { Product, ProductImage, ColorStockItem } from '@/types';
+import type { OrderItem as TrackingOrderItem, OrderItemProduct } from '@/types/order';
 
 /**
  * Pick the best model image URL for a given gender preference.
@@ -58,5 +60,53 @@ export function getInitialCardGender(
 ): 'masculino' | 'feminino' | null {
   if (filtersGender === 'feminino') return 'feminino';
   if (filtersGender === 'masculino') return 'masculino';
+  return null;
+}
+
+// ── Order-item thumbnail resolution ─────────────────────────────────
+
+/** Minimal product shape accepted by the order-item helper. */
+type OrderProduct = OrderItemProduct | { name: string; image: string | null; images?: unknown[] | null; colorStock?: unknown[] | null };
+
+/** Minimal order-item shape (works with both OrderTracking and UserDashboard types). */
+interface OrderItemLike {
+  color?: string | null;
+  product?: OrderProduct | null;
+}
+
+/**
+ * Pick the best thumbnail URL for an order item.
+ *
+ * Priority:
+ *  1. colorStock image matching item.color (best UX — shows exact variant ordered)
+ *  2. images[] by type priority: product > detail > model > first with url
+ *  3. product.image (main cover)
+ *  4. null (caller should use a placeholder)
+ */
+export function pickOrderItemImage(item: OrderItemLike): string | null {
+  const product = item.product;
+  if (!product) return null;
+
+  // 1. Color-specific image via colorStock
+  if (item.color && Array.isArray(product.colorStock) && product.colorStock.length > 0) {
+    const normalise = (s: string) => s.trim().toLowerCase();
+    const target = normalise(item.color);
+    const match = (product.colorStock as ColorStockItem[]).find(
+      (cs) => normalise(cs.id) === target || normalise(cs.name) === target,
+    );
+    if (match?.image) return match.image;
+  }
+
+  // 2. images[] by type priority
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    const imgs = product.images as ProductImage[];
+    const byType = (t: string) => imgs.find((i) => i.type === t && !!i.url);
+    const found = byType('product') ?? byType('detail') ?? byType('model') ?? imgs.find((i) => !!i.url);
+    if (found?.url) return found.url;
+  }
+
+  // 3. product.image
+  if (product.image) return product.image;
+
   return null;
 }

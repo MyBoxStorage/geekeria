@@ -1,13 +1,18 @@
 /**
  * Catalog Service — fetches products from the backend API.
  *
- * Falls back to the local hardcoded data (`src/data/products.ts`)
- * when the API is unreachable (network error, 5xx, timeout, etc.).
+ * `fetchCatalogProductsAPI` throws on failure so the caller (hook)
+ * can decide whether to use cache or local fallback.
+ *
+ * Legacy `fetchCatalogProducts` is kept for backward-compat but now
+ * just wraps the new function with a local-data catch.
  */
 
 import { getJSON } from '@/services/api';
 import { allProducts as localProducts } from '@/data/products';
 import type { Product } from '@/types';
+
+const IS_DEV = import.meta.env.DEV || import.meta.env.MODE === 'development';
 
 // ── Response types ──────────────────────────────────────────────────────────
 
@@ -26,6 +31,13 @@ export interface CatalogListResponse {
 export interface CatalogDetailResponse {
   ok: true;
   product: Product;
+}
+
+/** Shape returned by both API and cache-aware callers */
+export interface CatalogResult {
+  products: Product[];
+  pagination: CatalogPagination;
+  source: 'api' | 'local';
 }
 
 // ── Query params ────────────────────────────────────────────────────────────
@@ -56,38 +68,39 @@ function buildQueryString(params: CatalogQueryParams): string {
 // ── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Fetch product list from the backend catalog endpoint.
- * Returns `{ products, pagination, source }`.
- * On failure falls back to local data with `source: 'local'`.
+ * Fetch products from the API — THROWS on failure.
+ * Used by the hook to distinguish "API OK" from "API failed".
+ */
+export async function fetchCatalogProductsAPI(
+  params: CatalogQueryParams = {},
+): Promise<{ products: Product[]; pagination: CatalogPagination }> {
+  const qs = buildQueryString(params);
+  const data = await getJSON<CatalogListResponse>(`/api/catalog/products${qs}`);
+
+  if (data.ok && Array.isArray(data.products)) {
+    return { products: data.products, pagination: data.pagination };
+  }
+
+  throw new Error('Unexpected API response shape');
+}
+
+/**
+ * Legacy wrapper — fetches products with automatic local fallback.
+ * Kept for any callers that don't need cache awareness.
  */
 export async function fetchCatalogProducts(
   params: CatalogQueryParams = {},
-): Promise<{ products: Product[]; pagination: CatalogPagination; source: 'api' | 'local' }> {
+): Promise<CatalogResult> {
   try {
-    const qs = buildQueryString(params);
-    const data = await getJSON<CatalogListResponse>(`/api/catalog/products${qs}`);
-
-    if (data.ok && Array.isArray(data.products)) {
-      return {
-        products: data.products,
-        pagination: data.pagination,
-        source: 'api',
-      };
-    }
-
-    throw new Error('Unexpected API response shape');
+    const { products, pagination } = await fetchCatalogProductsAPI(params);
+    return { products, pagination, source: 'api' };
   } catch (err) {
-    if (import.meta.env.DEV) {
+    if (IS_DEV) {
       console.warn('[catalog] API unavailable, using local fallback', err);
     }
-
     return {
       products: localProducts,
-      pagination: {
-        limit: localProducts.length,
-        offset: 0,
-        total: localProducts.length,
-      },
+      pagination: { limit: localProducts.length, offset: 0, total: localProducts.length },
       source: 'local',
     };
   }
@@ -111,11 +124,10 @@ export async function fetchCatalogProductBySlug(
 
     return { product: null, source: 'api' };
   } catch (err) {
-    if (import.meta.env.DEV) {
+    if (IS_DEV) {
       console.warn('[catalog] Slug fetch failed, trying local fallback', err);
     }
 
-    // Try finding in local data by slug or id
     const local = localProducts.find(
       (p) => p.slug === slug || p.id === slug,
     ) ?? null;

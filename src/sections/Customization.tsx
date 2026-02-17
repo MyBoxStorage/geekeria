@@ -68,7 +68,7 @@ export function Customization() {
 
   const openWhatsApp = () => {
     const message = encodeURIComponent('Olá! Vim do site BRAVOS BRASIL e quero personalizar uma peça.');
-    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
+    window.open(`https://wa.me/5524981313689?text=${message}`, '_blank');
   };
 
   return (
@@ -136,7 +136,6 @@ export function Customization() {
               </Button>
               
               <p className="text-sm text-gray-500 mt-3 font-body">
-                {/* SUBSTITUIR: Número do WhatsApp */}
                 Atendimento de segunda a sexta, 9h às 18h
               </p>
             </div>

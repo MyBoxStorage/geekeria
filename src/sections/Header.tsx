@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Minus, Plus, Trash2, User, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, ShoppingBag, Menu, X, Minus, Plus, Trash2, User, LogOut } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CheckoutWithBrick } from '@/components/CheckoutWithBrick';
+import { TrustBadges } from '@/components/TrustBadges';
 
 const navLinks = [
   { name: 'INÍCIO', href: '#hero' },
@@ -183,10 +184,27 @@ export function Header() {
                 
                 <div className="flex-1 overflow-auto py-4">
                   {cart.items.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                      <p className="font-body">Seu carrinho está vazio</p>
-                      <p className="text-sm mt-2">Adicione produtos para começar</p>
+                    <div className="flex flex-col items-center justify-center py-12 px-4 flex-1">
+                      <div className="w-20 h-20 mb-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <ShoppingBag className="w-10 h-10 text-gray-300" />
+                      </div>
+                      <h3 className="font-display text-xl text-[#002776] mb-2">
+                        SEU CARRINHO ESTÁ VAZIO
+                      </h3>
+                      <p className="font-body text-sm text-gray-500 text-center mb-6">
+                        Explore a coleção e escolha sua peça.
+                      </p>
+                      <Link
+                        to="/catalogo"
+                        onClick={() => setIsCartOpen(false)}
+                      >
+                        <Button
+                          className="bg-[#00843D] hover:bg-[#006633] text-white font-display px-8 py-5"
+                          size="lg"
+                        >
+                          VER CATÁLOGO
+                        </Button>
+                      </Link>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -253,33 +271,61 @@ export function Header() {
                 </div>
 
                 {cart.items.length > 0 && (
-                  <div className="border-t pt-4 space-y-3">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Subtotal</span>
-                        <span>{formatPrice(cart.subtotal)}</span>
-                      </div>
-                      {cart.discount > 0 && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Desconto</span>
-                          <span>-{formatPrice(cart.discount)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Frete</span>
-                        <span>
-                          {cart.shipping === 0
-                            ? (cart.items.some((i) => i.product.category === 'TESTES') ? 'Grátis (Teste)' : 'Grátis')
-                            : formatPrice(cart.shipping)}
+                  <div className="border-t pt-4 space-y-4">
+                    {/* Desconto badge */}
+                    {totalItems >= 3 && (
+                      <div className="text-center">
+                        <span className="inline-flex items-center gap-1.5 bg-[#00843D]/10 text-[#00843D] rounded-full px-3 py-1.5 text-xs font-medium font-body">
+                          Você ganhou {totalItems >= 5 ? '15%' : totalItems >= 4 ? '10%' : '5%'} de desconto!
                         </span>
                       </div>
-                      <Separator />
-                      <div className="flex justify-between font-display text-xl text-[#00843D]">
-                        <span>TOTAL</span>
-                        <span>{formatPrice(cart.total)}</span>
+                    )}
+
+                    {/* Resumo do pedido */}
+                    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                      <h3 className="font-display text-sm text-[#002776] tracking-wider mb-3">
+                        RESUMO DO PEDIDO
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 font-body">
+                            Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'itens'})
+                          </span>
+                          <span className="font-medium text-gray-900 font-body">
+                            {formatPrice(cart.subtotal)}
+                          </span>
+                        </div>
+                        {cart.discount > 0 && (
+                          <div className="flex justify-between text-[#00843D]">
+                            <span className="font-body">Desconto</span>
+                            <span className="font-medium font-body">
+                              -{formatPrice(cart.discount)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 font-body">Frete</span>
+                          <span className="font-body text-gray-400 text-xs">
+                            Calculado no checkout
+                          </span>
+                        </div>
+                        <Separator className="my-1" />
+                        <div className="flex justify-between items-baseline">
+                          <span className="font-display text-base text-[#002776]">
+                            TOTAL ESTIMADO
+                          </span>
+                          <span className="font-display text-xl text-[#00843D]">
+                            {formatPrice(cart.total)}
+                          </span>
+                        </div>
                       </div>
+                      <p className="text-[11px] text-gray-400 font-body mt-3 leading-relaxed">
+                        Você confirma endereço e frete no próximo passo.
+                      </p>
                     </div>
-                    
+
+                    <TrustBadges variant="cart" />
+
                     <Button
                       className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
                       onClick={() => {
@@ -289,14 +335,6 @@ export function Header() {
                     >
                       FINALIZAR COMPRA
                     </Button>
-                    
-                    <p className="text-xs text-center text-gray-500">
-                      {totalItems >= 3 && (
-                        <span className="text-green-600 font-medium">
-                          Você ganhou {totalItems >= 5 ? '15%' : totalItems >= 4 ? '10%' : '5%'} de desconto!
-                        </span>
-                      )}
-                    </p>
                   </div>
                 )}
               </SheetContent>

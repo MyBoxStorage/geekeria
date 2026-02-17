@@ -34,6 +34,7 @@ import { deleteCoupon } from './routes/admin/coupons/delete.js';
 import { getAnalyticsOverview } from './routes/admin/analytics/overview.js';
 import { uploadMiddleware, uploadProductImage } from './routes/admin/storage.js';
 import { listAdminProducts, getAdminProduct, createAdminProduct, updateAdminProduct } from './routes/admin/products.js';
+import { getCatalogHealth } from './routes/admin/catalog-health.js';
 import { listCatalogProducts, getCatalogProduct } from './routes/catalog/products.js';
 import { validateCoupon } from './routes/coupons/validate.js';
 import { monitorStatus } from './routes/internal/monitor.js';
@@ -221,6 +222,7 @@ app.get('/api/admin/products', validateAdminToken, listAdminProducts);
 app.get('/api/admin/products/:id', validateAdminToken, getAdminProduct);
 app.post('/api/admin/products', validateAdminToken, createAdminProduct);
 app.put('/api/admin/products/:id', validateAdminToken, updateAdminProduct);
+app.get('/api/admin/catalog-health', validateAdminToken, getCatalogHealth);
 app.post('/api/coupons/validate', optionalAuth, validateCoupon);
 app.get(
   '/api/internal/monitor',

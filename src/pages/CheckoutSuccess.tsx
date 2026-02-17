@@ -1,5 +1,5 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, Home, MapPin, Loader2, PackageSearch } from 'lucide-react';
+import { CheckCircle, Package, Home, MapPin, Loader2, PackageSearch, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useEffect, useState, useRef } from 'react';
@@ -7,11 +7,11 @@ import { getOrder } from '@/services/orders';
 import type { OrderResponse } from '@/types/order';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
+import { buildWhatsAppLink } from '@/utils/whatsapp';
 
 export default function CheckoutSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const paymentId = searchParams.get('payment_id');
   const externalReference = searchParams.get('external_reference') ?? searchParams.get('ref');
 
   const [trackOrderRef] = useState<string | null>(() => {
@@ -83,7 +83,7 @@ export default function CheckoutSuccess() {
 
           {/* Título com font-display (Bebas Neue) */}
           <h1 className="font-display text-3xl sm:text-4xl text-[#002776] mb-3 tracking-wide">
-            Pagamento Aprovado! 🎉
+            Pagamento Aprovado
           </h1>
 
           {/* Subtítulo */}
@@ -206,13 +206,6 @@ export default function CheckoutSuccess() {
             </>
           )}
 
-          {/* ID do Pagamento */}
-          {paymentId && (
-            <p className="text-sm text-[#002776]/50 mb-4 font-body">
-              ID do Pagamento: <span className="font-mono">{paymentId}</span>
-            </p>
-          )}
-
           {/* Botões de Ação */}
           <div className="space-y-3">
             {trackOrderRef ? (
@@ -230,29 +223,48 @@ export default function CheckoutSuccess() {
                 aria-label="Acompanhar meu pedido"
               >
                 <PackageSearch className="w-4 h-4 mr-2" />
-                Acompanhar meu pedido
+                ACOMPANHAR PEDIDO
               </Button>
             ) : (
               <p className="text-sm text-[#002776]/60 py-2 font-body">
-                Consulte seu e-mail para acompanhar o pedido.
+                Pagamento confirmado. Se você não encontrar seu pedido, verifique seu e-mail.
               </p>
             )}
-            <Link to="/" className="block">
+            <Link to="/catalogo" className="block">
               <Button
                 className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
                 variant="outline"
-                aria-label="Voltar para a Loja"
+                aria-label="Voltar ao catálogo"
               >
                 <Home className="w-4 h-4 mr-2" />
-                Voltar para a Loja
+                VOLTAR AO CATÁLOGO
               </Button>
             </Link>
+            <Button
+              variant="ghost"
+              className="w-full text-[#25D366] hover:text-[#128C7E] hover:bg-[#25D366]/10 rounded-lg transition-all duration-300"
+              size="lg"
+              asChild
+            >
+              <a
+                href={buildWhatsAppLink(
+                  trackOrderRef
+                    ? `Olá! Meu pagamento foi aprovado e quero acompanhar meu pedido. Referência: ${trackOrderRef}. Pode me ajudar?`
+                    : 'Olá! Meu pagamento foi aprovado e preciso de ajuda com meu pedido. Pode me ajudar?'
+                )}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                FALAR NO WHATSAPP
+              </a>
+            </Button>
           </div>
 
           {/* Footer */}
           <p className="text-xs text-[#002776]/50 mt-6 font-body">
-            Você receberá um email de confirmação em breve com os detalhes do pedido.
+            Você receberá um e-mail de confirmação com os detalhes do pedido.
           </p>
         </CardContent>
       </Card>

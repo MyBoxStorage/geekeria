@@ -5,12 +5,12 @@
  * Não faz chamadas diretas à API - todo processamento é feito pelo Brick.
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { apiConfig } from '@/config/api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, MapPin } from 'lucide-react';
+import { User, MapPin, AlertCircle, Loader2, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,14 +20,39 @@ import { useCart } from '@/hooks/useCart';
 import { PaymentBrick } from '@/components/PaymentBrick';
 import { toast } from 'sonner';
 import { createOrder, type CreateOrderResponse } from '@/services/checkout';
+import {
+  loadPendingCheckout,
+  savePendingCheckout,
+  clearPendingCheckout,
+  writeLegacyPendingKey,
+  type PendingCheckoutV1,
+} from '@/utils/pendingCheckout';
 
-// Schema de validação do formulário
+// ─── Schema de validação premium (PT-BR) ──────────────────────────────────
 const checkoutSchema = z.object({
-  email: z.string().email('E-mail inválido'),
-  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  phone: z.string().min(10, 'Telefone inválido'),
-  zipCode: z.string().min(8, 'CEP inválido'),
-  address: z.string().min(5, 'Endereço inválido'),
+  name: z
+    .string()
+    .min(3, 'Informe seu nome completo')
+    .refine(
+      (v) => v.trim().split(/\s+/).length >= 2,
+      'Informe nome e sobrenome',
+    ),
+  email: z.string().email('Informe um e-mail válido'),
+  phone: z
+    .string()
+    .min(1, 'Informe seu telefone')
+    .refine(
+      (v) => v.replace(/\D/g, '').length >= 10,
+      'Telefone deve ter pelo menos 10 dígitos',
+    ),
+  zipCode: z
+    .string()
+    .min(1, 'Informe o CEP')
+    .refine(
+      (v) => v.replace(/\D/g, '').length === 8,
+      'CEP deve ter exatamente 8 dígitos',
+    ),
+  address: z.string().min(5, 'Informe o endereço completo'),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -48,6 +73,64 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponType, setCouponType] = useState<'PERCENTAGE' | 'FIXED' | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [isBrickLoading, setIsBrickLoading] = useState(true);
+
+  // ── Pending checkout recovery state ──────────────────────────────────────
+  const [pendingRecovery, setPendingRecovery] = useState<PendingCheckoutV1 | null>(null);
+
+  // Detectar pending checkout válido sempre que o dialog abrir (e estiver na etapa do form)
+  useEffect(() => {
+    if (isOpen && !showPaymentBrick) {
+      const pending = loadPendingCheckout();
+      if (
+        pending &&
+        pending.orderId &&
+        pending.externalReference &&
+        pending.totals &&
+        pending.step === 'payment'
+      ) {
+        setPendingRecovery(pending);
+      } else {
+        setPendingRecovery(null);
+      }
+    }
+  }, [isOpen, showPaymentBrick]);
+
+  /** Continuar pagamento de pedido pendente */
+  const handleContinuePayment = useCallback(() => {
+    if (
+      !pendingRecovery ||
+      !pendingRecovery.orderId ||
+      !pendingRecovery.externalReference ||
+      !pendingRecovery.totals
+    ) return;
+
+    setOrderData({
+      orderId: pendingRecovery.orderId,
+      externalReference: pendingRecovery.externalReference,
+      totals: pendingRecovery.totals,
+    });
+
+    if (pendingRecovery.payer) {
+      setCustomerData({
+        name: pendingRecovery.payer.name,
+        email: pendingRecovery.payer.email,
+        phone: pendingRecovery.payer.phone ?? '',
+        zipCode: pendingRecovery.payer.zipCode ?? '',
+        address: pendingRecovery.payer.address ?? '',
+      });
+    }
+
+    setShowPaymentBrick(true);
+    setPendingRecovery(null);
+    toast.success('Pedido recuperado! Continue com o pagamento.');
+  }, [pendingRecovery]);
+
+  /** Reiniciar checkout (descarta pedido pendente) */
+  const handleRestartCheckout = useCallback(() => {
+    clearPendingCheckout();
+    setPendingRecovery(null);
+  }, []);
 
   if (import.meta.env.DEV) {
     console.log('CheckoutWithBrick - Renderizado');
@@ -164,6 +247,54 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
     };
   };
 
+  /** Traduz erros do create-order em mensagens amigáveis PT-BR */
+  const translateCreateOrderError = (err: unknown): string => {
+    if (!err || typeof err !== 'object') {
+      return 'Erro ao criar pedido. Tente novamente.';
+    }
+
+    const apiErr = err as {
+      kind?: string;
+      status?: number;
+      error?: string;
+      message?: string;
+      details?: Array<{ color?: string; size?: string; productId?: string }>;
+    };
+
+    if (apiErr.kind === 'network') {
+      return 'Não conseguimos finalizar agora. Verifique sua conexão e tente novamente.';
+    }
+
+    if (apiErr.kind === 'http') {
+      if (apiErr.status && apiErr.status >= 500) {
+        return 'Não conseguimos finalizar agora. Tente novamente em instantes.';
+      }
+
+      switch (apiErr.error) {
+        case 'OUT_OF_STOCK_VARIANT': {
+          let msg =
+            'Essa combinação de cor e tamanho não está disponível. Ajuste a seleção e tente novamente.';
+          if (Array.isArray(apiErr.details) && apiErr.details.length > 0) {
+            const first = apiErr.details[0];
+            if (first?.color && first?.size) {
+              msg += ` Ex.: ${first.color} / ${first.size}`;
+            }
+          }
+          return msg;
+        }
+        case 'PRODUCT_NOT_FOUND':
+          return 'Um item do seu carrinho não está mais disponível. Atualize o carrinho.';
+        default:
+          return apiErr.message || 'Erro ao criar pedido. Tente novamente.';
+      }
+    }
+
+    const fallbackMsg = (err as { message?: string }).message;
+    return typeof fallbackMsg === 'string' && fallbackMsg
+      ? fallbackMsg
+      : 'Erro ao criar pedido. Tente novamente.';
+  };
+
   const onFormSubmit = async (data: CheckoutFormData) => {
     if (import.meta.env.DEV) {
       console.log('CheckoutWithBrick - onFormSubmit chamado');
@@ -174,6 +305,55 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
       toast.error('Seu carrinho está vazio');
       return;
     }
+
+    // ── Anti-duplicação: reutilizar pedido pendente válido ──────────────
+    const existingPending = loadPendingCheckout();
+    if (
+      existingPending &&
+      existingPending.orderId &&
+      existingPending.externalReference &&
+      existingPending.totals &&
+      existingPending.step === 'payment'
+    ) {
+      if (import.meta.env.DEV) {
+        console.log('CheckoutWithBrick - Pedido pendente detectado, pulando create-order');
+      }
+
+      setOrderData({
+        orderId: existingPending.orderId,
+        externalReference: existingPending.externalReference,
+        totals: existingPending.totals,
+      });
+      setCustomerData(data);
+      setShowPaymentBrick(true);
+      setPendingRecovery(null);
+      toast.success('Pedido anterior recuperado! Continue com o pagamento.');
+      return;
+    }
+
+    // ── Salvar step="form" antes de chamar create-order ────────────────
+    const cartItems = cart.items.map((item) => ({
+      productId: item.product.id,
+      quantity: item.quantity,
+      unitPrice: item.product.price,
+      size: item.size,
+      color: item.color,
+    }));
+
+    savePendingCheckout({
+      orderId: null,
+      externalReference: null,
+      payer: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        zipCode: data.zipCode,
+        address: data.address,
+      },
+      items: cartItems,
+      totals: null,
+      step: 'form',
+    });
 
     setIsCreatingOrder(true);
     
@@ -193,15 +373,8 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
           address1: parsedAddress.address1,
           number: parsedAddress.number,
           complement: parsedAddress.complement,
-          // Campos adicionais (district, city, state) podem ser adicionados no futuro
         },
-        items: cart.items.map((item) => ({
-          productId: item.product.id,
-          quantity: item.quantity,
-          unitPrice: item.product.price,
-          size: item.size,
-          color: item.color,
-        })),
+        items: cartItems,
         couponCode: couponDiscount > 0 ? couponCode.trim().toUpperCase() : undefined,
       };
 
@@ -217,28 +390,39 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
       // Salvar dados do pedido
       setOrderData(orderResponse);
       setCustomerData(data);
-      
-      // Salvar no localStorage para persistência
-      localStorage.setItem('bb_order_pending', JSON.stringify({
+
+      // ── Atualizar pending com orderId + step="payment" ───────────────
+      savePendingCheckout({
         orderId: orderResponse.orderId,
         externalReference: orderResponse.externalReference,
-        email: data.email,
-        timestamp: Date.now(),
-      }));
+        payer: {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          zipCode: data.zipCode,
+          address: data.address,
+        },
+        items: cartItems,
+        totals: orderResponse.totals,
+        step: 'payment',
+      });
+
+      // Escrever key legada para compat com CheckoutPending/CheckoutSuccess
+      writeLegacyPendingKey(orderResponse.orderId, orderResponse.externalReference, data.email);
 
       // Mostrar PaymentBrick
       setShowPaymentBrick(true);
       setIsCreatingOrder(false);
       
       toast.success('Pedido criado! Continue com o pagamento.');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('CheckoutWithBrick - Erro ao criar pedido:', error);
       setIsCreatingOrder(false);
       
-      const errorMessage = error?.message || error?.error || 'Erro ao criar pedido. Tente novamente.';
-      toast.error(errorMessage);
+      // Limpar pending form (não salvar half-state com falha)
+      clearPendingCheckout();
       
-      // Não prosseguir para o pagamento se falhar
+      toast.error(translateCreateOrderError(error));
       return;
     }
   };
@@ -316,9 +500,9 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
             return;
           }
 
-          // Limpar carrinho e fechar modal
+          // Limpar carrinho, pending state e fechar modal
+          clearPendingCheckout();
           clearCart();
-          localStorage.removeItem('bb_order_pending');
           onClose();
           reset();
           setShowPaymentBrick(false);
@@ -413,9 +597,9 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
           // O create-payment já atualizou o pedido existente com mpPaymentId.
           // Isso evita a duplicação de mpPaymentId que causava o bug do webhook ignorado.
 
-          // Limpar carrinho e fechar modal
+          // Limpar carrinho, pending state e fechar modal
+          clearPendingCheckout();
           clearCart();
-          localStorage.removeItem('bb_order_pending');
           onClose();
           reset();
           setShowPaymentBrick(false);
@@ -485,12 +669,14 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
   };
 
   const handlePaymentReady = () => {
+    setIsBrickLoading(false);
     if (import.meta.env.DEV) console.log('Payment Brick está pronto');
   };
 
   const handleBackToForm = () => {
     setShowPaymentBrick(false);
     setCustomerData(null);
+    setIsBrickLoading(true);
   };
 
   return (
@@ -500,15 +686,58 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
           <DialogTitle className="font-display text-2xl text-[#00843D]">
             FINALIZAR COMPRA
           </DialogTitle>
-          <DialogDescription>
-            {showPaymentBrick
-              ? 'Selecione o método de pagamento'
-              : 'Preencha os dados para concluir seu pedido'}
+          <DialogDescription className="flex items-center gap-2 mt-1 text-sm">
+            <span
+              className={`font-display tracking-wide ${!showPaymentBrick ? 'text-[#00843D]' : 'text-gray-400'}`}
+            >
+              ETAPA 1 · Seus dados
+            </span>
+            <span className="text-gray-300">→</span>
+            <span
+              className={`font-display tracking-wide ${showPaymentBrick ? 'text-[#00843D]' : 'text-gray-400'}`}
+            >
+              ETAPA 2 · Pagamento
+            </span>
           </DialogDescription>
         </DialogHeader>
 
         {!showPaymentBrick ? (
-          <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onFormSubmit)}>
+            <fieldset disabled={isCreatingOrder} className="space-y-6">
+            {/* ── Painel de recuperação de checkout pendente ─────────────── */}
+            {pendingRecovery && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                  <div>
+                    <h4 className="font-display text-base text-amber-900">
+                      Você tem um pagamento em andamento
+                    </h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Quer continuar de onde parou?
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleContinuePayment}
+                    className="flex-1 bg-[#00843D] hover:bg-[#006633] text-white font-display"
+                  >
+                    CONTINUAR PAGAMENTO
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleRestartCheckout}
+                    className="flex-1 font-display"
+                  >
+                    REINICIAR
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Dados Pessoais */}
             <div className="space-y-4">
               <h3 className="font-display text-lg text-gray-900 flex items-center gap-2">
@@ -645,11 +874,11 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                   <span>- {formatPrice(calculateCouponDiscount())}</span>
                 </div>
               )}
-              <div className={`flex justify-between text-sm ${cart.items.some((i) => i.product.category === 'TESTES') ? 'text-green-600' : ''}`}>
+              <div className="flex justify-between text-sm">
                 <span>Frete</span>
                 <span>
                   {(orderData?.totals.shippingCost ?? cart.shipping) === 0
-                    ? (cart.items.some((i) => i.product.category === 'TESTES') ? 'GRÁTIS (Produto de Teste)' : 'Grátis')
+                    ? 'Grátis'
                     : formatPrice(orderData?.totals.shippingCost ?? cart.shipping)}
                 </span>
               </div>
@@ -682,9 +911,17 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                 disabled={isCreatingOrder}
                 className="flex-1 bg-[#00843D] hover:bg-[#006633] text-white font-display disabled:opacity-50"
               >
-                {isCreatingOrder ? 'Criando pedido...' : 'CONTINUAR PARA PAGAMENTO'}
+                {isCreatingOrder ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    CRIANDO PEDIDO...
+                  </>
+                ) : (
+                  'CONTINUAR PARA PAGAMENTO'
+                )}
               </Button>
             </div>
+            </fieldset>
           </form>
         ) : (
           <div className="space-y-4">
@@ -743,7 +980,7 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
               return (
                 <div className="payment-step-container">
                   <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="font-semibold text-green-900 mb-2">✅ Dados confirmados</h3>
+                    <h3 className="font-semibold text-green-900 mb-2">Dados confirmados</h3>
                     <p className="text-sm text-green-700">
                       <strong>Cliente:</strong> {customerData.name} ({customerData.email})
                     </p>
@@ -751,6 +988,23 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                       <strong>Total:</strong> {formatPrice(orderData.totals.total)}
                     </p>
                   </div>
+
+                  {/* Badge de segurança */}
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-blue-600 shrink-0" />
+                    <p className="text-sm text-blue-800">
+                      Pagamento seguro via Mercado Pago
+                    </p>
+                  </div>
+
+                  {/* Loading indicator do Brick */}
+                  {isBrickLoading && (
+                    <div className="flex items-center justify-center gap-2 py-6 text-gray-500">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="text-sm">Carregando opções de pagamento...</span>
+                    </div>
+                  )}
+
                   <PaymentBrick
                     amount={orderData.totals.total}
                     items={cart.items}

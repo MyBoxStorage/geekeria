@@ -43,6 +43,8 @@ export async function getMyOrders(
               select: {
                 name: true,
                 image: true,
+                images: true,
+                colorStock: true,
               },
             },
           },

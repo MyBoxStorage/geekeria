@@ -62,6 +62,32 @@ export interface StorageUploadResponse {
   publicUrl: string;
 }
 
+export interface CatalogHealthCounts {
+  total: number;
+  withIssues: number;
+  missingSlug: number;
+  missingImage: number;
+  invalidPrice: number;
+  invalidCategory: number;
+  invalidColorStock: number;
+  derivedMismatch: number;
+  testCategory: number;
+}
+
+export interface CatalogHealthItem {
+  id: string;
+  name: string;
+  slug: string | null;
+  category: string;
+  issues: string[];
+}
+
+export interface CatalogHealthResponse {
+  ok: boolean;
+  counts: CatalogHealthCounts;
+  items: CatalogHealthItem[];
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function authHeaders(token: string): Record<string, string> {
@@ -131,6 +157,18 @@ export async function adminUploadImage(
   return uploadFile<StorageUploadResponse>(
     '/api/admin/storage/upload',
     formData,
+    { headers: authHeaders(token) },
+  );
+}
+
+/**
+ * Catalog health check — scans products for data-quality issues.
+ */
+export async function adminGetCatalogHealth(
+  token: string,
+): Promise<CatalogHealthResponse> {
+  return getJSON<CatalogHealthResponse>(
+    '/api/admin/catalog-health',
     { headers: authHeaders(token) },
   );
 }

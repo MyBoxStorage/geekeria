@@ -13,6 +13,10 @@ import { logger } from '../../utils/logger.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+/** Test-category products must not be created/edited via admin. */
+const isTestCategory = (c: string | null | undefined): boolean =>
+  (c ?? '').toUpperCase() === 'TESTES';
+
 function generateSlug(name: string): string {
   return name
     .toLowerCase()
@@ -208,6 +212,14 @@ export async function createAdminProduct(req: Request, res: Response) {
       });
     }
 
+    if (isTestCategory(body.category)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'CATEGORY_NOT_ALLOWED',
+        message: "Categoria 'TESTES' não é permitida no app principal.",
+      });
+    }
+
     // Do not accept custom IDs on create
     if (body.id) {
       return res.status(400).json({
@@ -273,6 +285,15 @@ export async function updateAdminProduct(req: Request, res: Response) {
     }
 
     const body = req.body;
+
+    if (body.category !== undefined && isTestCategory(body.category)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'CATEGORY_NOT_ALLOWED',
+        message: "Categoria 'TESTES' não é permitida no app principal.",
+      });
+    }
+
     const data: Record<string, unknown> = {};
 
     // Only set fields that were explicitly sent

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { apiConfig } from '@/config/api';
 import { authService } from '@/services/auth';
 
-const WHATSAPP_NUMBER = '5524992796969';
+const WHATSAPP_NUMBER = '5524981313689';
 
 interface Generation {
   id: string;
@@ -17,17 +17,26 @@ interface Generation {
 }
 
 export function MinhasEstampasPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     fetchGenerations();
-  }, []);
+  }, [authLoading, user]);
 
   const fetchGenerations = async () => {
     try {
       const token = authService.getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       const res = await fetch(`${apiConfig.baseURL}/api/user/my-generations`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -51,10 +60,28 @@ export function MinhasEstampasPage() {
     window.open(url, '_blank');
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-600 mb-4">
+            Você precisa estar logado para ver suas estampas.
+          </p>
+          <Link
+            to="/"
+            className="text-green-600 hover:text-green-700 font-semibold"
+          >
+            Voltar para Home
+          </Link>
+        </div>
       </div>
     );
   }

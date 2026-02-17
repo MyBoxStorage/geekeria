@@ -31,6 +31,14 @@ export interface OrderShipping {
   deadline: number | null;
 }
 
+export interface OrderItemProduct {
+  id?: string;
+  name: string;
+  image: string | null;
+  images?: unknown[] | null;
+  colorStock?: unknown[] | null;
+}
+
 export interface OrderItem {
   productId: string;
   quantity: number;
@@ -38,6 +46,7 @@ export interface OrderItem {
   size: string | null;
   color: string | null;
   name: string | null;
+  product?: OrderItemProduct | null;
 }
 
 export interface OrderResponse {

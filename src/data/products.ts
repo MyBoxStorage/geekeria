@@ -112,76 +112,7 @@ export const featuredProducts: Product[] = [
   },
 ];
 
-const testProducts: Product[] = [
-  {
-    id: 'prod_test_001',
-    name: 'TESTE R$ 1,00',
-    category: 'TESTES',
-    gender: 'unissex',
-    price: 1.0,
-    image: 'https://via.placeholder.com/300x300?text=TESTE+R%241.00',
-    description: 'Produto de teste para pagamento',
-    sizes: ['Único'],
-    colors: ['Teste'],
-    rating: 0,
-    reviews: 0,
-  },
-  {
-    id: 'prod_test_002',
-    name: 'TESTE R$ 2,00',
-    category: 'TESTES',
-    gender: 'unissex',
-    price: 2.0,
-    image: 'https://via.placeholder.com/300x300?text=TESTE+R%242.00',
-    description: 'Produto de teste para pagamento',
-    sizes: ['Único'],
-    colors: ['Teste'],
-    rating: 0,
-    reviews: 0,
-  },
-  {
-    id: 'prod_test_003',
-    name: 'TESTE R$ 3,00',
-    category: 'TESTES',
-    gender: 'unissex',
-    price: 3.0,
-    image: 'https://via.placeholder.com/300x300?text=TESTE+R%243.00',
-    description: 'Produto de teste para pagamento',
-    sizes: ['Único'],
-    colors: ['Teste'],
-    rating: 0,
-    reviews: 0,
-  },
-  {
-    id: 'prod_test_004',
-    name: 'TESTE R$ 4,00',
-    category: 'TESTES',
-    gender: 'unissex',
-    price: 4.0,
-    image: 'https://via.placeholder.com/300x300?text=TESTE+R%244.00',
-    description: 'Produto de teste para pagamento',
-    sizes: ['Único'],
-    colors: ['Teste'],
-    rating: 0,
-    reviews: 0,
-  },
-  {
-    id: 'prod_test_005',
-    name: 'TESTE R$ 5,00',
-    category: 'TESTES',
-    gender: 'unissex',
-    price: 5.0,
-    image: 'https://via.placeholder.com/300x300?text=TESTE+R%245.00',
-    description: 'Produto de teste para pagamento',
-    sizes: ['Único'],
-    colors: ['Teste'],
-    rating: 0,
-    reviews: 0,
-  },
-];
-
 export const allProducts: Product[] = [
-  ...testProducts,
   ...featuredProducts,
   {
     id: '9',
@@ -438,8 +369,7 @@ export const faqs: FAQ[] = [
 ];
 
 export const categories = [
-  { id: 'all', name: 'Todos', count: 45 },
-  { id: 'TESTES', name: 'Testes', count: 5 },
+  { id: 'all', name: 'Todos', count: 40 },
   { id: 'camisetas', name: 'Camisetas', count: 25 },
   { id: 'bone', name: 'Bonés', count: 8 },
   { id: 'moletom', name: 'Moletons', count: 6 },
