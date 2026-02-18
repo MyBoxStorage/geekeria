@@ -627,6 +627,10 @@ function ImageUploadSection({
   gender,
   colorStock,
   onColorStockChange,
+  keepConfeccao,
+  setKeepConfeccao,
+  confeccaoCache,
+  setConfeccaoCache,
 }: {
   images: DraftImage[];
   onImagesAdd: (imgs: DraftImage[]) => void;
@@ -635,6 +639,10 @@ function ImageUploadSection({
   gender: 'masculino' | 'feminino' | 'unissex';
   colorStock: ColorStock[];
   onColorStockChange: (updated: ColorStock[]) => void;
+  keepConfeccao: boolean;
+  setKeepConfeccao: React.Dispatch<React.SetStateAction<boolean>>;
+  confeccaoCache: { colorStock: ColorStock[]; gender: string } | null;
+  setConfeccaoCache: React.Dispatch<React.SetStateAction<{ colorStock: ColorStock[]; gender: string } | null>>;
 }) {
   const inputRefMasc = useRef<HTMLInputElement>(null);
   const inputRefFem = useRef<HTMLInputElement>(null);
@@ -691,6 +699,44 @@ function ImageUploadSection({
             badge={photosFem.length > 0 ? `${photosFem.length} foto(s)` : null}
           />
         )}
+      </div>
+
+      {/* Toggle cache de confecção */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <div>
+          <p className="text-sm font-medium text-zinc-200">
+            Manter confecção para o próximo produto
+          </p>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {keepConfeccao && confeccaoCache
+              ? 'Ativo — cores e tamanhos serão carregados no próximo produto'
+              : keepConfeccao
+              ? 'Ativo — será salvo ao concluir este produto'
+              : 'Desativado — confecção será limpa após salvar'}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setKeepConfeccao((prev) => {
+              const next = !prev;
+              if (!next) {
+                setConfeccaoCache(null);
+                localStorage.removeItem('bb_admin_confeccao_cache');
+              }
+              return next;
+            });
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            keepConfeccao ? 'bg-green-500' : 'bg-zinc-600'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              keepConfeccao ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
       </div>
 
       {/* Color stock section (replaces generic "Produto por Cor") */}
@@ -790,6 +836,22 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     () => loadDraftFromStorage() !== null
   );
 
+  const [keepConfeccao, setKeepConfeccao] = useState<boolean>(() => {
+    return localStorage.getItem('bb_admin_keep_confeccao') === 'true';
+  });
+
+  const [confeccaoCache, setConfeccaoCache] = useState<{
+    colorStock: ColorStock[];
+    gender: string;
+  } | null>(() => {
+    try {
+      const saved = localStorage.getItem('bb_admin_confeccao_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   // Auto-salva rascunho enquanto o admin edita
   useEffect(() => {
     const hasContent = draft.name || draft.price || draft.description || editingId;
@@ -806,6 +868,10 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       // silently fail (quota exceeded, etc)
     }
   }, [draft, editingId]);
+
+  useEffect(() => {
+    localStorage.setItem('bb_admin_keep_confeccao', String(keepConfeccao));
+  }, [keepConfeccao]);
 
   const getToken = () => getAdminToken() || '';
 
@@ -974,10 +1040,26 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         }
       }
 
-      // 4) Reset form and reload list + health
+      // 4) Salvar cache de confecção se toggle ativo
+      let cacheToApply: { colorStock: ColorStock[]; gender: string } | null = null;
+      if (keepConfeccao) {
+        cacheToApply = {
+          colorStock: (draft.colorStock ?? []).map((cs) => ({ ...cs, image: null })),
+          gender: draft.gender,
+        };
+        setConfeccaoCache(cacheToApply);
+        localStorage.setItem('bb_admin_confeccao_cache', JSON.stringify(cacheToApply));
+      }
+
+      // 5) Reset form and reload list + health
       localStorage.removeItem(DRAFT_STORAGE_KEY);
       invalidateCatalogCache();
-      setDraft({ ...emptyDraft });
+      const baseDraft = { ...emptyDraft };
+      if (keepConfeccao && cacheToApply) {
+        baseDraft.colorStock = cacheToApply.colorStock.map((cs) => ({ ...cs, image: null }));
+        baseDraft.gender = cacheToApply.gender as DraftProduct['gender'];
+      }
+      setDraft(baseDraft);
       setImages([]);
       setEditingId(null);
       setActiveTab('list');
@@ -1282,7 +1364,12 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                 style={s.btnPrimary}
                 onClick={() => {
                   localStorage.removeItem(DRAFT_STORAGE_KEY);
-                  setDraft({ ...emptyDraft });
+                  const baseDraft = { ...emptyDraft };
+                  if (keepConfeccao && confeccaoCache) {
+                    baseDraft.colorStock = confeccaoCache.colorStock.map((cs) => ({ ...cs, image: null }));
+                    baseDraft.gender = confeccaoCache.gender as DraftProduct['gender'];
+                  }
+                  setDraft(baseDraft);
                   setEditingId(null);
                   setImages([]);
                   setActiveTab('add');
@@ -1590,7 +1677,12 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                 <button
                   onClick={() => {
                     localStorage.removeItem(DRAFT_STORAGE_KEY);
-                    setDraft({ ...emptyDraft });
+                    const baseDraft = { ...emptyDraft };
+                    if (keepConfeccao && confeccaoCache) {
+                      baseDraft.colorStock = confeccaoCache.colorStock.map((cs) => ({ ...cs, image: null }));
+                      baseDraft.gender = confeccaoCache.gender as DraftProduct['gender'];
+                    }
+                    setDraft(baseDraft);
                     setImages([]);
                     setEditingId(null);
                     setRestoredFromDraft(false);
@@ -1622,6 +1714,10 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                 gender={draft.gender}
                 colorStock={draft.colorStock}
                 onColorStockChange={(updated) => setDraft((p) => ({ ...p, colorStock: updated }))}
+                keepConfeccao={keepConfeccao}
+                setKeepConfeccao={setKeepConfeccao}
+                confeccaoCache={confeccaoCache}
+                setConfeccaoCache={setConfeccaoCache}
               />
             </div>
 
