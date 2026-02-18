@@ -10,6 +10,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -170,7 +171,7 @@ export async function listAdminProducts(req: Request, res: Response) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     logger.error(`listAdminProducts: ${msg}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao listar produtos.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao listar produtos.');
   }
 }
 
@@ -180,7 +181,7 @@ export async function getAdminProduct(req: Request, res: Response) {
   try {
     const rawId = req.params.id;
     const id = typeof rawId === 'string' ? rawId.trim() : '';
-    if (!id) return res.status(400).json({ ok: false, error: 'ID obrigatório.' });
+    if (!id) return sendError(res, req, 400, 'VALIDATION_ERROR', 'ID obrigatório.');
 
     const product = await prisma.product.findUnique({
       where: { id },
@@ -188,14 +189,14 @@ export async function getAdminProduct(req: Request, res: Response) {
     });
 
     if (!product) {
-      return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Produto não encontrado.');
     }
 
     return res.json({ ok: true, product });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     logger.error(`getAdminProduct: ${msg}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao buscar produto.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar produto.');
   }
 }
 
@@ -206,26 +207,16 @@ export async function createAdminProduct(req: Request, res: Response) {
     const body = req.body;
 
     if (!body.name || body.price == null || !body.category) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Campos obrigatórios: name, price, category.',
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Campos obrigatórios: name, price, category.');
     }
 
     if (isTestCategory(body.category)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'CATEGORY_NOT_ALLOWED',
-        message: "Categoria 'TESTES' não é permitida no app principal.",
-      });
+      return sendError(res, req, 400, 'CATEGORY_NOT_ALLOWED', "Categoria 'TESTES' não é permitida no app principal.");
     }
 
     // Do not accept custom IDs on create
     if (body.id) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Não envie "id" ao criar produto. O ID é gerado automaticamente.',
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Não envie "id" ao criar produto. O ID é gerado automaticamente.');
     }
 
     const slug = body.slug || generateSlug(body.name);
@@ -267,7 +258,7 @@ export async function createAdminProduct(req: Request, res: Response) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     logger.error(`createAdminProduct: ${msg}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao criar produto.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar produto.');
   }
 }
 
@@ -277,21 +268,17 @@ export async function updateAdminProduct(req: Request, res: Response) {
   try {
     const rawId = req.params.id;
     const id = typeof rawId === 'string' ? rawId.trim() : '';
-    if (!id) return res.status(400).json({ ok: false, error: 'ID obrigatório.' });
+    if (!id) return sendError(res, req, 400, 'VALIDATION_ERROR', 'ID obrigatório.');
 
     const existing = await prisma.product.findUnique({ where: { id }, select: { id: true } });
     if (!existing) {
-      return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Produto não encontrado.');
     }
 
     const body = req.body;
 
     if (body.category !== undefined && isTestCategory(body.category)) {
-      return res.status(400).json({
-        ok: false,
-        error: 'CATEGORY_NOT_ALLOWED',
-        message: "Categoria 'TESTES' não é permitida no app principal.",
-      });
+      return sendError(res, req, 400, 'CATEGORY_NOT_ALLOWED', "Categoria 'TESTES' não é permitida no app principal.");
     }
 
     const data: Record<string, unknown> = {};
@@ -349,6 +336,6 @@ export async function updateAdminProduct(req: Request, res: Response) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     logger.error(`updateAdminProduct: ${msg}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao atualizar produto.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao atualizar produto.');
   }
 }

@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { sendError } from '../../../utils/errorResponse.js';
 import { prisma } from '../../../utils/prisma.js';
 
 export async function listPromptTemplates(
@@ -16,6 +17,6 @@ export async function listPromptTemplates(
     });
   } catch (error) {
     console.error('List prompt templates error:', error);
-    res.status(500).json({ error: 'Erro ao listar templates' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao listar templates');
   }
 }

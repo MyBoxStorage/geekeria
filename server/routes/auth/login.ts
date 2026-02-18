@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../../utils/prisma.js';
 import { loginSchema } from './schemas.js';
 import { generateToken } from '../../utils/authMiddleware.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * POST /api/auth/login
@@ -12,10 +13,7 @@ export async function login(req: Request, res: Response): Promise<void> {
   try {
     const validation = loginSchema.safeParse(req.body);
     if (!validation.success) {
-      res.status(400).json({
-        error: 'Dados inválidos',
-        details: validation.error.issues,
-      });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados inválidos', { details: validation.error.issues });
       return;
     }
 
@@ -23,13 +21,13 @@ export async function login(req: Request, res: Response): Promise<void> {
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      res.status(401).json({ error: 'Email ou senha inválidos' });
+      sendError(res, req, 401, 'INVALID_CREDENTIALS', 'Email ou senha inválidos');
       return;
     }
 
     const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
-      res.status(401).json({ error: 'Email ou senha inválidos' });
+      sendError(res, req, 401, 'INVALID_CREDENTIALS', 'Email ou senha inválidos');
       return;
     }
 
@@ -49,6 +47,6 @@ export async function login(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Erro ao fazer login' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao fazer login');
   }
 }

@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
 import { z } from 'zod';
+import { sendError } from '../../utils/errorResponse.js';
 
 const linkOrderSchema = z.object({
   externalReference: z.string().min(1),
@@ -16,23 +17,20 @@ const linkOrderSchema = z.object({
 export async function linkOrder(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.user) {
-      res.status(401).json({ error: 'Não autenticado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Não autenticado');
       return;
     }
 
     const validation = linkOrderSchema.safeParse(req.body);
     if (!validation.success) {
-      res.status(400).json({ error: 'Dados inválidos', details: validation.error.issues });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados inválidos', { details: validation.error.issues });
       return;
     }
 
     const { externalReference, payerEmail } = validation.data;
 
     if (payerEmail.toLowerCase() !== req.user.email.toLowerCase()) {
-      res.status(403).json({
-        error: 'Email não corresponde',
-        message: 'O email do pedido deve ser o mesmo da sua conta',
-      });
+      sendError(res, req, 403, 'EMAIL_MISMATCH', 'O email do pedido deve ser o mesmo da sua conta');
       return;
     }
 
@@ -41,15 +39,12 @@ export async function linkOrder(req: AuthRequest, res: Response): Promise<void> 
     });
 
     if (!order) {
-      res.status(404).json({ error: 'Pedido não encontrado' });
+      sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
       return;
     }
 
     if (order.buyerId) {
-      res.status(409).json({
-        error: 'Pedido já vinculado',
-        message: 'Este pedido já está vinculado a uma conta',
-      });
+      sendError(res, req, 409, 'ORDER_ALREADY_LINKED', 'Este pedido já está vinculado a uma conta');
       return;
     }
 
@@ -123,6 +118,6 @@ export async function linkOrder(req: AuthRequest, res: Response): Promise<void> 
     });
   } catch (error) {
     console.error('Link order error:', error);
-    res.status(500).json({ error: 'Erro ao vincular pedido' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao vincular pedido');
   }
 }

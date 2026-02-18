@@ -16,8 +16,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
-
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+import { sendError } from '../../utils/errorResponse.js';
 
 const markMontinkSchema = z.object({
   externalReference: z.string().min(1),
@@ -26,31 +25,6 @@ const markMontinkSchema = z.object({
     montinkStatus: z.string().min(1),
   }),
 });
-
-/**
- * Middleware para validar admin token
- */
-function validateAdminToken(req: Request, res: Response, next: () => void) {
-  const token = req.headers['x-admin-token'] as string;
-
-  if (!ADMIN_TOKEN) {
-    logger.error('ADMIN_TOKEN not configured in environment');
-    return res.status(500).json({
-      error: 'Server configuration error',
-      message: 'Token administrativo não configurado',
-    });
-  }
-
-  if (!token || token !== ADMIN_TOKEN) {
-    logger.warn(`Unauthorized admin access attempt: token=${token ? 'provided' : 'missing'}`);
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Token administrativo inválido',
-    });
-  }
-
-  next();
-}
 
 export async function markMontink(req: Request, res: Response) {
   try {
@@ -67,10 +41,7 @@ export async function markMontink(req: Request, res: Response) {
 
     if (!order) {
       logger.warn(`Order not found for mark-montink: externalReference=${externalReference}`);
-      return res.status(404).json({
-        error: 'Order not found',
-        message: 'Pedido não encontrado',
-      });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
     }
 
     // Validar que status permite marcação
@@ -78,11 +49,7 @@ export async function markMontink(req: Request, res: Response) {
       logger.warn(
         `Cannot mark montink: Order status is ${order.status}, expected READY_FOR_MONTINK or PAID, externalReference=${externalReference}`
       );
-      return res.status(400).json({
-        error: 'Invalid order status',
-        message: `Pedido não está pronto para produção. Status atual: ${order.status}`,
-        currentStatus: order.status,
-      });
+      return sendError(res, req, 400, 'INVALID_ORDER_STATUS', `Pedido não está pronto para produção. Status atual: ${order.status}`, { currentStatus: order.status });
     }
 
     // Atualizar Order
@@ -126,20 +93,11 @@ export async function markMontink(req: Request, res: Response) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn(`Invalid request: ${error.issues.map((e: any) => e.path.join('.')).join(', ')}`);
-      return res.status(400).json({
-        error: 'Invalid request',
-        message: 'Parâmetros inválidos',
-        details: error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Parâmetros inválidos', { details: error.issues });
     }
 
     logger.error(`Error marking montink: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: 'Erro ao marcar pedido',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao marcar pedido');
   }
 }
 
-// Exportar também o middleware para uso no index.ts
-export { validateAdminToken };

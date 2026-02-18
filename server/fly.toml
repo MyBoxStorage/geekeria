@@ -40,7 +40,7 @@ primary_region = "gru"  # São Paulo, Brazil
     timeout = "2s"
     grace_period = "5s"
     method = "GET"
-    path = "/health"
+    path = "/health/ready"
 
 [deploy]
 release_command = "npx prisma migrate deploy --schema=./prisma/schema.prisma"

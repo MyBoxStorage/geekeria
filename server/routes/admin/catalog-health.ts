@@ -10,6 +10,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // ── Issue codes ──────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ function hasDerivedMismatch(
 
 const MAX_ITEMS_RESPONSE = 50;
 
-export async function getCatalogHealth(_req: Request, res: Response) {
+export async function getCatalogHealth(req: Request, res: Response) {
   try {
     const products = await prisma.product.findMany({
       select: HEALTH_SELECT,
@@ -194,6 +195,6 @@ export async function getCatalogHealth(_req: Request, res: Response) {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Unknown error';
     logger.error(`getCatalogHealth: ${msg}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao verificar catálogo.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao verificar catálogo.');
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Filter,
   Star,
@@ -43,6 +43,7 @@ import { CartProvider } from '@/hooks/useCart';
 import { MercadoPagoProvider } from '@/components/MercadoPagoProvider';
 import { Toaster } from '@/components/ui/sonner';
 import type { Product, Category, Size, Color, Gender, SortOption } from '@/types';
+import { JsonLd } from '@/components/JsonLd';
 
 /* ── Analytics helper (safe - no-op if gtag unavailable) ── */
 function trackEvent(eventName: string, params: Record<string, string>) {
@@ -512,6 +513,8 @@ function ProductCard({
 const PAGE_SIZE = 12;
 
 function CatalogContent() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // ── Server-side filter state (sent as query params) ──
   const [category, _setCategory] = useState<Category>('all');
   const [gender, _setGender] = useState<'' | Gender>('');
@@ -522,8 +525,12 @@ function CatalogContent() {
   const [selectedColors, setSelectedColors] = useState<Color[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
 
-  // ── Pagination ──
-  const [page, setPage] = useState(1);
+  // ── Pagination (initialized from ?page= query param) ──
+  const [page, setPage] = useState(() => {
+    const pageParam = searchParams.get('page');
+    const parsed = parseInt(pageParam ?? '1', 10);
+    return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+  });
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
 
@@ -699,8 +706,61 @@ function CatalogContent() {
     };
   }, []);
 
+  /* Sync ?page= query param with page state */
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (page <= 1) {
+      params.delete('page');
+    } else {
+      params.set('page', String(page));
+    }
+    setSearchParams(params, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  /* SEO: rel="next" / rel="prev" for pagination */
+  useEffect(() => {
+    document.querySelectorAll('link[rel="next"], link[rel="prev"]').forEach(el => el.remove());
+
+    if (page > 1) {
+      const prev = document.createElement('link');
+      prev.rel = 'prev';
+      prev.href = `https://bravosbrasil.com.br/catalogo${page - 1 === 1 ? '' : `?page=${page - 1}`}`;
+      document.head.appendChild(prev);
+    }
+
+    if (page < totalPages) {
+      const next = document.createElement('link');
+      next.rel = 'next';
+      next.href = `https://bravosbrasil.com.br/catalogo?page=${page + 1}`;
+      document.head.appendChild(next);
+    }
+
+    return () => {
+      document.querySelectorAll('link[rel="next"], link[rel="prev"]').forEach(el => el.remove());
+    };
+  }, [page, totalPages]);
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Início",
+            "item": "https://bravosbrasil.com.br"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Catálogo",
+            "item": "https://bravosbrasil.com.br/catalogo"
+          }
+        ]
+      }} />
       <Header />
 
       {/* Hero Banner with GSAP parallax + fade */}

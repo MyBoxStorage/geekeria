@@ -26,6 +26,7 @@ import {
   truncateForDb,
 } from '../../services/risk/riskScoring.js';
 import { validateItemsStock, type ProductStockData } from '../../utils/stockValidation.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // Schema de validação
 const createOrderSchema = z.object({
@@ -120,10 +121,7 @@ export async function createOrder(req: Request, res: Response) {
     const validationResult = createOrderSchema.safeParse(req.body);
     
     if (!validationResult.success) {
-      return res.status(400).json({
-        error: 'Validation error',
-        details: validationResult.error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados do pedido inválidos', { details: validationResult.error.issues });
     }
 
     const { payer, shipping, items, couponCode } = validationResult.data;
@@ -197,12 +195,7 @@ export async function createOrder(req: Request, res: Response) {
     const foundIds = new Set(products.map((p) => p.id));
     const missingIds = productIds.filter((pid) => !foundIds.has(pid));
     if (missingIds.length > 0) {
-      return res.status(400).json({
-        ok: false,
-        error: 'PRODUCT_NOT_FOUND',
-        message: 'Um ou mais produtos não foram encontrados.',
-        details: missingIds.map((id) => ({ productId: id })),
-      });
+      return sendError(res, req, 400, 'PRODUCT_NOT_FOUND', 'Um ou mais produtos não foram encontrados.', { details: missingIds.map((id) => ({ productId: id })) });
     }
 
     // Validar estoque (color + size) contra colorStock do DB
@@ -229,12 +222,7 @@ export async function createOrder(req: Request, res: Response) {
 
     if (stockViolations.length > 0) {
       logger.warn(`Stock validation failed: ${JSON.stringify(stockViolations)}`);
-      return res.status(400).json({
-        ok: false,
-        error: 'OUT_OF_STOCK_VARIANT',
-        message: 'Uma ou mais combinações de cor/tamanho não estão disponíveis.',
-        details: stockViolations,
-      });
+      return sendError(res, req, 400, 'OUT_OF_STOCK_VARIANT', 'Uma ou mais combinações de cor/tamanho não estão disponíveis.', { details: stockViolations });
     }
 
     const hasTestProducts = products.some((p) => p.category === 'TESTES');
@@ -364,10 +352,6 @@ export async function createOrder(req: Request, res: Response) {
 
   } catch (error) {
     logger.error('Create order error:', errorMeta(error));
-    
-    res.status(500).json({
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar pedido');
   }
 }

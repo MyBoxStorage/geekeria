@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * POST /api/coupons/validate
@@ -16,7 +17,7 @@ export async function validateCoupon(
     const userId = req.user?.id;
 
     if (!code) {
-      res.status(400).json({ error: 'Código do cupom é obrigatório' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Código do cupom é obrigatório');
       return;
     }
 
@@ -27,22 +28,22 @@ export async function validateCoupon(
     });
 
     if (!coupon) {
-      res.status(404).json({ error: 'Cupom não encontrado' });
+      sendError(res, req, 404, 'NOT_FOUND', 'Cupom não encontrado');
       return;
     }
 
     if (!coupon.isActive) {
-      res.status(400).json({ error: 'Cupom inativo' });
+      sendError(res, req, 400, 'COUPON_INACTIVE', 'Cupom inativo');
       return;
     }
 
     if (coupon.expiresAt && new Date() > coupon.expiresAt) {
-      res.status(400).json({ error: 'Cupom expirado' });
+      sendError(res, req, 400, 'COUPON_EXPIRED', 'Cupom expirado');
       return;
     }
 
     if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
-      res.status(400).json({ error: 'Cupom esgotado' });
+      sendError(res, req, 400, 'COUPON_EXHAUSTED', 'Cupom esgotado');
       return;
     }
 
@@ -55,7 +56,7 @@ export async function validateCoupon(
       });
 
       if (previousUse) {
-        res.status(400).json({ error: 'Você já usou este cupom' });
+        sendError(res, req, 400, 'COUPON_ALREADY_USED', 'Você já usou este cupom');
         return;
       }
     }
@@ -71,6 +72,6 @@ export async function validateCoupon(
     });
   } catch (error) {
     console.error('Validate coupon error:', error);
-    res.status(500).json({ error: 'Erro ao validar cupom' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao validar cupom');
   }
 }

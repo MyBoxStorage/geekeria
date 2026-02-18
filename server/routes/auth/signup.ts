@@ -4,6 +4,7 @@ import { prisma } from '../../utils/prisma.js';
 import { sendWelcomeEmail } from '../../utils/email.js';
 import { signupSchema } from './schemas.js';
 import { generateToken } from '../../utils/authMiddleware.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * POST /api/auth/signup
@@ -13,10 +14,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
   try {
     const validation = signupSchema.safeParse(req.body);
     if (!validation.success) {
-      res.status(400).json({
-        error: 'Dados inválidos',
-        details: validation.error.issues,
-      });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados inválidos', { details: validation.error.issues });
       return;
     }
 
@@ -24,7 +22,7 @@ export async function signup(req: Request, res: Response): Promise<void> {
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      res.status(409).json({ error: 'Email já cadastrado' });
+      sendError(res, req, 409, 'EMAIL_ALREADY_EXISTS', 'Email já cadastrado');
       return;
     }
 
@@ -74,6 +72,6 @@ export async function signup(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ error: 'Erro ao criar conta' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar conta');
   }
 }

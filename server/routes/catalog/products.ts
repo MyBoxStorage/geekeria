@@ -9,6 +9,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { sendCachedJson } from '../../utils/httpCache.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -152,7 +153,7 @@ export async function listCatalogProducts(req: Request, res: Response) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro desconhecido';
     logger.error(`listCatalogProducts error: ${message}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao carregar catálogo.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao carregar catálogo.');
   }
 }
 
@@ -164,7 +165,7 @@ export async function getCatalogProduct(req: Request, res: Response) {
     const slug = typeof rawSlug === 'string' ? rawSlug.trim() : '';
 
     if (!slug) {
-      return res.status(400).json({ ok: false, error: 'Slug é obrigatório.' });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Slug é obrigatório.');
     }
 
     const product = await prisma.product.findFirst({
@@ -173,12 +174,12 @@ export async function getCatalogProduct(req: Request, res: Response) {
     });
 
     if (!product) {
-      return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Produto não encontrado.');
     }
 
     // Test-category products are never served via the public catalog
     if (isTestCategory(product.category)) {
-      return res.status(404).json({ ok: false, error: 'Produto não encontrado.' });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Produto não encontrado.');
     }
 
     const mapped = {
@@ -192,6 +193,6 @@ export async function getCatalogProduct(req: Request, res: Response) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro desconhecido';
     logger.error(`getCatalogProduct error: ${message}`);
-    return res.status(500).json({ ok: false, error: 'Erro ao carregar produto.' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao carregar produto.');
   }
 }

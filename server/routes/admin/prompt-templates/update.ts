@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { sendError } from '../../../utils/errorResponse.js';
 import { prisma } from '../../../utils/prisma.js';
 
 export async function updatePromptTemplate(
@@ -8,7 +9,7 @@ export async function updatePromptTemplate(
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!id) {
-      res.status(400).json({ error: 'ID obrigatório' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'ID obrigatório');
       return;
     }
     const { name, content } = req.body;
@@ -27,6 +28,6 @@ export async function updatePromptTemplate(
     });
   } catch (error) {
     console.error('Update prompt template error:', error);
-    res.status(500).json({ error: 'Erro ao atualizar template' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao atualizar template');
   }
 }

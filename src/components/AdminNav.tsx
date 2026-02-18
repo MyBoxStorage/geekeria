@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom';
+import { clearAdminToken } from '@/hooks/useAdminAuth';
 
 export function AdminNav() {
   const [searchParams] = useSearchParams();
@@ -13,7 +14,7 @@ export function AdminNav() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token');
+    clearAdminToken();
     window.location.href = '/admin?tab=dashboard';
   };
 

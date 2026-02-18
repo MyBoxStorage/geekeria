@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminNav } from '@/components/AdminNav';
 import { apiConfig } from '@/config/api';
+import { getAdminToken, setAdminToken, clearAdminToken } from '@/hooks/useAdminAuth';
+import { getAdminErrorMessage, isAdminAuthError } from '@/utils/adminErrors';
 
 interface PromptTemplate {
   id: string;
@@ -15,16 +17,16 @@ interface PromptTemplate {
 export function AdminPromptsPage() {
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adminToken, setAdminToken] = useState(() => localStorage.getItem('admin_token') || '');
+  const [adminToken, setAdminTokenState] = useState(() => getAdminToken() || '');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(null);
   const [newTemplate, setNewTemplate] = useState({ name: '', content: '' });
   const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('admin_token');
+    const savedToken = getAdminToken();
     if (savedToken) {
-      setAdminToken(savedToken);
+      setAdminTokenState(savedToken);
       fetchTemplates(savedToken);
     } else {
       setLoading(false);
@@ -44,7 +46,8 @@ export function AdminPromptsPage() {
       });
 
       if (!res.ok) {
-        alert('Token inválido');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         setLoading(false);
         return;
       }
@@ -52,9 +55,10 @@ export function AdminPromptsPage() {
       const data = await res.json();
       setTemplates(data.templates);
       setIsAuthenticated(true);
-      localStorage.setItem('admin_token', tokenToUse);
+      setAdminToken(tokenToUse);
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      if (import.meta.env.DEV) console.error('Error fetching templates:', error);
+      alert(getAdminErrorMessage());
     } finally {
       setLoading(false);
     }
@@ -81,14 +85,18 @@ export function AdminPromptsPage() {
         body: JSON.stringify(newTemplate),
       });
 
-      if (!res.ok) throw new Error('Erro ao criar template');
+      if (!res.ok) {
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
+        return;
+      }
 
       setNewTemplate({ name: '', content: '' });
       setShowCreateForm(false);
       fetchTemplates();
     } catch (error) {
-      console.error('Error creating template:', error);
-      alert('Erro ao criar template');
+      if (import.meta.env.DEV) console.error('Error creating template:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -111,13 +119,17 @@ export function AdminPromptsPage() {
         }
       );
 
-      if (!res.ok) throw new Error('Erro ao atualizar template');
+      if (!res.ok) {
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
+        return;
+      }
 
       setEditingTemplate(null);
       fetchTemplates();
     } catch (error) {
-      console.error('Error updating template:', error);
-      alert('Erro ao atualizar template');
+      if (import.meta.env.DEV) console.error('Error updating template:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -133,12 +145,16 @@ export function AdminPromptsPage() {
         }
       );
 
-      if (!res.ok) throw new Error('Erro ao ativar template');
+      if (!res.ok) {
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
+        return;
+      }
 
       fetchTemplates();
     } catch (error) {
-      console.error('Error activating template:', error);
-      alert('Erro ao ativar template');
+      if (import.meta.env.DEV) console.error('Error activating template:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -152,7 +168,7 @@ export function AdminPromptsPage() {
             <input
               type="password"
               value={adminToken}
-              onChange={(e) => setAdminToken(e.target.value)}
+              onChange={(e) => setAdminTokenState(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
               placeholder="Digite o token de admin"
               required

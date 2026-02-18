@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth';
 import { apiConfig } from '@/config/api';
+import { useSEO } from '@/hooks/useSEO';
 import {
   User,
   Package,
@@ -357,6 +358,8 @@ function OrdersList({ orders, loading, error, onRefresh }: {
 // ─── Main Dashboard ───────────────────────────────────────────────
 
 export default function UserDashboard() {
+  useSEO({ title: 'Minha Conta | BRAVOS BRASIL', description: '', noindex: true });
+
   const { user, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');

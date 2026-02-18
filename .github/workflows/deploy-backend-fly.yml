@@ -109,6 +109,28 @@ jobs:
           echo "::error::buildSha not found in /health after 3 attempts. Expected: $EXPECTED_SHA. Last body: $resp"
           exit 1
 
+      - name: Smoke — GET /health/ready (DB readiness)
+        env:
+          BACKEND_URL: ${{ secrets.MONITOR_API_URL }}
+        run: |
+          URL="${BACKEND_URL:-https://bravosbackend.fly.dev}"
+          for i in 1 2 3; do
+            echo "Attempt $i/3..."
+            code=$(curl -s -o /tmp/health-ready.json -w "%{http_code}" "$URL/health/ready")
+            echo "Status: $code"
+            if [ "$code" = "200" ]; then
+              cat /tmp/health-ready.json
+              echo ""
+              echo "health/ready: OK"
+              exit 0
+            fi
+            echo "health/ready returned $code, retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::health/ready not 200 after 3 attempts (last: $code)"
+          cat /tmp/health-ready.json 2>/dev/null || true
+          exit 1
+
       - name: Smoke — GET /api/internal/monitor
         env:
           BACKEND_URL: ${{ secrets.MONITOR_API_URL }}

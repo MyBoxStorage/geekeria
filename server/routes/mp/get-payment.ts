@@ -9,26 +9,19 @@
 import { Request, Response } from 'express';
 import { logger } from '../../utils/logger.js';
 import { errorMeta } from '../../utils/logging.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 export async function getPayment(req: Request, res: Response) {
   const raw = req.params.paymentId;
   const paymentId = typeof raw === 'string' ? raw.trim() : Array.isArray(raw) ? raw[0]?.trim() ?? '' : '';
   if (!paymentId) {
-    return res.status(400).json({
-      ok: false,
-      error: 'MISSING_PAYMENT_ID',
-      message: 'paymentId is required',
-    });
+    return sendError(res, req, 400, 'MISSING_PAYMENT_ID', 'paymentId is required');
   }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
   if (!accessToken) {
     logger.error('MP_ACCESS_TOKEN not set');
-    return res.status(500).json({
-      ok: false,
-      error: 'MP_ACCESS_TOKEN not set',
-      message: 'Server configuration error',
-    });
+    return sendError(res, req, 500, 'SERVER_CONFIG_ERROR', 'Mercado Pago access token not configured');
   }
 
   try {
@@ -54,12 +47,8 @@ export async function getPayment(req: Request, res: Response) {
       });
 
       // Keep status mapping: MP 5xx -> 502, MP 4xx -> 400
-      return res.status(mpResponse.status >= 500 ? 502 : 400).json({
-        ok: false,
-        error: 'MP_GET_PAYMENT_FAILED',
-        status: mpResponse.status,
-        message: mpData?.message || 'Falha ao buscar pagamento no Mercado Pago',
-      });
+      const proxyStatus = mpResponse.status >= 500 ? 502 : 400;
+      return sendError(res, req, proxyStatus, 'MP_GET_PAYMENT_FAILED', 'Falha ao buscar pagamento no Mercado Pago', { mpStatus: mpResponse.status });
     }
 
     // Extrair PIX do point_of_interaction.transaction_data (mesmo formato usado em create-payment)
@@ -97,11 +86,6 @@ export async function getPayment(req: Request, res: Response) {
     });
   } catch (err) {
     logger.error('getPayment error:', errorMeta(err));
-    return res.status(500).json({
-      ok: false,
-      error: 'MP_GET_PAYMENT_FAILED',
-      status: 500,
-      message: err instanceof Error ? err.message : 'Erro ao buscar pagamento',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar pagamento');
   }
 }

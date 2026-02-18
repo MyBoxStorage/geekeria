@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { sendError } from '../../../utils/errorResponse.js';
 import { prisma } from '../../../utils/prisma.js';
 
 export async function listCoupons(req: Request, res: Response): Promise<void> {
@@ -18,6 +19,6 @@ export async function listCoupons(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('List coupons error:', error);
-    res.status(500).json({ error: 'Erro ao listar cupons' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao listar cupons');
   }
 }

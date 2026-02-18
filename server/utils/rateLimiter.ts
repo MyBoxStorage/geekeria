@@ -4,6 +4,39 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+import { sendError } from './errorResponse.js';
+
+/**
+ * Resolve the real client IP from a request.
+ *
+ * Priority:
+ *  1. req.ip — Express parses x-forwarded-for respecting `trust proxy` setting.
+ *     With `app.set('trust proxy', 1)` this is the right-most untrusted IP.
+ *  2. fly-client-ip — Fly.io injects the real client IP in this header.
+ *  3. x-forwarded-for first entry — manual fallback (parsed, trimmed).
+ *  4. req.socket.remoteAddress — direct connection.
+ *  5. 'unknown' — last resort (never returns null).
+ */
+export function resolveClientIp(req: Request): string {
+  // 1. req.ip (trust proxy already configured)
+  if (req.ip) return req.ip;
+
+  // 2. Fly.io specific header
+  const fly = req.headers['fly-client-ip'];
+  if (fly && typeof fly === 'string') return fly.trim();
+
+  // 3. x-forwarded-for first entry (manual parse)
+  const xff = req.headers['x-forwarded-for'];
+  if (xff) {
+    const first = (Array.isArray(xff) ? xff[0] : xff.split(',')[0])?.trim();
+    if (first) return first;
+  }
+
+  // 4. Direct socket
+  if (req.socket?.remoteAddress) return req.socket.remoteAddress;
+
+  return 'unknown';
+}
 
 export type RateLimitEntry = {
   count: number;
@@ -46,12 +79,7 @@ export function createRateLimiter(
 
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const ip =
-        (req.headers['x-forwarded-for'] as string) ||
-        req.socket.remoteAddress ||
-        req.ip ||
-        'unknown';
-
+      const ip = resolveClientIp(req);
       const key = `${ip}:${routeKey}`;
       const now = Date.now();
       const entry = store.get(key);
@@ -69,7 +97,9 @@ export function createRateLimiter(
       }
 
       if (entry.count >= maxRequests) {
-        res.status(429).json({ error: 'Too many requests' });
+        const retryAfterSeconds = Math.ceil(windowMs / 1000);
+        res.setHeader('Retry-After', String(retryAfterSeconds));
+        sendError(res, req, 429, 'RATE_LIMITED', 'Muitas requisições. Aguarde um pouco e tente novamente.', { retryAfterSeconds });
         return;
       }
 

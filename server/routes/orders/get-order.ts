@@ -18,6 +18,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const getOrderSchema = z.object({
   externalReference: z.string().min(1),
@@ -65,10 +66,7 @@ export async function getOrder(req: Request, res: Response) {
     if (!order) {
       logger.warn(`Order not found: externalReference=${params.externalReference}`);
       // Não revelar se email bate ou não
-      return res.status(404).json({
-        error: 'Order not found',
-        message: 'Pedido não encontrado',
-      });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
     }
 
     // Validar email completo
@@ -80,10 +78,7 @@ export async function getOrder(req: Request, res: Response) {
         `Order email mismatch or missing: externalReference=${params.externalReference}`
       );
       // 404 genérico para não vazar informações
-      return res.status(404).json({
-        error: 'Order not found',
-        message: 'Pedido não encontrado',
-      });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
     }
 
     const payerEmailMasked = maskEmail(orderEmail);
@@ -142,17 +137,10 @@ export async function getOrder(req: Request, res: Response) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       logger.warn(`Invalid request: ${error.issues.map((e: any) => e.path.join('.')).join(', ')}`);
-      return res.status(400).json({
-        error: 'Invalid request',
-        message: 'Parâmetros inválidos',
-        details: error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Parâmetros inválidos', { details: error.issues });
     }
 
     logger.error(`Error getting order: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: 'Erro ao buscar pedido',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar pedido');
   }
 }

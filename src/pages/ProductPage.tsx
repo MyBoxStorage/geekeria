@@ -32,6 +32,7 @@ import {
   type BinaryGender,
 } from '@/utils/productStock';
 import type { Product } from '@/types';
+import { JsonLd } from '@/components/JsonLd';
 
 /* ══════════════════════════════════════════════════════════
    LOADING SKELETON
@@ -319,6 +320,57 @@ function ProductLoader({ slug }: { slug: string }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {product && (
+        <JsonLd data={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.name,
+          "description": product.description,
+          "image": imageUrl,
+          "sku": product.id,
+          "brand": {
+            "@type": "Brand",
+            "name": "BRAVOS BRASIL"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": `https://bravosbrasil.com.br/produto/${product.slug}`,
+            "priceCurrency": "BRL",
+            "price": product.price,
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": "BRAVOS BRASIL"
+            }
+          }
+        }} />
+      )}
+      {product && (
+        <JsonLd data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Início",
+              "item": "https://bravosbrasil.com.br"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Catálogo",
+              "item": "https://bravosbrasil.com.br/catalogo"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": product.name,
+              "item": `https://bravosbrasil.com.br/produto/${product.slug}`
+            }
+          ]
+        }} />
+      )}
       <Header />
       <ProductHero productName={product.name} category={product.category} />
 

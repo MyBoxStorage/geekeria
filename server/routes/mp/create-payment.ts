@@ -23,6 +23,7 @@ import {
   computeOrderRiskSimple,
   truncateForDb,
 } from '../../services/risk/riskScoring.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // Schema de validação
 const createPaymentSchema = z.object({
@@ -52,10 +53,7 @@ export async function createPayment(req: Request, res: Response) {
     const validationResult = createPaymentSchema.safeParse(req.body);
     
     if (!validationResult.success) {
-      return res.status(400).json({
-        error: 'Validation error',
-        details: validationResult.error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados de pagamento inválidos', { details: validationResult.error.issues });
     }
 
     const { items, payer, amount, paymentMethod, existingOrderId, existingExternalReference } = validationResult.data;
@@ -64,10 +62,7 @@ export async function createPayment(req: Request, res: Response) {
     const accessToken = process.env.MP_ACCESS_TOKEN;
     if (!accessToken) {
       logger.error('MP_ACCESS_TOKEN não configurado');
-      return res.status(500).json({
-        error: 'Server configuration error',
-        message: 'Mercado Pago access token not configured',
-      });
+      return sendError(res, req, 500, 'SERVER_CONFIG_ERROR', 'Mercado Pago access token not configured');
     }
 
     // Reutilizar pedido existente (se fornecido pelo checkout) ou criar novo
@@ -82,17 +77,11 @@ export async function createPayment(req: Request, res: Response) {
       });
 
       if (!existingOrder) {
-        return res.status(404).json({
-          error: 'Order not found',
-          message: 'Pedido existente não encontrado. Tente novamente.',
-        });
+        return sendError(res, req, 404, 'NOT_FOUND', 'Pedido existente não encontrado. Tente novamente.');
       }
 
       if (existingOrder.externalReference !== existingExternalReference) {
-        return res.status(400).json({
-          error: 'External reference mismatch',
-          message: 'Referência do pedido não confere.',
-        });
+        return sendError(res, req, 400, 'REFERENCE_MISMATCH', 'Referência do pedido não confere.');
       }
 
       orderId = existingOrder.id;
@@ -293,10 +282,6 @@ export async function createPayment(req: Request, res: Response) {
 
   } catch (error) {
     logger.error('Create payment error:', errorMeta(error));
-    
-    res.status(500).json({
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao processar pagamento');
   }
 }

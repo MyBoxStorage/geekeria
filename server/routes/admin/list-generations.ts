@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * GET /api/admin/generations
@@ -57,6 +58,6 @@ export async function listGenerations(
     });
   } catch (error) {
     console.error('List generations error:', error);
-    res.status(500).json({ error: 'Erro ao listar gerações' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao listar gerações');
   }
 }

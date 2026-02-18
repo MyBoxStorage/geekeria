@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { AdminNav } from '@/components/AdminNav';
 import { Download, RefreshCw } from 'lucide-react';
 import { apiConfig } from '@/config/api';
+import { getAdminToken, setAdminToken as persistAdminToken, clearAdminToken } from '@/hooks/useAdminAuth';
+import { getAdminErrorMessage, isAdminAuthError } from '@/utils/adminErrors';
 
 const API_URL = apiConfig.baseURL;
 
@@ -42,23 +44,25 @@ export function AdminGenerationsPage() {
       );
 
       if (!res.ok) {
-        alert('Token inválido');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         return;
       }
 
       const data = await res.json();
       setGenerations(data.generations);
       setIsAuthenticated(true);
-      localStorage.setItem('admin_token', adminToken);
+      persistAdminToken(adminToken);
     } catch (error) {
-      console.error('Error fetching generations:', error);
+      if (import.meta.env.DEV) console.error('Error fetching generations:', error);
+      alert(getAdminErrorMessage());
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('admin_token');
+    const savedToken = getAdminToken();
     if (savedToken) {
       setAdminToken(savedToken);
     }
@@ -86,8 +90,8 @@ export function AdminGenerationsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download error:', error);
-      alert('Erro ao baixar imagem');
+      if (import.meta.env.DEV) console.error('Download error:', error);
+      alert(getAdminErrorMessage());
     }
   };
 

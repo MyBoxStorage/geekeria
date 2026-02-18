@@ -1,21 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { AdminNav } from '@/components/AdminNav';
 import { apiConfig } from '@/config/api';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { getAdminToken, setAdminToken as persistAdminToken, clearAdminToken } from '@/hooks/useAdminAuth';
+import { getAdminErrorMessage, isAdminAuthError } from '@/utils/adminErrors';
+
+const AdminOverviewCharts = lazy(() => import('@/components/admin/AdminOverviewCharts'));
 
 interface AnalyticsData {
   overview: {
@@ -41,7 +30,7 @@ export function AdminDashboardPage() {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('admin_token');
+    const savedToken = getAdminToken();
     if (savedToken) {
       setAdminToken(savedToken);
       fetchAnalytics(savedToken);
@@ -72,16 +61,18 @@ export function AdminDashboardPage() {
       );
 
       if (!res.ok) {
-        alert('Token inválido');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         return;
       }
 
       const data = await res.json();
       setAnalytics(data.analytics);
       setIsAuthenticated(true);
-      localStorage.setItem('admin_token', tokenToUse);
+      persistAdminToken(tokenToUse);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      if (import.meta.env.DEV) console.error('Error fetching analytics:', error);
+      alert(getAdminErrorMessage());
     } finally {
       setLoading(false);
     }
@@ -132,8 +123,6 @@ export function AdminDashboardPage() {
   }
 
   if (!analytics) return null;
-
-  const COLORS = ['#00843D', '#FFD700', '#3B82F6', '#EF4444', '#8B5CF6'];
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -228,99 +217,20 @@ export function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Gráfico de Vendas por Dia */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">
-            📈 Vendas dos Últimos 30 Dias
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={analytics.salesByDay}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(date) =>
-                  new Date(date).toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                  })
-                }
-              />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip
-                labelFormatter={(date) =>
-                  new Date(date).toLocaleDateString('pt-BR')
-                }
-                formatter={(value: number, name: string) =>
-                  name === 'revenue' ? `R$ ${value.toFixed(2)}` : value
-                }
-              />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="count"
-                stroke="#3B82F6"
-                name="Pedidos"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="revenue"
-                stroke="#00843D"
-                name="Receita (R$)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Top Produtos */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold mb-4">🏆 Top 10 Produtos</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.topProducts.slice(0, 10)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="productName"
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="totalSold" fill="#00843D" name="Vendidos" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Status dos Pedidos */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-bold mb-4">📦 Status dos Pedidos</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={analytics.ordersByStatus}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.status}: ${entry.count}`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {analytics.ordersByStatus.map((_, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Charts (lazy-loaded — Recharts is ~450 kB) */}
+        <Suspense
+          fallback={
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6 text-sm text-gray-400">
+              Carregando gráficos…
+            </div>
+          }
+        >
+          <AdminOverviewCharts
+            salesByDay={analytics.salesByDay}
+            topProducts={analytics.topProducts}
+            ordersByStatus={analytics.ordersByStatus}
+          />
+        </Suspense>
 
         {/* Cards de Cupons */}
         <div className="grid md:grid-cols-2 gap-4 mt-6">

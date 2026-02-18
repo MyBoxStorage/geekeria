@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const listAdminOrdersSchema = z.object({
   status: z.string().default('READY_FOR_MONTINK'),
@@ -43,10 +44,7 @@ export async function listAdminOrders(req: Request, res: Response) {
 
     if (!parsed.success) {
       logger.warn('Invalid admin orders list request');
-      return res.status(400).json({
-        error: 'Invalid request',
-        message: 'Parâmetros inválidos',
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Parâmetros inválidos');
     }
 
     const { status, limit } = parsed.data;
@@ -92,10 +90,7 @@ export async function listAdminOrders(req: Request, res: Response) {
     logger.error(
       `Error in admin list orders: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: 'Erro ao listar pedidos',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao listar pedidos');
   }
 }
 
@@ -121,10 +116,7 @@ export async function exportAdminOrder(req: Request, res: Response) {
 
     if (!parsed.success) {
       logger.warn('Invalid admin export request');
-      return res.status(400).json({
-        error: 'Invalid request',
-        message: 'Parâmetros inválidos',
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Parâmetros inválidos');
     }
 
     const { externalReference, includeCpf } = parsed.data;
@@ -150,10 +142,7 @@ export async function exportAdminOrder(req: Request, res: Response) {
 
     if (!order) {
       logger.warn(`Admin export: order not found externalReference=${externalReference}`);
-      return res.status(404).json({
-        error: 'Order not found',
-        message: 'Pedido não encontrado',
-      });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
     }
 
     const exportPayload = {
@@ -224,10 +213,7 @@ export async function exportAdminOrder(req: Request, res: Response) {
     logger.error(
       `Error in admin export order: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: 'Erro ao exportar pedido',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao exportar pedido');
   }
 }
 

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout/
+Disallow: /minha-conta
+Disallow: /minhas-estampas
+Disallow: /order
+
+Sitemap: https://bravosbrasil.com.br/sitemap.xml

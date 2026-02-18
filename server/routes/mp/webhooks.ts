@@ -11,14 +11,28 @@ import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 import { fetchMpPayment, MpHttpError } from '../../services/mp/fetchPayment.js';
 import { mapMpStatusToOrderStatus } from '../../services/mp/statusMapper.js';
 
 /**
  * Valida assinatura do webhook conforme documentação Mercado Pago.
- * Header x-signature: ts=<timestamp>,v1=<hmac_hex>
- * Manifest: id:<data.id>;request-id:<x-request-id>;ts:<ts>;
- * HMAC SHA256(secret, manifest) deve ser igual a v1.
+ *
+ * IMPORTANTE — esquema de assinatura do MP:
+ * O MP **NÃO** assina o body do request. Ele assina um "manifest" construído
+ * a partir de metadados: data.id (query/body), x-request-id (header) e
+ * timestamp (ts, extraído do próprio header x-signature).
+ *
+ * Formato do header:
+ *   x-signature: ts=<timestamp>,v1=<hmac_hex>
+ *
+ * Manifest (string para HMAC):
+ *   id:<data.id>;request-id:<x-request-id>;ts:<ts>;
+ *
+ * Algoritmo: HMAC-SHA256(secret, manifest) → hex
+ * Comparação: timing-safe (crypto.timingSafeEqual) para evitar timing oracle.
+ *
+ * Referência: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
  */
 function verifyWebhookSignature(
   secret: string,
@@ -40,6 +54,8 @@ function verifyWebhookSignature(
 
   const partsManifest: string[] = [];
   if (dataId != null && dataId !== '') {
+    // MP payment IDs are numeric strings — toLowerCase() is a no-op for them.
+    // Preserved for defensive compatibility; MP signs the id it sends.
     const id = typeof dataId === 'string' && /^[a-zA-Z0-9]+$/.test(dataId) ? dataId.toLowerCase() : dataId;
     partsManifest.push(`id:${id}`);
   }
@@ -48,14 +64,22 @@ function verifyWebhookSignature(
   const manifest = partsManifest.join(';') + ';';
 
   const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
-  return expected === hash;
+
+  // Timing-safe comparison to prevent timing oracle attacks
+  if (expected.length !== hash.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(hash, 'hex'));
+  } catch {
+    // Buffer.from can throw if hash contains invalid hex chars
+    return false;
+  }
 }
 
 export async function webhookHandler(req: Request, res: Response) {
   const webhookSecret = process.env.MP_WEBHOOK_SECRET;
   if (!webhookSecret || webhookSecret.trim() === '') {
-    logger.warn('[WEBHOOK] MP_WEBHOOK_SECRET not configured');
-    res.status(401).json({ error: 'Webhook secret not configured' });
+    logger.warn('mp_webhook_rejected', { event: 'mp_webhook_rejected', reason: 'secret_not_configured' });
+    sendError(res, req, 401, 'MP_WEBHOOK_UNAUTHORIZED', 'Webhook secret not configured');
     return;
   }
 
@@ -68,18 +92,31 @@ export async function webhookHandler(req: Request, res: Response) {
   const dataId = dataIdQuery != null ? String(dataIdQuery) : dataIdBody != null ? String(dataIdBody) : undefined;
 
   if (!verifyWebhookSignature(webhookSecret, xSignature, reqId, dataId)) {
-    logger.warn('[WEBHOOK] Signature validation failed', {
+    logger.warn('mp_webhook_rejected', {
+      event: 'mp_webhook_rejected',
+      reason: xSignature ? 'invalid_signature' : 'missing_signature',
+      requestId: reqId ?? null,
+      dataId: dataId ?? null,
       hasSignature: !!xSignature,
       hasRequestId: !!reqId,
       hasDataId: !!dataId,
     });
-    res.status(401).json({ error: 'Invalid signature' });
+    sendError(res, req, 401, 'MP_WEBHOOK_UNAUTHORIZED', 'Invalid signature');
     return;
   }
 
+  // Log structured entry for every accepted webhook
+  logger.info('mp_webhook_received', {
+    event: 'mp_webhook_received',
+    requestId: reqId ?? null,
+    dataId: dataId ?? null,
+    topic: req.body?.type ?? req.body?.topic ?? 'unknown',
+    hasSignature: !!xSignature,
+  });
+
   // Sempre responder 200 rapidamente para o Mercado Pago
   // Processamento assíncrono acontece após resposta
-  res.status(200).json({ received: true });
+  res.status(200).json({ ok: true, result: 'accepted' });
 
   try {
     // Extract básico
@@ -99,7 +136,7 @@ export async function webhookHandler(req: Request, res: Response) {
           processedAt: new Date(),
         },
       });
-      logger.info('[WEBHOOK] Event ignored: empty eventId', { eventType });
+      logger.info('mp_webhook_ignored', { event: 'mp_webhook_ignored', reason: 'empty_event_id', eventType });
       return;
     }
 
@@ -115,18 +152,20 @@ export async function webhookHandler(req: Request, res: Response) {
           status: 'received',
         },
       });
-      logger.info('[WEBHOOK] Event received', { eventType, eventId });
+      logger.info('mp_webhook_event_created', { event: 'mp_webhook_event_created', eventType, dataId: eventId });
     } catch (error: any) {
       // Se falhar por unique constraint, evento já foi processado
       if (error.code === 'P2002') {
-        logger.info('[WEBHOOK] Event already processed', { eventType, eventId });
+        logger.info('mp_webhook_duplicate', { event: 'mp_webhook_duplicate', eventType, dataId: eventId });
         return;
       }
       // Outro erro: logar e retornar
-      logger.error('[WEBHOOK] Error creating WebhookEvent', {
+      logger.error('mp_webhook_error', {
+        event: 'mp_webhook_error',
+        stage: 'create_webhook_event',
         eventType,
-        eventId,
-        error: error.message,
+        dataId: eventId,
+        message: error.message,
       });
       return;
     }
@@ -143,7 +182,7 @@ export async function webhookHandler(req: Request, res: Response) {
           processedAt: new Date(),
         },
       });
-      logger.info('[WEBHOOK] Merchant order processed', { eventId });
+      logger.info('mp_webhook_processed', { event: 'mp_webhook_processed', result: 'merchant_order_ack', dataId: eventId });
     } else {
       // Tipo não tratado: marcar como ignored
       await prisma.webhookEvent.update({
@@ -153,11 +192,13 @@ export async function webhookHandler(req: Request, res: Response) {
           processedAt: new Date(),
         },
       });
-      logger.info('[WEBHOOK] Unhandled event type', { eventType, eventId });
+      logger.info('mp_webhook_ignored', { event: 'mp_webhook_ignored', reason: 'unhandled_event_type', eventType, dataId: eventId });
     }
   } catch (error) {
-    logger.error('[WEBHOOK] Processing error', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+    logger.error('mp_webhook_error', {
+      event: 'mp_webhook_error',
+      stage: 'top_level',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
     // Erro já foi logado, resposta 200 já foi enviada
   }
@@ -175,7 +216,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
     // Buscar detalhes do pagamento na API do Mercado Pago
     const accessToken = process.env.MP_ACCESS_TOKEN;
     if (!accessToken) {
-      logger.error('[WEBHOOK] MP_ACCESS_TOKEN não configurado', { webhookEventId, paymentId });
+      logger.error('mp_webhook_error', { event: 'mp_webhook_error', stage: 'missing_access_token', paymentId });
       await prisma.webhookEvent.update({
         where: { id: webhookEventId },
         data: {
@@ -192,12 +233,10 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
       payment = await fetchMpPayment(paymentId);
     } catch (err) {
       if (err instanceof MpHttpError && err.status === 404) {
-        logger.info('[WEBHOOK] Payment not found (404), ignoring', {
-          webhookEventId,
-          provider: 'mercadopago',
+        logger.info('mp_webhook_ignored', {
+          event: 'mp_webhook_ignored',
+          reason: 'payment_not_found_404',
           paymentId,
-          httpStatus: 404,
-          action: 'ignored',
         });
         await prisma.webhookEvent.update({
           where: { id: webhookEventId },
@@ -209,7 +248,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
         });
       } else {
         const msg = err instanceof Error ? err.message : 'Unknown error';
-        logger.error('[WEBHOOK] Failed to fetch payment', { webhookEventId, paymentId, error: msg });
+        logger.error('mp_webhook_error', { event: 'mp_webhook_error', stage: 'fetch_payment', paymentId, message: msg });
         await prisma.webhookEvent.update({
           where: { id: webhookEventId },
           data: {
@@ -236,7 +275,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           processedAt: new Date(),
         },
       });
-      logger.info('[WEBHOOK] Payment ignored: externalReference missing', { webhookEventId, paymentId });
+      logger.info('mp_webhook_ignored', { event: 'mp_webhook_ignored', reason: 'missing_external_reference', paymentId });
       return;
     }
 
@@ -260,11 +299,12 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
             processedAt: new Date(),
           },
         });
-        logger.info('[WEBHOOK] Payment ID already processed for different order', {
-          webhookEventId,
+        logger.info('mp_webhook_duplicate', {
+          event: 'mp_webhook_duplicate',
+          reason: 'payment_id_on_different_order',
           paymentId: mpPaymentId,
-          currentExternalRef: externalReference,
-          existingExternalRef: existingOrderWithPaymentId.externalReference,
+          orderRef: externalReference,
+          existingOrderRef: existingOrderWithPaymentId.externalReference,
         });
         return;
       }
@@ -293,7 +333,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           processedAt: new Date(),
         },
       });
-      logger.warn('[WEBHOOK] Order not found', { webhookEventId, paymentId, externalReference });
+      logger.warn('mp_webhook_error', { event: 'mp_webhook_error', stage: 'order_lookup', reason: 'order_not_found', paymentId, orderRef: externalReference });
       return;
     }
 
@@ -314,10 +354,11 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
             processedAt: new Date(),
           },
         });
-        logger.info('[WEBHOOK] Payment already processed, status unchanged', {
-          webhookEventId,
+        logger.info('mp_webhook_duplicate', {
+          event: 'mp_webhook_duplicate',
+          reason: 'status_unchanged',
           paymentId: mpPaymentId,
-          externalReference,
+          orderRef: externalReference,
           currentStatus: order.status,
           mpStatus: order.mpStatus,
         });
@@ -327,7 +368,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
 
     const orderStatus = mapMpStatusToOrderStatus(mpStatus);
     if (mpStatus && !['approved', 'cancelled', 'rejected', 'refunded', 'charged_back', 'pending', 'in_process'].includes(mpStatus)) {
-      logger.warn('[WEBHOOK] Unknown payment status', { webhookEventId, paymentId, mpStatus });
+      logger.warn('mp_webhook_unknown_status', { event: 'mp_webhook_unknown_status', paymentId, mpStatus });
     }
 
     // VERIFICAÇÃO 3: Atualizar apenas se status realmente mudou
@@ -344,10 +385,11 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           processedAt: new Date(),
         },
       });
-      logger.info('[WEBHOOK] No changes detected, skipping update', {
-        webhookEventId,
+      logger.info('mp_webhook_duplicate', {
+        event: 'mp_webhook_duplicate',
+        reason: 'no_changes',
         paymentId: mpPaymentId,
-        externalReference,
+        orderRef: externalReference,
         currentStatus: order.status,
         newStatus: orderStatus,
       });
@@ -373,7 +415,8 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
       !order.creditsGranted
     ) {
       try {
-        logger.info('[WEBHOOK] Payment approved, granting credits', {
+        logger.info('mp_webhook_credits_pending', {
+          event: 'mp_webhook_credits_pending',
           orderId: order.id,
           buyerId: order.buyerId,
         });
@@ -397,15 +440,19 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           }),
         ]);
 
-        logger.info('[WEBHOOK] +5 credits granted', {
+        logger.info('mp_webhook_credits_granted', {
+          event: 'mp_webhook_credits_granted',
           orderId: order.id,
           buyerId: order.buyerId,
+          amount: 5,
         });
       } catch (creditError) {
-        logger.error('[WEBHOOK] Error granting credits', {
+        logger.error('mp_webhook_error', {
+          event: 'mp_webhook_error',
+          stage: 'grant_credits',
           orderId: order.id,
           buyerId: order.buyerId,
-          error: creditError instanceof Error ? creditError.message : 'Unknown',
+          message: creditError instanceof Error ? creditError.message : 'Unknown',
         });
         // NÃO falha o webhook - apenas loga o erro
       }
@@ -420,11 +467,11 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
           // Fire-and-forget: não aguardar resultado
           processMontinkFulfillment(order.id).catch((err: unknown) => {
             // Erro já foi logado dentro de processMontinkFulfillment
-            logger.error('[WEBHOOK] Montink fulfillment async error', { orderId: order.id, error: err });
+            logger.error('mp_webhook_error', { event: 'mp_webhook_error', stage: 'montink_fulfillment', orderId: order.id, message: err instanceof Error ? err.message : 'Unknown' });
           });
         })
         .catch((err: unknown) => {
-          logger.error('[WEBHOOK] Failed to load montinkFulfillment service', { error: err });
+          logger.error('mp_webhook_error', { event: 'mp_webhook_error', stage: 'montink_import', message: err instanceof Error ? err.message : 'Unknown' });
         });
     }
 
@@ -437,24 +484,23 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
       },
     });
 
-    // Log estruturado sem PII (sem email, CPF, nome, etc)
-    logger.info('[WEBHOOK] Order updated successfully', {
-      webhookEventId,
-      orderId: order.id,
-      externalReference,
+    logger.info('mp_webhook_processed', {
+      event: 'mp_webhook_processed',
       paymentId: mpPaymentId,
+      orderRef: externalReference,
+      mpStatus,
+      newOrderStatus: orderStatus,
       previousStatus: order.status,
-      newStatus: orderStatus,
       previousMpStatus: order.mpStatus,
-      newMpStatus: mpStatus,
       statusChanged,
       paymentIdChanged,
     });
   } catch (error) {
-    logger.error('[WEBHOOK] Error processing payment event', {
-      webhookEventId,
+    logger.error('mp_webhook_error', {
+      event: 'mp_webhook_error',
+      stage: 'process_payment',
       paymentId,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
     await prisma.webhookEvent.update({
       where: { id: webhookEventId },

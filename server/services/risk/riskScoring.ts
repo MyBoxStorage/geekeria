@@ -5,16 +5,17 @@
 
 import type { Request } from 'express';
 import type { PrismaClient } from '@prisma/client';
+import { resolveClientIp } from '../../utils/rateLimiter.js';
 
-/** Get client IP (Fly, then x-forwarded-for, then socket). Truncates to 255. */
+/**
+ * Get client IP for DB storage. Delegates to resolveClientIp (which
+ * respects Express trust proxy + Fly.io headers), then truncates to 255.
+ * Returns null only when resolveClientIp returns 'unknown'.
+ */
 export function getClientIp(req: Request): string | null {
-  const fly = req.headers['fly-client-ip'];
-  if (fly && typeof fly === 'string') return truncateForDb(fly);
-  const xff = req.headers['x-forwarded-for'];
-  const first = Array.isArray(xff) ? xff[0] : typeof xff === 'string' ? xff.split(',')[0]?.trim() : null;
-  if (first) return truncateForDb(first);
-  const addr = req.socket?.remoteAddress;
-  return addr ? truncateForDb(addr) : null;
+  const ip = resolveClientIp(req);
+  if (ip === 'unknown') return null;
+  return truncateForDb(ip);
 }
 
 /** Get user-agent, truncated to 255. */

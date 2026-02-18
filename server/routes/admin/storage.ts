@@ -19,6 +19,7 @@ import multer from 'multer';
 import path from 'path';
 import { getSupabaseAdmin } from '../../utils/supabaseAdmin.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const BUCKET = 'products';
 
@@ -67,7 +68,7 @@ export async function uploadProductImage(req: Request, res: Response) {
   try {
     const file = req.file;
     if (!file) {
-      return res.status(400).json({ ok: false, error: 'Nenhum arquivo enviado. Use o campo "file".' });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Nenhum arquivo enviado. Use o campo "file".');
     }
 
     const folder = (req.body.folder as string) || 'products';
@@ -89,7 +90,7 @@ export async function uploadProductImage(req: Request, res: Response) {
 
     if (error) {
       logger.error(`Supabase Storage upload failed: ${error.message}`);
-      return res.status(500).json({ ok: false, error: `Erro no upload: ${error.message}` });
+      return sendError(res, req, 500, 'UPLOAD_ERROR', 'Erro no upload do arquivo.');
     }
 
     // Build public URL (bucket is public)
@@ -110,6 +111,6 @@ export async function uploadProductImage(req: Request, res: Response) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro desconhecido';
     logger.error(`Upload handler error: ${message}`);
-    return res.status(500).json({ ok: false, error: message });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro no processamento do upload.');
   }
 }

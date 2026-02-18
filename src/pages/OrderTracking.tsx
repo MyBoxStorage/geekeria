@@ -9,6 +9,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Search, Package, MapPin, Loader2, AlertCircle, Home, RefreshCw, Copy, Check, HelpCircle, AlertTriangle, MessageCircle } from 'lucide-react';
+import { useSEO } from '@/hooks/useSEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ import { getOrderStatusLabel, getOrderStatusHint } from '@/types/order';
 import { pickOrderItemImage } from '@/utils/productImages';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
+import { buildWhatsAppLink } from '@/utils/whatsapp';
 
 const PENDING_AUTO_REFRESH_MS = 30_000;
 
@@ -101,6 +103,8 @@ function getTimeline(status: OrderStatus): Array<{ label: string; state: StepSta
 type OrderTrackingState = { ref?: string; email?: string } | null;
 
 export default function OrderTracking() {
+  useSEO({ title: 'Rastreamento de Pedido | BRAVOS BRASIL', description: '', noindex: true });
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -180,11 +184,15 @@ export default function OrderTracking() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !externalReference) { toast.error('Preencha email e número do pedido'); return; }
+    if (!email || !externalReference) { toast.error('Preencha email e numero do pedido'); return; }
     setLoading(true); setError(null); setOrder(null);
     try {
       const orderData = await loadOrder(externalReference, email);
       setOrder(orderData);
+      // Atualizar URL para tornar link compartilhavel
+      const url = new URL(window.location.href);
+      url.searchParams.set('ref', externalReference);
+      window.history.replaceState(null, '', url.toString());
       toast.success('Pedido encontrado!');
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
@@ -410,25 +418,33 @@ export default function OrderTracking() {
                     </Alert>
                   )}
 
-                  {/* Seção de Ajuda para CANCELADO/FAILED */}
-                  {(order.status === 'CANCELED' || order.status === 'FAILED') && (
+                  {/* Seção de Ajuda para CANCELADO/FAILED/REFUNDED */}
+                  {(order.status === 'CANCELED' || order.status === 'FAILED' || order.status === 'REFUNDED') && (
                     <div className="mt-4 rounded-xl border border-[#002776]/10 bg-[#F8FAFC] p-4">
                       <p className="text-sm font-semibold text-[#002776] mb-2 flex items-center gap-2 font-body">
                         <MessageCircle className="w-4 h-4 text-[#002776]" />
                         Precisa de ajuda?
                       </p>
                       <p className="text-sm text-[#002776]/70 mb-3 font-body">
-                        Se seu pedido foi cancelado ou não concluiu, entre em contato com nosso suporte.
+                        {order.status === 'REFUNDED'
+                          ? 'Seu pedido foi reembolsado. Se tiver duvidas, fale com nosso suporte.'
+                          : 'Se seu pedido foi cancelado ou nao concluiu, entre em contato com nosso suporte.'}
                       </p>
                       <Button
                         type="button"
-                        variant="outline"
                         size="sm"
                         asChild
-                        className="border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-colors"
+                        className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-lg transition-colors"
                       >
-                        <a href="mailto:suporte@bravosbrasil.com.br" target="_blank" rel="noopener noreferrer">
-                          Falar com suporte
+                        <a
+                          href={buildWhatsAppLink(
+                            `Olá! Preciso de ajuda com meu pedido. Referencia: ${order.externalReference}. Status: ${getOrderStatusLabel(order.status)}. Pode me orientar?`
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          FALAR NO WHATSAPP
                         </a>
                       </Button>
                     </div>
@@ -514,21 +530,15 @@ export default function OrderTracking() {
                     </div>
                   )}
 
-                  {order.shipping.address1 && (
+                  {/* Destino (apenas cidade/UF por privacidade) */}
+                  {order.shipping.city && order.shipping.state && (
                     <div className="mt-4 pt-4 border-t border-[#002776]/10">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-[#002776]/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-[#002776]/10 rounded-lg flex items-center justify-center flex-shrink-0">
                           <MapPin className="w-4 h-4 text-[#002776]" />
                         </div>
-                        <div className="text-xs text-[#002776]/70 font-body text-left">
-                          <p className="font-medium text-[#002776]">{order.shipping.address1}</p>
-                          {order.shipping.number && <p>Nº {order.shipping.number}</p>}
-                          {order.shipping.complement && <p>{order.shipping.complement}</p>}
-                          {order.shipping.district && <p>{order.shipping.district}</p>}
-                          {order.shipping.city && order.shipping.state && (
-                            <p>{order.shipping.city} - {order.shipping.state}</p>
-                          )}
-                          {order.shipping.cep && <p>CEP: {order.shipping.cep}</p>}
+                        <div className="text-xs text-[#002776]/70 font-body">
+                          <p className="font-medium text-[#002776]">Destino: {order.shipping.city} - {order.shipping.state}</p>
                         </div>
                       </div>
                     </div>
@@ -570,15 +580,34 @@ export default function OrderTracking() {
               </ul>
             </div>
 
-            {/* Botão Voltar */}
-            <div className="pt-4 border-t border-[#002776]/10">
+            {/* CTAs de rodape */}
+            <div className="pt-4 border-t border-[#002776]/10 space-y-3">
+              {order?.externalReference && (
+                <Button
+                  variant="ghost"
+                  className="w-full text-[#25D366] hover:text-[#128C7E] hover:bg-[#25D366]/10 rounded-lg transition-all duration-300"
+                  size="lg"
+                  asChild
+                >
+                  <a
+                    href={buildWhatsAppLink(
+                      `Olá! Quero acompanhar meu pedido. Referencia: ${order.externalReference}. Pode me ajudar?`
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    FALAR NO WHATSAPP
+                  </a>
+                </Button>
+              )}
               <Button
                 variant="outline"
                 className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/catalogo')}
               >
                 <Home className="w-4 h-4 mr-2" />
-                Voltar para a Loja
+                VOLTAR AO CATALOGO
               </Button>
             </div>
           </CardContent>

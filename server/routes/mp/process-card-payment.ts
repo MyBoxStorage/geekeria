@@ -25,6 +25,7 @@ import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { errorMeta } from '../../utils/logging.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const processCardPaymentSchema = z.object({
   token: z.string().min(1, 'Token é obrigatório'),
@@ -51,10 +52,7 @@ export async function processCardPayment(req: Request, res: Response) {
       logger.warn('Card payment validation error', {
         issues: validationResult.error.issues,
       });
-      return res.status(400).json({
-        error: 'Validation error',
-        details: validationResult.error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados de pagamento inválidos', { details: validationResult.error.issues });
     }
 
     const {
@@ -71,10 +69,7 @@ export async function processCardPayment(req: Request, res: Response) {
     const accessToken = process.env.MP_ACCESS_TOKEN;
     if (!accessToken) {
       logger.error('MP_ACCESS_TOKEN não configurado');
-      return res.status(500).json({
-        error: 'Server configuration error',
-        message: 'Mercado Pago access token not configured',
-      });
+      return sendError(res, req, 500, 'SERVER_CONFIG_ERROR', 'Mercado Pago access token not configured');
     }
 
     // Buscar o pedido existente pelo external_reference
@@ -93,10 +88,7 @@ export async function processCardPayment(req: Request, res: Response) {
 
     if (!order) {
       logger.warn('Order not found for card payment', { external_reference });
-      return res.status(404).json({
-        error: 'Order not found',
-        message: `Pedido não encontrado: ${external_reference}`,
-      });
+      return sendError(res, req, 404, 'NOT_FOUND', 'Pedido não encontrado');
     }
 
     // Verificar se o pedido já foi pago
@@ -106,11 +98,7 @@ export async function processCardPayment(req: Request, res: Response) {
         status: order.status,
         mpPaymentId: order.mpPaymentId,
       });
-      return res.status(409).json({
-        error: 'Order already processed',
-        message: 'Este pedido já possui um pagamento associado.',
-        status: order.status,
-      });
+      return sendError(res, req, 409, 'ORDER_ALREADY_PROCESSED', 'Este pedido já possui um pagamento associado.', { status: order.status });
     }
 
     // Validar que o valor bate com o pedido
@@ -121,10 +109,7 @@ export async function processCardPayment(req: Request, res: Response) {
         orderTotal: order.total,
         requestAmount: transaction_amount,
       });
-      return res.status(400).json({
-        error: 'Amount mismatch',
-        message: 'O valor do pagamento não confere com o pedido.',
-      });
+      return sendError(res, req, 400, 'AMOUNT_MISMATCH', 'O valor do pagamento não confere com o pedido.');
     }
 
     // Preparar payload para a API do Mercado Pago
@@ -271,11 +256,6 @@ export async function processCardPayment(req: Request, res: Response) {
     });
   } catch (error) {
     logger.error('Process card payment error:', errorMeta(error));
-
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao processar pagamento com cartão');
   }
 }

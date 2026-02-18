@@ -1,65 +1,80 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, Home, MapPin, Loader2, PackageSearch, MessageCircle } from 'lucide-react';
+import { CheckCircle, Package, Home, MapPin, Loader2, PackageSearch, MessageCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getOrder } from '@/services/orders';
 import type { OrderResponse } from '@/types/order';
 import { formatCurrency } from '@/lib/utils';
 import { toast } from 'sonner';
 import { buildWhatsAppLink } from '@/utils/whatsapp';
+import { loadPendingCheckout, clearPendingCheckout } from '@/utils/pendingCheckout';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSEO } from '@/hooks/useSEO';
+
+interface LegacyPending {
+  externalReference?: string;
+  email?: string;
+}
 
 export default function CheckoutSuccess() {
+  useSEO({ title: 'Pedido Confirmado | BRAVOS BRASIL', description: '', noindex: true });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const externalReference = searchParams.get('external_reference') ?? searchParams.get('ref');
+  const { user } = useAuth();
 
-  const [trackOrderRef] = useState<string | null>(() => {
-    const fromUrl = searchParams.get('ref') ?? searchParams.get('external_reference');
-    if (fromUrl) return fromUrl;
+  const queryRef = searchParams.get('external_reference') ?? searchParams.get('ref');
+
+  // ── Recuperacao de referencia: query > V1 > legacy ──────────────────
+  const pendingV1 = useMemo(() => loadPendingCheckout(), []);
+
+  const resolvedRef = useMemo(() => {
+    if (queryRef) return queryRef;
+    if (pendingV1?.externalReference) return pendingV1.externalReference;
     try {
       const raw = localStorage.getItem('bb_order_pending');
-      if (!raw) return null;
-      const data = JSON.parse(raw) as { externalReference?: string };
-      return data.externalReference ?? null;
-    } catch {
-      return null;
+      if (raw) {
+        const parsed = JSON.parse(raw) as LegacyPending;
+        if (parsed.externalReference) return parsed.externalReference;
+      }
+    } catch { /* ignore */ }
+    return null;
+  }, [queryRef, pendingV1]);
+
+  const resolvedEmail = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('bb_order_pending');
+      if (raw) {
+        const parsed = JSON.parse(raw) as LegacyPending;
+        if (parsed.externalReference === resolvedRef && parsed.email) return parsed.email;
+      }
+    } catch { /* ignore */ }
+    return pendingV1?.payer?.email ?? null;
+  }, [resolvedRef, pendingV1]);
+
+  // ── Limpeza segura: somente se temos referencia resolvida ───────────
+  useEffect(() => {
+    if (resolvedRef) {
+      clearPendingCheckout();
+      try { localStorage.removeItem('pixPaymentData'); } catch { /* ignore */ }
     }
-  });
+  }, [resolvedRef]);
 
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const pendingEmailRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const refToLoad = trackOrderRef ?? externalReference;
-    if (!refToLoad) {
-      setLoading(false);
-      return;
-    }
-
-    let pendingEmail: string | null = null;
-    try {
-      const pendingRaw = localStorage.getItem('bb_order_pending');
-      const pending = pendingRaw ? (JSON.parse(pendingRaw) as { externalReference?: string; email?: string } | null) : null;
-      if (pending?.externalReference === refToLoad) {
-        pendingEmail = pending?.email ?? null;
-      }
-      pendingEmailRef.current = pendingEmail;
-    } catch {
-      pendingEmailRef.current = null;
-    }
-
-    if (!refToLoad || !pendingEmail) {
+    if (!resolvedRef || !resolvedEmail) {
       setLoading(false);
       return;
     }
 
     const loadOrder = async () => {
       try {
-        const orderData = await getOrder(refToLoad, pendingEmail!);
+        const orderData = await getOrder(resolvedRef, resolvedEmail);
         setOrder(orderData);
       } catch {
+        if (import.meta.env.DEV) console.error('Erro ao carregar detalhes do pedido');
         toast.error('Erro ao carregar detalhes do pedido');
       } finally {
         setLoading(false);
@@ -67,7 +82,7 @@ export default function CheckoutSuccess() {
     };
 
     loadOrder();
-  }, [trackOrderRef, externalReference]);
+  }, [resolvedRef, resolvedEmail]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#00843D]/10 via-[#00843D]/5 to-[#FFCC29]/10 p-4">
@@ -88,7 +103,7 @@ export default function CheckoutSuccess() {
 
           {/* Subtítulo */}
           <p className="text-base sm:text-lg text-[#002776]/70 mb-6 sm:mb-8 font-body">
-            Seu pedido foi confirmado com sucesso e já está sendo processado.
+            Seu pedido foi confirmado. Voce pode acompanhar o status a qualquer momento.
           </p>
 
           {/* Badge de Status Aprovado */}
@@ -106,24 +121,24 @@ export default function CheckoutSuccess() {
           ) : (
             <>
               {/* Card do Número do Pedido - com cores da marca */}
-              {(externalReference || trackOrderRef) && (
+              {resolvedRef && (
                 <div className="bg-gradient-to-r from-[#00843D]/10 to-[#00843D]/5 rounded-xl p-5 sm:p-6 mb-6 border border-[#00843D]/30 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="w-8 h-8 bg-[#00843D]/10 rounded-full flex items-center justify-center">
                       <Package className="w-4 h-4 text-[#00843D]" />
                     </div>
-                    <p className="text-sm font-medium text-[#00843D] font-body">Número do Pedido</p>
+                    <p className="text-sm font-medium text-[#00843D] font-body">Referencia do pedido</p>
                   </div>
                   <p className="text-xl sm:text-2xl font-mono font-bold text-[#002776]">
-                    #{externalReference || trackOrderRef}
+                    #{resolvedRef}
                   </p>
                 </div>
               )}
 
               {/* Aviso quando não tem order - com amarelo da marca */}
-              {!loading && trackOrderRef && !order && (
+              {!loading && resolvedRef && !order && (
                 <div className="text-sm text-[#002776] bg-[#FFCC29]/10 border border-[#FFCC29]/30 rounded-xl p-4 mb-4 font-body">
-                  Para acompanhar, use o botão abaixo e informe seu e-mail.
+                  Para acompanhar, use o botao abaixo e informe seu e-mail.
                 </div>
               )}
 
@@ -208,17 +223,14 @@ export default function CheckoutSuccess() {
 
           {/* Botões de Ação */}
           <div className="space-y-3">
-            {trackOrderRef ? (
+            {resolvedRef ? (
               <Button
                 className="w-full bg-[#00843D] hover:bg-[#006633] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 size="lg"
                 onClick={() => {
-                  const emailForState = pendingEmailRef.current ?? undefined;
-                  navigate(`/order?ref=${encodeURIComponent(trackOrderRef)}`, {
-                    state: { ref: trackOrderRef, email: emailForState },
+                  navigate(`/order?ref=${encodeURIComponent(resolvedRef)}`, {
+                    state: { ref: resolvedRef, email: resolvedEmail ?? undefined },
                   });
-                  localStorage.removeItem('bb_order_pending');
-                  localStorage.removeItem('pixPaymentData');
                 }}
                 aria-label="Acompanhar meu pedido"
               >
@@ -227,9 +239,21 @@ export default function CheckoutSuccess() {
               </Button>
             ) : (
               <p className="text-sm text-[#002776]/60 py-2 font-body">
-                Pagamento confirmado. Se você não encontrar seu pedido, verifique seu e-mail.
+                Pagamento confirmado. Se voce nao encontrar seu pedido, verifique seu e-mail.
               </p>
             )}
+
+            <Link to="/minha-conta" className="block">
+              <Button
+                className="w-full border-2 border-[#002776] text-[#002776] hover:bg-[#002776] hover:text-white rounded-lg transition-all duration-300"
+                size="lg"
+                variant="outline"
+              >
+                <User className="w-4 h-4 mr-2" />
+                {user ? 'IR PARA MINHA CONTA' : 'CRIAR CONTA PARA ACOMPANHAR'}
+              </Button>
+            </Link>
+
             <Link to="/catalogo" className="block">
               <Button
                 className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
@@ -238,9 +262,10 @@ export default function CheckoutSuccess() {
                 aria-label="Voltar ao catálogo"
               >
                 <Home className="w-4 h-4 mr-2" />
-                VOLTAR AO CATÁLOGO
+                VOLTAR AO CATALOGO
               </Button>
             </Link>
+
             <Button
               variant="ghost"
               className="w-full text-[#25D366] hover:text-[#128C7E] hover:bg-[#25D366]/10 rounded-lg transition-all duration-300"
@@ -249,8 +274,8 @@ export default function CheckoutSuccess() {
             >
               <a
                 href={buildWhatsAppLink(
-                  trackOrderRef
-                    ? `Olá! Meu pagamento foi aprovado e quero acompanhar meu pedido. Referência: ${trackOrderRef}. Pode me ajudar?`
+                  resolvedRef
+                    ? `Olá! Meu pagamento foi aprovado e quero acompanhar meu pedido. Referência: ${resolvedRef}. Pode me ajudar?`
                     : 'Olá! Meu pagamento foi aprovado e preciso de ajuda com meu pedido. Pode me ajudar?'
                 )}
                 target="_blank"

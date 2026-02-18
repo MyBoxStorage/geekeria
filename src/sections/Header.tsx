@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, ShoppingCart, ShoppingBag, Menu, X, Minus, Plus, Trash2, User, LogOut } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +26,7 @@ export function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { cart, totalItems, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
   const { user, logout } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +36,16 @@ export function Header() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // ── Deep-link: /?checkout=1 abre o modal automaticamente ──────────
+  useEffect(() => {
+    if (searchParams.get('checkout') === '1' && !isCheckoutOpen) {
+      setIsCheckoutOpen(true);
+      // Remover o param da URL para não reabrir ao refresh
+      searchParams.delete('checkout');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, isCheckoutOpen, setSearchParams]);
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);

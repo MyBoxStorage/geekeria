@@ -25,6 +25,7 @@ import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { errorMeta } from '../../utils/logging.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 // ── Validation schema ───────────────────────────────────────────────────────
 
@@ -60,12 +61,7 @@ export async function createPreference(req: Request, res: Response) {
         body: Object.keys(req.body),
         errors: validationResult.error.issues,
       });
-      return res.status(400).json({
-        ok: false,
-        error: 'MISSING_ORDER_REFERENCE',
-        message: 'externalReference ou orderId é obrigatório. Crie o pedido primeiro via POST /api/checkout/create-order.',
-        details: validationResult.error.issues,
-      });
+      return sendError(res, req, 400, 'MISSING_ORDER_REFERENCE', 'externalReference ou orderId é obrigatório. Crie o pedido primeiro via POST /api/checkout/create-order.');
     }
 
     const { externalReference, orderId } = validationResult.data;
@@ -93,11 +89,7 @@ export async function createPreference(req: Request, res: Response) {
 
     if (!order) {
       logger.warn(`create-preference: order not found (extRef=${externalReference}, id=${orderId})`);
-      return res.status(404).json({
-        ok: false,
-        error: 'ORDER_NOT_FOUND',
-        message: 'Pedido não encontrado. Crie o pedido primeiro via POST /api/checkout/create-order.',
-      });
+      return sendError(res, req, 404, 'ORDER_NOT_FOUND', 'Pedido não encontrado. Crie o pedido primeiro via POST /api/checkout/create-order.');
     }
 
     // ── 2. Check Mercado Pago Access Token ──────────────────────────────
@@ -105,11 +97,7 @@ export async function createPreference(req: Request, res: Response) {
     const accessToken = process.env.MP_ACCESS_TOKEN;
     if (!accessToken) {
       logger.error('MP_ACCESS_TOKEN não configurado');
-      return res.status(500).json({
-        ok: false,
-        error: 'Server configuration error',
-        message: 'Mercado Pago access token not configured',
-      });
+      return sendError(res, req, 500, 'SERVER_CONFIG_ERROR', 'Mercado Pago access token not configured');
     }
 
     // ── 3. Build preference from Order data ─────────────────────────────
@@ -229,11 +217,6 @@ export async function createPreference(req: Request, res: Response) {
     });
   } catch (error) {
     logger.error('Create preference error:', errorMeta(error));
-
-    res.status(500).json({
-      ok: false,
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar preferência de pagamento');
   }
 }

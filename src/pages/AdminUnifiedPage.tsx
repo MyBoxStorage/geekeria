@@ -1,13 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
-import { AdminDashboardPage } from './AdminDashboardPage';
-import { AdminGenerationsPage } from './AdminGenerationsPage';
-import { AdminPromptsPage } from './AdminPromptsPage';
-import { AdminCouponsPage } from './AdminCouponsPage';
-import ProductAdmin from '@/components/admin/ProductAdmin';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLogin } from './AdminLogin';
+import { useSEO } from '@/hooks/useSEO';
+
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const AdminDashboardPage = lazy(() =>
+  import('./AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage }))
+);
+const AdminGenerationsPage = lazy(() =>
+  import('./AdminGenerationsPage').then((m) => ({ default: m.AdminGenerationsPage }))
+);
+const AdminPromptsPage = lazy(() =>
+  import('./AdminPromptsPage').then((m) => ({ default: m.AdminPromptsPage }))
+);
+const AdminCouponsPage = lazy(() =>
+  import('./AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage }))
+);
+const ProductAdmin = lazy(() => import('@/components/admin/ProductAdmin'));
 
 type TabId = 'orders' | 'dashboard' | 'generations' | 'prompts' | 'coupons' | 'products';
 
@@ -40,6 +50,8 @@ function resolveInitialTab(paramTab: string | null, pathname: string): TabId {
 }
 
 export function AdminUnifiedPage() {
+  useSEO({ title: 'Admin | BRAVOS BRASIL', description: '', noindex: true });
+
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,12 +70,12 @@ export function AdminUnifiedPage() {
     navigate(`/admin?tab=${tab}`, { replace: true });
   };
 
-  if (activeTab === 'products' && !isAuthenticated) {
+  // Gate: require admin auth for ALL tabs (consistent UX on expired/missing token)
+  if (!isAuthenticated) {
     return (
       <AdminLogin
         onLogin={login}
         error={error}
-        onBack={() => switchTab('orders')}
       />
     );
   }
@@ -186,19 +198,27 @@ export function AdminUnifiedPage() {
 
       {/* ── CONTENT ── */}
       <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
-        {activeTab === 'orders' && <AdminDashboard />}
-        {activeTab === 'dashboard' && <AdminDashboardPage />}
-        {activeTab === 'generations' && <AdminGenerationsPage />}
-        {activeTab === 'prompts' && <AdminPromptsPage />}
-        {activeTab === 'coupons' && <AdminCouponsPage />}
-        {activeTab === 'products' && isAuthenticated && (
-          <ProductAdmin
-            onLogout={() => {
-              logout();
-              switchTab('orders');
-            }}
-          />
-        )}
+        <Suspense
+          fallback={
+            <div style={{ padding: 24, color: '#666', fontSize: 13, fontFamily: "'Inter', sans-serif" }}>
+              Carregando…
+            </div>
+          }
+        >
+          {activeTab === 'orders' && <AdminDashboard />}
+          {activeTab === 'dashboard' && <AdminDashboardPage />}
+          {activeTab === 'generations' && <AdminGenerationsPage />}
+          {activeTab === 'prompts' && <AdminPromptsPage />}
+          {activeTab === 'coupons' && <AdminCouponsPage />}
+          {activeTab === 'products' && (
+            <ProductAdmin
+              onLogout={() => {
+                logout();
+                switchTab('orders');
+              }}
+            />
+          )}
+        </Suspense>
       </main>
     </div>
   );

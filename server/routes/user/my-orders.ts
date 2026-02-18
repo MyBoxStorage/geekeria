@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * GET /api/user/my-orders?limit=5
@@ -12,7 +13,7 @@ export async function getMyOrders(
 ): Promise<void> {
   try {
     if (!req.user) {
-      res.status(401).json({ error: 'Não autenticado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Não autenticado');
       return;
     }
 
@@ -58,6 +59,6 @@ export async function getMyOrders(
     });
   } catch (error) {
     console.error('Get my orders error:', error);
-    res.status(500).json({ error: 'Erro ao buscar pedidos' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar pedidos');
   }
 }

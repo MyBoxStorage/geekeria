@@ -9,6 +9,7 @@ import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../utils/prisma.js';
 import { logger } from '../../utils/logger.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const auditParamsSchema = z.object({
   externalReference: z.string().min(1),
@@ -24,7 +25,7 @@ export async function getOrderAudit(req: Request, res: Response) {
     });
 
     if (!parsed.success) {
-      return res.status(400).json({ ok: false, error: 'INVALID_PARAMS' });
+      return sendError(res, req, 400, 'INVALID_PARAMS', 'Parâmetros inválidos');
     }
 
     const { externalReference } = parsed.data;
@@ -43,7 +44,7 @@ export async function getOrderAudit(req: Request, res: Response) {
     });
 
     if (!order) {
-      return res.status(404).json({ ok: false, error: 'ORDER_NOT_FOUND' });
+      return sendError(res, req, 404, 'ORDER_NOT_FOUND', 'Pedido não encontrado');
     }
 
     const [adminEvents, webhookEvents] = await Promise.all([
@@ -123,9 +124,6 @@ export async function getOrderAudit(req: Request, res: Response) {
     logger.error(
       `Audit error: ${err instanceof Error ? err.message : String(err)}`
     );
-    return res.status(500).json({
-      ok: false,
-      error: 'INTERNAL_ERROR',
-    });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar auditoria');
   }
 }

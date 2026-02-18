@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { getAdminToken } from '@/hooks/useAdminAuth';
 import {
   Plus,
   Trash2,
@@ -800,7 +801,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     }
   }, [draft, editingId]);
 
-  const getToken = () => localStorage.getItem('admin_token') || '';
+  const getToken = () => getAdminToken() || '';
 
   // ── Load products from backend on mount ──
   const loadProducts = useCallback(async () => {
@@ -829,8 +830,8 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         setProducts(mapped);
       }
     } catch (err) {
-      console.error('Failed to load products:', err);
-      showToast(`ERRO loadProducts: ${err instanceof Error ? err.message : JSON.stringify(err)}`);
+      if (import.meta.env.DEV) console.error('Failed to load products:', err);
+      showToast('Falha ao carregar produtos. Tente novamente.');
     } finally {
       setIsLoadingList(false);
     }
@@ -846,7 +847,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         setHealthItems(res.items);
       }
     } catch (err) {
-      console.error('Failed to load catalog health:', err);
+      if (import.meta.env.DEV) console.error('Failed to load catalog health:', err);
     }
   }, []);
 
@@ -913,7 +914,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
               uploadedUrls.set(id, result.publicUrl);
             }
           } catch (uploadErr) {
-            console.error(`Upload failed for ${kind}:`, uploadErr);
+            if (import.meta.env.DEV) console.error(`Upload failed for ${kind}:`, uploadErr);
             showToast(`Erro ao enviar imagem: ${kind}`);
           }
         }
@@ -931,11 +932,11 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
         }
       } else {
         const res = await adminCreateProduct(token, payload as unknown as Record<string, unknown>);
-        console.log('CREATE RESPONSE:', JSON.stringify(res));
+        if (import.meta.env.DEV) console.log('CREATE RESPONSE:', res);
         if (res.ok) {
           showToast('Produto criado no banco!');
         } else {
-          showToast(`CREATE FALHOU: ${JSON.stringify(res)}`);
+          showToast('Falha ao criar produto. Verifique os dados e tente novamente.');
         }
       }
 
@@ -958,7 +959,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
           msg = errObj.message;
         }
       }
-      console.error('handleSave error:', err);
+      if (import.meta.env.DEV) console.error('handleSave error:', err);
       showToast(msg);
     } finally {
       setIsSaving(false);
@@ -996,7 +997,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
           } as Product;
         }
       } catch (err) {
-        console.warn('Failed to load full product from backend, using list data:', err);
+        if (import.meta.env.DEV) console.warn('Failed to load full product from backend, using list data:', err);
       }
     }
 

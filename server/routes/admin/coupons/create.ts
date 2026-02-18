@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { sendError } from '../../../utils/errorResponse.js';
 import { prisma } from '../../../utils/prisma.js';
 
 export async function createCoupon(req: Request, res: Response): Promise<void> {
@@ -6,19 +7,19 @@ export async function createCoupon(req: Request, res: Response): Promise<void> {
     const { code, type, value, maxUses, expiresAt } = req.body;
 
     if (!code || !type || value === undefined) {
-      res.status(400).json({ error: 'Código, tipo e valor são obrigatórios' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Código, tipo e valor são obrigatórios');
       return;
     }
 
     const normalizedCode = code.trim().toUpperCase();
 
     if (type === 'PERCENTAGE' && value > 20) {
-      res.status(400).json({ error: 'Desconto máximo: 20%' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Desconto máximo: 20%');
       return;
     }
 
     if (value <= 0) {
-      res.status(400).json({ error: 'Valor deve ser maior que zero' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Valor deve ser maior que zero');
       return;
     }
 
@@ -27,7 +28,7 @@ export async function createCoupon(req: Request, res: Response): Promise<void> {
     });
 
     if (existing) {
-      res.status(400).json({ error: 'Código já existe' });
+      sendError(res, req, 400, 'DUPLICATE_CODE', 'Código já existe');
       return;
     }
 
@@ -47,6 +48,6 @@ export async function createCoupon(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     console.error('Create coupon error:', error);
-    res.status(500).json({ error: 'Erro ao criar cupom' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar cupom');
   }
 }

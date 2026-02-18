@@ -1,15 +1,17 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin, PackageSearch, MessageCircle } from 'lucide-react';
+import { Clock, QrCode, Barcode, Home, Mail, Copy, Check, Package, MapPin, PackageSearch, MessageCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { getOrder } from '@/services/orders';
 import { getPaymentDetails } from '@/services/mp-payment';
 import type { OrderResponse } from '@/types/order';
 import { formatCurrency } from '@/lib/utils';
 import { buildWhatsAppLink } from '@/utils/whatsapp';
+import { loadPendingCheckout } from '@/utils/pendingCheckout';
+import { useSEO } from '@/hooks/useSEO';
 
 interface PixPaymentData {
   qrCode: string;
@@ -34,6 +36,8 @@ function isValidMpPaymentId(value: string | null): boolean {
 }
 
 export default function CheckoutPending() {
+  useSEO({ title: 'Pagamento em análise | BRAVOS BRASIL', description: '', noindex: true });
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const paymentId = searchParams.get('payment_id');
@@ -41,11 +45,44 @@ export default function CheckoutPending() {
   const externalReference = searchParams.get('external_reference') ?? orderId;
   const paymentMethod = searchParams.get('payment_type_id');
 
+  // ── Recuperação de referência via localStorage (V1 + legado) ──────────
+  const pendingV1 = useMemo(() => loadPendingCheckout(), []);
+
+  /** Referência efetiva: query > V1 > legacy. Usada para exibição e CTAs. */
+  const resolvedRef = useMemo(() => {
+    if (externalReference) return externalReference;
+    if (pendingV1?.externalReference) return pendingV1.externalReference;
+    try {
+      const raw = localStorage.getItem('bb_order_pending');
+      if (raw) {
+        const parsed = JSON.parse(raw) as PendingOrderData;
+        if (parsed.externalReference) return parsed.externalReference;
+      }
+    } catch { /* ignore */ }
+    return null;
+  }, [externalReference, pendingV1]);
+
+  /** Email recuperado: legacy > V1. Usado para polling de pedido. */
+  const resolvedEmail = useMemo(() => {
+    try {
+      const raw = localStorage.getItem('bb_order_pending');
+      if (raw) {
+        const parsed = JSON.parse(raw) as PendingOrderData;
+        if (parsed.externalReference === resolvedRef && parsed.email) return parsed.email;
+      }
+    } catch { /* ignore */ }
+    return pendingV1?.payer?.email ?? null;
+  }, [resolvedRef, pendingV1]);
+
+  /** V1 existe mas não temos referência (cenário de pendência perdida). */
+  const pendingExistsNoRef = !!pendingV1 && !resolvedRef;
+
   if (import.meta.env.DEV) {
-    console.log('🔍 Debug Pending Page:');
+    console.log('Debug Pending Page:');
     console.log('- Order ID:', orderId);
     console.log('- Payment ID:', paymentId);
-    console.log('- External Reference:', externalReference);
+    console.log('- External Reference (query):', externalReference);
+    console.log('- Resolved Ref:', resolvedRef);
     console.log('- Payment Type:', paymentMethod);
     console.log('- isValidMpPaymentId(paymentId):', isValidMpPaymentId(paymentId));
   }
@@ -149,18 +186,7 @@ export default function CheckoutPending() {
     }
 
     async function fetchPaymentByOrder(ref: string): Promise<boolean> {
-      let email: string | null = null;
-      try {
-        const pendingRaw = localStorage.getItem('bb_order_pending');
-        if (pendingRaw) {
-          const pending = JSON.parse(pendingRaw) as PendingOrderData;
-          if (pending.externalReference === ref && pending.email) {
-            email = pending.email;
-          }
-        }
-      } catch {
-        // ignore
-      }
+      const email = resolvedEmail;
       if (!email) return false;
 
       try {
@@ -223,39 +249,20 @@ export default function CheckoutPending() {
 
   // Carregar dados do pedido e iniciar polling
   useEffect(() => {
-    if (!externalReference) return;
-
-    // Recuperar email do pedido pendente salvo no localStorage
-    let emailFromLocalStorage: string | null = null;
-    try {
-      const pendingRaw = localStorage.getItem('bb_order_pending');
-      if (pendingRaw) {
-        const pending = JSON.parse(pendingRaw) as PendingOrderData;
-        if (pending.externalReference === externalReference && pending.email) {
-          emailFromLocalStorage = pending.email;
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar bb_order_pending do localStorage:', error);
-    }
-
-    // Se não tivermos email, não fazemos polling de detalhes (mantém apenas tela de pendência)
-    if (!emailFromLocalStorage) {
-      return;
-    }
+    if (!resolvedRef || !resolvedEmail) return;
 
     const loadOrder = async () => {
       try {
-        const orderData = await getOrder(externalReference, emailFromLocalStorage as string);
+        const orderData = await getOrder(resolvedRef, resolvedEmail);
         setOrder(orderData);
 
         // Se status mudou para READY_FOR_MONTINK ou PAID, redirecionar
         if (orderData.status === 'READY_FOR_MONTINK' || orderData.status === 'PAID') {
-          navigate(`/checkout/success?external_reference=${externalReference}&payment_id=${paymentId || ''}`);
+          navigate(`/checkout/success?external_reference=${resolvedRef}&payment_id=${paymentId || ''}`);
           return;
         }
       } catch (error) {
-        console.error('Erro ao carregar pedido:', error);
+        if (import.meta.env.DEV) console.error('Erro ao carregar pedido:', error);
       }
     };
 
@@ -281,7 +288,7 @@ export default function CheckoutPending() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [externalReference, paymentId, navigate]);
+  }, [resolvedRef, resolvedEmail, paymentId, navigate]);
 
   // Função para copiar código PIX
   const handleCopyPixCode = () => {
@@ -316,9 +323,27 @@ export default function CheckoutPending() {
           </h1>
 
           {/* Subtítulo */}
-          <p className="text-base sm:text-lg text-[#002776]/70 mb-6 font-body">
+          <p className="text-base sm:text-lg text-[#002776]/70 mb-4 font-body">
             Aguardando confirmação do pagamento.
           </p>
+
+          {/* Instruções claras */}
+          <div className="mb-6 p-4 bg-[#002776]/5 rounded-xl border border-[#002776]/10 text-left">
+            <div className="flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-[#002776]/60 mt-0.5 shrink-0" />
+              <div className="space-y-1.5 text-sm text-[#002776]/70 font-body leading-relaxed">
+                <p>Se voce pagou via PIX, a confirmacao pode levar alguns minutos.</p>
+                <p>Nao e necessario pagar novamente se ja concluiu o PIX.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Aviso: V1 existe mas sem referência */}
+          {pendingExistsNoRef && (
+            <div className="mb-6 p-3 bg-amber-50 rounded-lg border border-amber-200 text-sm text-amber-800 font-body">
+              Nao encontramos a referencia do pedido neste dispositivo. Verifique seu e-mail para acompanhar o status.
+            </div>
+          )}
 
           {/* Badge de Status Pendente */}
           <div className="mb-6">
@@ -329,11 +354,11 @@ export default function CheckoutPending() {
           </div>
 
           {/* Card do Número do Pedido - com cores da marca */}
-          {externalReference && (
+          {resolvedRef && (
             <div className="bg-gradient-to-r from-[#FFCC29]/10 to-[#FFCC29]/5 rounded-xl p-5 sm:p-6 mb-6 border border-[#FFCC29]/30 hover:shadow-lg transition-shadow duration-300">
-              <p className="text-sm font-medium text-[#002776]/70 mb-2 font-body">Número do Pedido</p>
+              <p className="text-sm font-medium text-[#002776]/70 mb-2 font-body">Referencia do pedido</p>
               <p className="text-xl sm:text-2xl font-mono font-bold text-[#002776]">
-                #{externalReference}
+                #{resolvedRef}
               </p>
             </div>
           )}
@@ -435,11 +460,11 @@ export default function CheckoutPending() {
                   </>
                 ) : pixLoadFailed === 'FAILED' ? (
                   <>
-                    <strong className="font-semibold">PIX:</strong> Não foi possível carregar o QR Code aqui.
-                    {externalReference && (
-                      <> Consulte seu pedido com o número <strong className="font-semibold">#{externalReference}</strong> ou verifique seu email.</>
+                    <strong className="font-semibold">PIX:</strong> Nao foi possivel carregar o QR Code aqui.
+                    {resolvedRef && (
+                      <> Consulte seu pedido com o numero <strong className="font-semibold">#{resolvedRef}</strong> ou verifique seu email.</>
                     )}
-                    {!externalReference && ' Volte para a loja ou verifique seu email para as instruções de pagamento.'}
+                    {!resolvedRef && ' Volte para a loja ou verifique seu email para as instrucoes de pagamento.'}
                   </>
                 ) : (
                   <>
@@ -552,24 +577,14 @@ export default function CheckoutPending() {
 
           {/* Botões de Ação */}
           <div className="space-y-3">
-            {(externalReference || order?.externalReference) ? (
+            {(resolvedRef || order?.externalReference) ? (
               <Button
                 className="w-full bg-[#00843D] hover:bg-[#006633] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
                 size="lg"
                 onClick={() => {
-                  const ref = externalReference || order?.externalReference || '';
-                  let email: string | undefined;
-                  try {
-                    const pendingRaw = localStorage.getItem('bb_order_pending');
-                    const pending = pendingRaw ? (JSON.parse(pendingRaw) as PendingOrderData | null) : null;
-                    if (pending?.externalReference === ref && pending?.email) {
-                      email = pending.email;
-                    }
-                  } catch {
-                    // ignore
-                  }
+                  const ref = resolvedRef || order?.externalReference || '';
                   navigate(`/order?ref=${encodeURIComponent(ref)}`, {
-                    state: { ref, email },
+                    state: { ref, email: resolvedEmail ?? undefined },
                   });
                 }}
                 aria-label="Acompanhar meu pedido"
@@ -579,7 +594,7 @@ export default function CheckoutPending() {
               </Button>
             ) : (
               <p className="text-sm text-[#002776]/60 py-2 font-body">
-                Verifique seu e-mail para instruções de pagamento e acompanhamento.
+                Verifique seu e-mail para instrucoes de pagamento e acompanhamento.
               </p>
             )}
             <Link to="/catalogo" className="block">
@@ -590,7 +605,7 @@ export default function CheckoutPending() {
                 aria-label="Voltar ao catálogo"
               >
                 <Home className="w-4 h-4 mr-2" />
-                VOLTAR AO CATÁLOGO
+                VOLTAR AO CATALOGO
               </Button>
             </Link>
             <Button
@@ -602,7 +617,7 @@ export default function CheckoutPending() {
               <a
                 href={buildWhatsAppLink(
                   (() => {
-                    const ref = externalReference || order?.externalReference;
+                    const ref = resolvedRef || order?.externalReference;
                     const tipo = isPix ? ' (PIX)' : '';
                     return ref
                       ? `Olá! Estou com um pagamento pendente${tipo} e quero confirmar o status do meu pedido. Referência: ${ref}. Pode me ajudar?`
@@ -616,6 +631,15 @@ export default function CheckoutPending() {
                 FALAR NO WHATSAPP
               </a>
             </Button>
+            <Link to="/" className="block">
+              <Button
+                variant="ghost"
+                className="w-full text-[#002776]/50 hover:text-[#002776] rounded-lg transition-colors"
+                size="sm"
+              >
+                Voltar para a pagina inicial
+              </Button>
+            </Link>
           </div>
 
           {/* Footer */}

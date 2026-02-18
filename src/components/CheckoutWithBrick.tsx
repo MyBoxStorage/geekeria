@@ -126,8 +126,30 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
     toast.success('Pedido recuperado! Continue com o pagamento.');
   }, [pendingRecovery]);
 
-  /** Reiniciar checkout (descarta pedido pendente) */
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema),
+  });
+
+  /** Reiniciar checkout (descarta pedido pendente e reseta formulário) */
   const handleRestartCheckout = useCallback(() => {
+    clearPendingCheckout();
+    setPendingRecovery(null);
+    setOrderData(null);
+    setCustomerData(null);
+    setShowPaymentBrick(false);
+    setCouponCode('');
+    setCouponDiscount(0);
+    setCouponType(null);
+    reset();
+  }, [reset]);
+
+  /** Apenas dispensar o banner de pendência, sem resetar formulário */
+  const handleDismissPending = useCallback(() => {
     clearPendingCheckout();
     setPendingRecovery(null);
   }, []);
@@ -140,15 +162,6 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
     console.log('CheckoutWithBrick - cart.total:', cart.total);
     console.log('MercadoPago Public Key:', import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY ? 'Configurada' : 'NÃO CONFIGURADA');
   }
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<CheckoutFormData>({
-    resolver: zodResolver(checkoutSchema),
-  });
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('pt-BR', {
@@ -706,19 +719,43 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
             <fieldset disabled={isCreatingOrder} className="space-y-6">
             {/* ── Painel de recuperação de checkout pendente ─────────────── */}
             {pendingRecovery && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+              <div className="rounded-xl border border-amber-300 bg-gradient-to-b from-amber-50 to-white p-5 space-y-4 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                  <div>
-                    <h4 className="font-display text-base text-amber-900">
-                      Você tem um pagamento em andamento
+                  <div className="rounded-full bg-amber-100 p-2 shrink-0">
+                    <AlertCircle className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-display text-base text-amber-900 tracking-wide">
+                      PAGAMENTO PENDENTE DETECTADO
                     </h4>
-                    <p className="text-sm text-amber-700 mt-1">
-                      Quer continuar de onde parou?
+                    <p className="text-sm text-amber-700 font-body leading-relaxed">
+                      Encontramos uma tentativa de pagamento recente.
+                      Você pode continuar de onde parou ou reiniciar.
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+
+                {/* Detalhes do pedido pendente (quando disponíveis) */}
+                {(pendingRecovery.externalReference || pendingRecovery.totals) && (
+                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-amber-800 font-body pl-12">
+                    {pendingRecovery.externalReference && (
+                      <span>Ref.: <strong>{pendingRecovery.externalReference}</strong></span>
+                    )}
+                    {pendingRecovery.totals?.total != null && (
+                      <span>
+                        Total:{' '}
+                        <strong>
+                          {pendingRecovery.totals.total.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          })}
+                        </strong>
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-2 pt-1">
                   <Button
                     type="button"
                     onClick={handleContinuePayment}
@@ -728,13 +765,20 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="destructive"
                     onClick={handleRestartCheckout}
                     className="flex-1 font-display"
                   >
-                    REINICIAR
+                    REINICIAR CHECKOUT
                   </Button>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleDismissPending}
+                  className="w-full text-center text-xs text-amber-600 hover:text-amber-800 underline underline-offset-2 font-body transition-colors"
+                >
+                  Remover pendência e preencher do zero
+                </button>
               </div>
             )}
 

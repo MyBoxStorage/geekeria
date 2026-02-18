@@ -7,6 +7,7 @@
 import type { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../../utils/prisma.js';
+import { sendError } from '../../../utils/errorResponse.js';
 
 export async function getAnalyticsOverview(
   req: Request,
@@ -165,6 +166,6 @@ export async function getAnalyticsOverview(
     });
   } catch (error) {
     console.error('Analytics overview error:', error);
-    res.status(500).json({ error: 'Erro ao buscar analytics' });
+    return sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar analytics');
   }
 }

@@ -5,6 +5,7 @@ import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
 import { uploadImageToGCS } from '../../utils/storage.js';
 import { notifyNewGeneration } from '../../utils/telegram.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -24,17 +25,25 @@ export async function generateStamp(
   res: Response
 ): Promise<void> {
   try {
+    // Feature guard: fail clearly if generation deps are not configured
+    const missingDeps = [
+      !process.env.GEMINI_API_KEY && 'GEMINI_API_KEY',
+      !process.env.GCS_KEY_BASE64 && process.env.NODE_ENV === 'production' && 'GCS_KEY_BASE64',
+    ].filter(Boolean) as string[];
+
+    if (missingDeps.length > 0) {
+      sendError(res, req, 503, 'SERVICE_UNAVAILABLE', 'O serviço de geração de estampas não está configurado neste ambiente.', { missing: missingDeps });
+      return;
+    }
+
     if (!req.user) {
-      res.status(401).json({ error: 'Não autenticado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Não autenticado');
       return;
     }
 
     const validation = generateStampSchema.safeParse(req.body);
     if (!validation.success) {
-      res.status(400).json({
-        error: 'Dados inválidos',
-        details: validation.error.issues,
-      });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados inválidos', { details: validation.error.issues });
       return;
     }
 
@@ -47,11 +56,7 @@ export async function generateStamp(
     });
 
     if (!user || user.credits < 1) {
-      res.status(403).json({
-        error: 'Sem créditos disponíveis',
-        credits: user?.credits || 0,
-        message: 'Compre um produto para ganhar +5 créditos',
-      });
+      sendError(res, req, 403, 'NO_CREDITS', 'Compre um produto para ganhar +5 créditos', { credits: user?.credits || 0 });
       return;
     }
 
@@ -281,15 +286,11 @@ OBRIGATÓRIO:
         },
       });
 
-      res.status(500).json({
-        error: 'Erro ao gerar estampa',
-        message: 'Tente novamente. Seu crédito não foi consumido.',
-        details: err.message,
-      });
+      sendError(res, req, 500, 'GENERATION_FAILED', 'Tente novamente. Seu crédito não foi consumido.');
     }
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     console.error('Generate stamp error:', err);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro interno do servidor');
   }
 }

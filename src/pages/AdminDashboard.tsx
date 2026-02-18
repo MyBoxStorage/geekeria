@@ -39,6 +39,8 @@ import {
   markMontinkAdmin,
   type AdminOrderSummary,
 } from '@/services/admin';
+import { handleAdminApiError } from '@/utils/adminErrors';
+import { clearAdminToken } from '@/hooks/useAdminAuth';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -66,10 +68,11 @@ export default function AdminDashboard() {
       const response = await fetchAdminOrders(token);
       setOrders(response.orders);
       toast.success(`Carregado(s) ${response.count} pedido(s) READY_FOR_MONTINK`);
-    } catch (error: any) {
-      console.error('Erro ao carregar pedidos admin:', error);
-      const msg = error?.message || error?.error || 'Erro ao carregar pedidos';
-      toast.error(msg);
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Erro ao carregar pedidos admin:', error);
+      const err = handleAdminApiError(error);
+      if (err.shouldClearToken) clearAdminToken();
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -81,14 +84,17 @@ export default function AdminDashboard() {
       return;
     }
 
+    if (!confirm('Atenção: este JSON pode conter dados pessoais (nome, telefone, endereço). Deseja copiar mesmo assim?')) return;
+
     try {
       const data = await exportAdminOrder(token, order.externalReference);
       await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
       toast.success(`JSON copiado para o pedido ${order.externalReference}`);
-    } catch (error: any) {
-      console.error('Erro ao exportar pedido:', error);
-      const msg = error?.message || error?.error || 'Erro ao exportar pedido';
-      toast.error(msg);
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Erro ao exportar pedido:', error);
+      const err = handleAdminApiError(error);
+      if (err.shouldClearToken) clearAdminToken();
+      toast.error(err.message);
     }
   };
 
@@ -103,10 +109,11 @@ export default function AdminDashboard() {
       const data = await exportAdminOrder(token, order.externalReference);
       setExportData(data);
       setExportDialogOpen(true);
-    } catch (error: any) {
-      console.error('Erro ao exportar pedido:', error);
-      const msg = error?.message || error?.error || 'Erro ao exportar pedido';
-      toast.error(msg);
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Erro ao exportar pedido:', error);
+      const err = handleAdminApiError(error);
+      if (err.shouldClearToken) clearAdminToken();
+      toast.error(err.message);
     } finally {
       setExportLoading(false);
     }
@@ -146,10 +153,11 @@ export default function AdminDashboard() {
       toast.success(`Pedido ${selectedOrder.externalReference} marcado como enviado`);
       setMarkDialogOpen(false);
       setSelectedOrder(null);
-    } catch (error: any) {
-      console.error('Erro ao marcar Montink:', error);
-      const msg = error?.message || error?.error || 'Erro ao marcar pedido';
-      toast.error(msg);
+    } catch (error: unknown) {
+      if (import.meta.env.DEV) console.error('Erro ao marcar Montink:', error);
+      const err = handleAdminApiError(error);
+      if (err.shouldClearToken) clearAdminToken();
+      toast.error(err.message);
     } finally {
       setMarkLoading(false);
     }
@@ -157,11 +165,12 @@ export default function AdminDashboard() {
 
   const handleCopyExportData = async () => {
     if (!exportData) return;
+    if (!confirm('Atenção: este JSON pode conter dados pessoais (nome, telefone, endereço). Deseja copiar mesmo assim?')) return;
     try {
       await navigator.clipboard.writeText(JSON.stringify(exportData, null, 2));
       toast.success('JSON copiado para área de transferência');
     } catch (error) {
-      console.error('Erro ao copiar JSON:', error);
+      if (import.meta.env.DEV) console.error('Erro ao copiar JSON:', error);
       toast.error('Erro ao copiar JSON');
     }
   };

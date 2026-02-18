@@ -15,6 +15,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { logger } from '../../utils/logger.js';
 import { errorMeta } from '../../utils/logging.js';
+import { sendError } from '../../utils/errorResponse.js';
 import { getMontinkShippingQuote } from '../../integrations/montink/shipping.js';
 import { 
   SHIPPING_STRATEGY, 
@@ -38,10 +39,7 @@ export async function shippingQuote(req: Request, res: Response) {
     const validationResult = shippingQuoteSchema.safeParse(req.body);
     
     if (!validationResult.success) {
-      return res.status(400).json({
-        error: 'Validation error',
-        details: validationResult.error.issues,
-      });
+      return sendError(res, req, 400, 'VALIDATION_ERROR', 'Dados de frete inválidos', { details: validationResult.error.issues });
     }
 
     const { subtotal, cep, items } = validationResult.data;
@@ -117,10 +115,7 @@ export async function shippingQuote(req: Request, res: Response) {
     
     // Se estratégia for MONTINK_REQUIRED e Montink falhar, retornar erro
     if (SHIPPING_STRATEGY === 'MONTINK_REQUIRED') {
-      return res.status(500).json({
-        error: 'Shipping calculation failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      });
+      return sendError(res, req, 500, 'SHIPPING_ERROR', 'Falha no cálculo do frete');
     }
 
     // Caso contrário, usar fallback mesmo em erro inesperado

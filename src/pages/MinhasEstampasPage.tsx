@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiConfig } from '@/config/api';
 import { authService } from '@/services/auth';
+import { useSEO } from '@/hooks/useSEO';
 
 const WHATSAPP_NUMBER = '5524981313689';
 
@@ -17,6 +18,8 @@ interface Generation {
 }
 
 export function MinhasEstampasPage() {
+  useSEO({ title: 'Minhas Estampas | BRAVOS BRASIL', description: '', noindex: true });
+
   const { user, isLoading: authLoading } = useAuth();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);

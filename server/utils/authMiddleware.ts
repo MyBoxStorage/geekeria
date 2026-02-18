@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import type { Response, NextFunction } from 'express';
 import { prisma } from './prisma.js';
 import type { AuthRequest, JWTPayload } from '../types/auth.js';
+import { sendError } from './errorResponse.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION';
 
@@ -22,7 +23,7 @@ export async function requireAuth(
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Token não fornecido' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Token não fornecido');
       return;
     }
 
@@ -32,7 +33,7 @@ export async function requireAuth(
     try {
       decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     } catch {
-      res.status(401).json({ error: 'Token inválido ou expirado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Token inválido ou expirado');
       return;
     }
 
@@ -48,7 +49,7 @@ export async function requireAuth(
     });
 
     if (!user) {
-      res.status(401).json({ error: 'Usuário não encontrado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Usuário não encontrado');
       return;
     }
 
@@ -56,7 +57,7 @@ export async function requireAuth(
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    res.status(500).json({ error: 'Erro de autenticação' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro de autenticação');
   }
 }
 

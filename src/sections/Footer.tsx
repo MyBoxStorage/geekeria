@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Instagram, Facebook, Youtube, Twitter, Shield, Lock } from 'lucide-react';
+import { Instagram, /* Facebook, Youtube, Twitter, */ Shield, Lock } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,18 +14,19 @@ const quickLinks = [
 ];
 
 const supportLinks = [
-  { name: 'FAQ', href: '#' },
-  { name: 'Trocas e devoluções', href: '#' },
-  { name: 'Política de privacidade', href: '#' },
-  { name: 'Termos de uso', href: '#' },
-  { name: 'Rastreamento de pedido', href: '#' },
+  { name: 'FAQ', href: '/#faq' },
+  { name: 'Trocas e devoluções', href: '/trocas-e-devolucoes' }, /* TODO: criar página */
+  { name: 'Política de privacidade', href: '/politica-de-privacidade' }, /* TODO: criar página */
+  { name: 'Termos de uso', href: '/termos-de-uso' }, /* TODO: criar página */
+  { name: 'Rastreamento de pedido', href: '/order' },
 ];
 
+/* Redes sociais ativas (demais serão adicionadas quando tiverem URL real)
+   TODO: Facebook → https://facebook.com/bravosbrasil
+   TODO: YouTube → adicionar URL real
+   TODO: Twitter/X → adicionar URL real */
 const socialLinks = [
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
+  { icon: Instagram, href: 'https://www.instagram.com/bravosbrasilco/', label: 'Instagram' },
 ];
 
 const paymentMethods = [

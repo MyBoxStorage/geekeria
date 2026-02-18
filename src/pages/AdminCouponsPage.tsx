@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminNav } from '@/components/AdminNav';
 import { apiConfig } from '@/config/api';
+import { getAdminToken, setAdminToken, clearAdminToken } from '@/hooks/useAdminAuth';
+import { getAdminErrorMessage, isAdminAuthError } from '@/utils/adminErrors';
 import {
   Select,
   SelectContent,
@@ -26,7 +28,7 @@ interface Coupon {
 export function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adminToken, setAdminToken] = useState(() => localStorage.getItem('admin_token') || '');
+  const [adminToken, setAdminTokenState] = useState(() => getAdminToken() || '');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newCoupon, setNewCoupon] = useState({
@@ -38,9 +40,9 @@ export function AdminCouponsPage() {
   });
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('admin_token');
+    const savedToken = getAdminToken();
     if (savedToken) {
-      setAdminToken(savedToken);
+      setAdminTokenState(savedToken);
       fetchCoupons(savedToken);
     } else {
       setLoading(false);
@@ -58,7 +60,8 @@ export function AdminCouponsPage() {
       });
 
       if (!res.ok) {
-        alert('Token inválido');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         setLoading(false);
         return;
       }
@@ -66,9 +69,10 @@ export function AdminCouponsPage() {
       const data = await res.json();
       setCoupons(data.coupons);
       setIsAuthenticated(true);
-      localStorage.setItem('admin_token', tokenToUse);
+      setAdminToken(tokenToUse);
     } catch (error) {
-      console.error('Error fetching coupons:', error);
+      if (import.meta.env.DEV) console.error('Error fetching coupons:', error);
+      alert(getAdminErrorMessage());
     } finally {
       setLoading(false);
     }
@@ -106,10 +110,9 @@ export function AdminCouponsPage() {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        alert(data.error || 'Erro ao criar cupom');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         return;
       }
 
@@ -123,8 +126,8 @@ export function AdminCouponsPage() {
       setShowCreateForm(false);
       fetchCoupons();
     } catch (error) {
-      console.error('Error creating coupon:', error);
-      alert('Erro ao criar cupom');
+      if (import.meta.env.DEV) console.error('Error creating coupon:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -139,12 +142,16 @@ export function AdminCouponsPage() {
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
-      if (!res.ok) throw new Error('Erro ao atualizar cupom');
+      if (!res.ok) {
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
+        return;
+      }
 
       fetchCoupons();
     } catch (error) {
-      console.error('Error toggling coupon:', error);
-      alert('Erro ao atualizar cupom');
+      if (import.meta.env.DEV) console.error('Error toggling coupon:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -157,17 +164,16 @@ export function AdminCouponsPage() {
         headers: { 'x-admin-token': adminToken },
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        alert(data.error || 'Erro ao deletar cupom');
+        if (isAdminAuthError(res.status)) clearAdminToken();
+        alert(getAdminErrorMessage(res.status));
         return;
       }
 
       fetchCoupons();
     } catch (error) {
-      console.error('Error deleting coupon:', error);
-      alert('Erro ao deletar cupom');
+      if (import.meta.env.DEV) console.error('Error deleting coupon:', error);
+      alert(getAdminErrorMessage());
     }
   };
 
@@ -181,7 +187,7 @@ export function AdminCouponsPage() {
             <input
               type="password"
               value={adminToken}
-              onChange={(e) => setAdminToken(e.target.value)}
+              onChange={(e) => setAdminTokenState(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4"
               placeholder="Digite o token de admin"
               required

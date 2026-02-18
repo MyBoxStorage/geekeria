@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * POST /api/internal/cleanup-expired-generations
@@ -7,7 +8,7 @@ import { prisma } from '../../utils/prisma.js';
  * Requer ADMIN_TOKEN
  */
 export async function cleanupExpiredGenerations(
-  _req: Request,
+  req: Request,
   res: Response
 ): Promise<void> {
   try {
@@ -54,6 +55,6 @@ export async function cleanupExpiredGenerations(
     });
   } catch (error) {
     console.error('Cleanup error:', error);
-    res.status(500).json({ error: 'Erro ao limpar gerações expiradas' });
+    sendError(res, req, 500, 'CLEANUP_ERROR', 'Erro ao limpar gerações expiradas');
   }
 }

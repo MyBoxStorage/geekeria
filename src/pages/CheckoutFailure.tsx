@@ -1,12 +1,38 @@
-import { useSearchParams, Link } from 'react-router-dom';
-import { XCircle, Home, AlertCircle, RotateCcw, MessageCircle } from 'lucide-react';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { XCircle, Home, AlertCircle, RotateCcw, MessageCircle, PackageSearch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { buildWhatsAppLink } from '@/utils/whatsapp';
+import { loadPendingCheckout } from '@/utils/pendingCheckout';
+import { useMemo } from 'react';
+import { useSEO } from '@/hooks/useSEO';
+
+interface LegacyPending {
+  externalReference?: string;
+}
 
 export default function CheckoutFailure() {
+  useSEO({ title: 'Pagamento não realizado | BRAVOS BRASIL', description: '', noindex: true });
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const statusDetail = searchParams.get('status_detail');
+
+  // ── Resolucao de referencia: query > V1 > legacy ──────────────────
+  const queryRef = searchParams.get('external_reference') ?? searchParams.get('order_id');
+  const pendingV1 = useMemo(() => loadPendingCheckout(), []);
+
+  const resolvedRef = useMemo(() => {
+    if (queryRef) return queryRef;
+    if (pendingV1?.externalReference) return pendingV1.externalReference;
+    try {
+      const raw = localStorage.getItem('bb_order_pending');
+      if (raw) {
+        const parsed = JSON.parse(raw) as LegacyPending;
+        if (parsed.externalReference) return parsed.externalReference;
+      }
+    } catch { /* ignore */ }
+    return null;
+  }, [queryRef, pendingV1]);
 
   const getErrorMessage = (detail: string | null): string => {
     const messages: Record<string, string> = {
@@ -59,12 +85,12 @@ export default function CheckoutFailure() {
 
           {/* Título */}
           <h1 className="font-display text-3xl sm:text-4xl text-[#002776] mb-3 tracking-wide">
-            Pagamento Recusado
+            Pagamento Nao Concluido
           </h1>
 
           {/* Subtítulo */}
           <p className="text-base sm:text-lg text-[#002776]/70 mb-6 font-body">
-            Não foi possível processar seu pagamento.
+            Voce pode tentar novamente ou acompanhar o pedido caso ele tenha sido criado.
           </p>
 
           {/* Badge de status */}
@@ -89,6 +115,16 @@ export default function CheckoutFailure() {
             <div className="mb-6 p-4 sm:p-5 bg-red-50 rounded-xl border border-red-200">
               <p className="text-sm text-red-800 font-body">
                 {getErrorMessage(null)}
+              </p>
+            </div>
+          )}
+
+          {/* Referência do pedido (se existir) */}
+          {resolvedRef && (
+            <div className="bg-gradient-to-r from-[#002776]/10 to-[#002776]/5 rounded-xl p-4 sm:p-5 mb-6 border border-[#002776]/20">
+              <p className="text-sm font-medium text-[#002776]/70 mb-1 font-body">Referencia do pedido</p>
+              <p className="text-lg sm:text-xl font-mono font-bold text-[#002776]">
+                #{resolvedRef}
               </p>
             </div>
           )}
@@ -120,16 +156,28 @@ export default function CheckoutFailure() {
 
           {/* CTAs */}
           <div className="space-y-3">
-            <Link to="/catalogo" className="block">
+            <Button
+              className="w-full bg-[#00843D] hover:bg-[#006633] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
+              size="lg"
+              onClick={() => navigate('/?checkout=1')}
+              aria-label="Tentar novamente"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              TENTAR NOVAMENTE
+            </Button>
+
+            {resolvedRef && (
               <Button
-                className="w-full bg-[#00843D] hover:bg-[#006633] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
+                className="w-full border-2 border-[#002776] text-[#002776] hover:bg-[#002776] hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
-                aria-label="Tentar novamente"
+                variant="outline"
+                onClick={() => navigate(`/order?ref=${encodeURIComponent(resolvedRef)}`)}
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                TENTAR NOVAMENTE
+                <PackageSearch className="w-4 h-4 mr-2" />
+                ACOMPANHAR PEDIDO
               </Button>
-            </Link>
+            )}
+
             <Link to="/catalogo" className="block">
               <Button
                 className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
@@ -138,9 +186,10 @@ export default function CheckoutFailure() {
                 aria-label="Voltar ao catálogo"
               >
                 <Home className="w-4 h-4 mr-2" />
-                VOLTAR AO CATÁLOGO
+                VOLTAR AO CATALOGO
               </Button>
             </Link>
+
             <Button
               variant="ghost"
               className="w-full text-[#25D366] hover:text-[#128C7E] hover:bg-[#25D366]/10 rounded-lg transition-all duration-300"
@@ -149,9 +198,16 @@ export default function CheckoutFailure() {
             >
               <a
                 href={buildWhatsAppLink(
-                  statusDetail
-                    ? `Olá! Meu pagamento não foi aprovado e preciso de ajuda para finalizar a compra. Motivo: ${getErrorMessage(statusDetail).split('.')[0].toLowerCase()}. Pode me orientar?`
-                    : 'Olá! Meu pagamento não foi aprovado e preciso de ajuda para finalizar a compra. Pode me orientar?'
+                  (() => {
+                    const motivo = statusDetail
+                      ? getErrorMessage(statusDetail).split('.')[0].toLowerCase()
+                      : null;
+                    if (resolvedRef && motivo)
+                      return `Olá! Meu pagamento nao foi aprovado e preciso de ajuda. Referencia: ${resolvedRef}. Motivo: ${motivo}. Pode me orientar?`;
+                    if (resolvedRef)
+                      return `Olá! Meu pagamento nao foi aprovado e preciso de ajuda. Referencia: ${resolvedRef}. Pode me orientar?`;
+                    return 'Olá! Meu pagamento nao foi aprovado e preciso de ajuda para finalizar a compra. Pode me orientar?';
+                  })()
                 )}
                 target="_blank"
                 rel="noreferrer"

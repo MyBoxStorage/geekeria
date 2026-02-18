@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { sendError } from '../../../utils/errorResponse.js';
 import { prisma } from '../../../utils/prisma.js';
 
 export async function createPromptTemplate(
@@ -9,7 +10,7 @@ export async function createPromptTemplate(
     const { name, content } = req.body;
 
     if (!name || !content) {
-      res.status(400).json({ error: 'Nome e conteúdo são obrigatórios' });
+      sendError(res, req, 400, 'VALIDATION_ERROR', 'Nome e conteúdo são obrigatórios');
       return;
     }
 
@@ -27,6 +28,6 @@ export async function createPromptTemplate(
     });
   } catch (error) {
     console.error('Create prompt template error:', error);
-    res.status(500).json({ error: 'Erro ao criar template' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao criar template');
   }
 }

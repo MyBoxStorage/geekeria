@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * GET /api/auth/me
@@ -9,7 +10,7 @@ import type { AuthRequest } from '../../types/auth.js';
 export async function me(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.user) {
-      res.status(401).json({ error: 'Não autenticado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Não autenticado');
       return;
     }
 
@@ -27,13 +28,13 @@ export async function me(req: AuthRequest, res: Response): Promise<void> {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'Usuário não encontrado' });
+      sendError(res, req, 404, 'NOT_FOUND', 'Usuário não encontrado');
       return;
     }
 
     res.json({ success: true, user });
   } catch (error) {
     console.error('Me endpoint error:', error);
-    res.status(500).json({ error: 'Erro ao buscar dados' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar dados');
   }
 }

@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import { prisma } from '../../utils/prisma.js';
 import type { AuthRequest } from '../../types/auth.js';
+import { sendError } from '../../utils/errorResponse.js';
 
 /**
  * GET /api/my-generations
@@ -12,7 +13,7 @@ export async function listMyGenerations(
 ): Promise<void> {
   try {
     if (!req.user) {
-      res.status(401).json({ error: 'Não autenticado' });
+      sendError(res, req, 401, 'UNAUTHORIZED', 'Não autenticado');
       return;
     }
 
@@ -50,6 +51,6 @@ export async function listMyGenerations(
     });
   } catch (error) {
     console.error('List generations error:', error);
-    res.status(500).json({ error: 'Erro ao buscar gerações' });
+    sendError(res, req, 500, 'INTERNAL_ERROR', 'Erro ao buscar gerações');
   }
 }
