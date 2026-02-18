@@ -56,7 +56,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl text-[#00843D]">
             {product.name}
@@ -82,7 +82,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
               {formatPrice(product.price)}
             </p>
             
-            <p className="text-gray-600 font-body text-sm">
+            <p className="text-gray-600 font-body text-sm line-clamp-3 whitespace-pre-wrap">
               {product.description}
             </p>
             
