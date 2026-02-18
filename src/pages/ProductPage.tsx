@@ -434,7 +434,7 @@ function ProductLoader({ slug }: { slug: string }) {
             </div>
 
             {/* Description */}
-            <p className="text-gray-600 font-body leading-relaxed">
+            <p className="text-gray-600 font-body leading-relaxed whitespace-pre-wrap">
               {product.description}
             </p>
 

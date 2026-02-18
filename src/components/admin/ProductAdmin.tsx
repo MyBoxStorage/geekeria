@@ -1746,6 +1746,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                   <label style={s.label}>Descrição</label>
                   <textarea
                     style={s.textarea}
+                    rows={8}
                     value={draft.description}
                     onChange={(e) =>
                       setDraft((p) => ({ ...p, description: e.target.value }))
