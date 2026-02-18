@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/check-no-vite-secrets.js && tsx scripts/generate-sitemap.ts",
+    "prebuild": "node scripts/check-no-vite-secrets.js && tsx --env-file=.env scripts/generate-sitemap.ts",
     "generate-sitemap": "tsx scripts/generate-sitemap.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

@@ -18,7 +18,7 @@ const STATIC_ROUTES = [
 
 async function getProductSlugs(): Promise<string[]> {
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     console.warn('⚠️  Variáveis do Supabase não encontradas. Gerando sitemap apenas com rotas estáticas.');
@@ -30,7 +30,8 @@ async function getProductSlugs(): Promise<string[]> {
   const { data, error } = await supabase
     .from('products')
     .select('slug')
-    .eq('active', true);
+    .not('category', 'eq', 'TESTES')
+    .not('slug', 'is', null);
 
   if (error) {
     console.warn('⚠️  Erro ao buscar produtos:', error.message);
