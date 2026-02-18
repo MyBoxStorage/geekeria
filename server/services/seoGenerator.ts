@@ -72,29 +72,35 @@ export async function generateProductSEO(
   }
 
   try {
-    const prompt = `Você é um especialista em SEO para e-commerce brasileiro de moda patriótica.
+    const prompt = `Você é um especialista em SEO para e-commerce brasileiro de moda patriótica e cristã.
 
 Gere SEO otimizado para este produto da marca BRAVOS BRASIL:
-- Nome: ${product.name}
+- Nome do produto: ${product.name}
 - Categoria: ${product.category}
 - Gênero: ${product.gender}
 - Preço: R$ ${product.price.toFixed(2)}
 - Descrição: ${product.description}
 ${product.badge ? `- Badge: ${product.badge}` : ''}
 
-O posicionamento da marca é: patriotismo brasileiro, fé cristã, tradição, valores conservadores, Deus, Pátria, Família. Estética sóbria e respeitosa.
+INSTRUÇÕES CRÍTICAS:
+1. O NOME DO PRODUTO é a palavra-chave principal. Use-o como base do metaTitle.
+2. Extraia da descrição a PROPOSTA EMOCIONAL — fé, patriotismo, orgulho nacional, tradição, valores cristãos, amor ao Brasil. Essa emoção deve estar presente no metaTitle e metaDescription.
+3. O metaDescription deve conectar a emoção do produto com a intenção de compra. Use linguagem que ressoe com brasileiros que valorizam Deus, Pátria e Família. Termine com call-to-action direto.
+4. As seoTags devem misturar: (a) termos emocionais de busca — como "camiseta patriótica", "roupa cristã brasil", "camiseta fé e pátria"; (b) termos específicos do tema do produto — extraídos do nome e da descrição; (c) termos de intenção de compra — como "comprar camiseta patriótica", "presente patriótico".
+5. NUNCA use termos técnicos (gramatura, fio, DTG) nas tags ou description — esses são diferenciais de conversão, não de busca.
+6. Escreva como um brasileiro fala e busca — informal, direto, emocional.
 
 Retorne APENAS um JSON válido (sem markdown, sem explicações) neste formato exato:
 {
-  "metaTitle": "título SEO com máximo 60 caracteres incluindo | BRAVOS BRASIL no final",
-  "metaDescription": "descrição SEO com máximo 160 caracteres, inclua call-to-action e palavra-chave principal",
+  "metaTitle": "título com máximo 60 caracteres terminando com | BRAVOS BRASIL",
+  "metaDescription": "máximo 160 caracteres, emocional, com call-to-action",
   "seoTags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"]
 }
 
-Regras:
+Regras absolutas:
 - metaTitle: máximo 60 caracteres, termine com " | BRAVOS BRASIL"
-- metaDescription: máximo 160 caracteres, natural, persuasivo, inclua termo de busca principal
-- seoTags: 6 a 8 tags em português, foco em termos que brasileiros buscam no Google`;
+- metaDescription: máximo 160 caracteres
+- seoTags: 6 a 8 tags, todas em português, foco emocional e de intenção de compra`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
