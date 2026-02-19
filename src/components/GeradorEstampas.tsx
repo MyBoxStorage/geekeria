@@ -246,7 +246,13 @@ export function GeradorEstampas() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-                <p className="text-red-600 text-sm">❌ {error}</p>
+                <p className="text-red-600 text-sm font-body">
+                  ❌ {error === 'GENERATION_FAILED' || error.includes('high demand') || error.includes('503')
+                    ? 'O servidor de geração está sobrecarregado no momento. Aguarde alguns segundos e tente novamente.'
+                    : error === 'INSUFFICIENT_CREDITS'
+                    ? 'Créditos insuficientes. Adquira mais créditos para continuar.'
+                    : error}
+                </p>
               </div>
             )}
 
