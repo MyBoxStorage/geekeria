@@ -8,7 +8,9 @@ import {
   Share2,
   Sparkles,
   TrendingUp,
+  Ruler,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -128,6 +130,7 @@ function ProductLoader({ slug }: { slug: string }) {
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [uiGender, setUiGender] = useState<BinaryGender>('masculino');
+  const [showSizeGuide, setShowSizeGuide] = useState(false);
 
   // Scroll to top on mount (component remounts per slug via key)
   useEffect(() => {
@@ -500,19 +503,29 @@ function ProductLoader({ slug }: { slug: string }) {
 
             {/* ── Size selector ── */}
             <div>
-              <Label className="font-body font-medium mb-2 block">
-                Tamanho
-                {selectedColor && hasColorStock && availableSizes.length > 0 && (
-                  <span className="text-xs font-normal text-gray-500 ml-2">
-                    {uiGender === 'masculino' ? '— corte masculino' : '— corte feminino'}
-                  </span>
-                )}
-                {selectedColor && hasColorStock && availableSizes.length === 0 && (
-                  <span className="text-xs text-red-500 ml-2 font-normal">
-                    Sem estoque para essa cor
-                  </span>
-                )}
-              </Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="font-body font-medium">
+                  Tamanho
+                  {selectedColor && hasColorStock && availableSizes.length > 0 && (
+                    <span className="text-xs font-normal text-gray-500 ml-2">
+                      {uiGender === 'masculino' ? '— corte masculino' : '— corte feminino'}
+                    </span>
+                  )}
+                  {selectedColor && hasColorStock && availableSizes.length === 0 && (
+                    <span className="text-xs text-red-500 ml-2 font-normal">
+                      Sem estoque para essa cor
+                    </span>
+                  )}
+                </Label>
+                <button
+                  type="button"
+                  onClick={() => setShowSizeGuide(true)}
+                  className="flex items-center gap-1 text-xs text-[#00843D] hover:underline font-body"
+                >
+                  <Ruler className="w-3 h-3" />
+                  Guia de tamanhos
+                </button>
+              </div>
               <RadioGroup
                 value={selectedSize}
                 onValueChange={setSelectedSize}
@@ -581,6 +594,97 @@ function ProductLoader({ slug }: { slug: string }) {
 
       <Footer />
       <FloatingWhatsApp />
+
+      {/* Modal guia de tamanhos */}
+      <Dialog open={showSizeGuide} onOpenChange={setShowSizeGuide}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg">Guia de Tamanhos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 font-body text-sm">
+
+            {/* Masculino */}
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2">♂ Masculino (cm)</h3>
+              <table className="w-full border-collapse text-center text-xs">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-200 px-3 py-2"></th>
+                    <th className="border border-gray-200 px-3 py-2">PP</th>
+                    <th className="border border-gray-200 px-3 py-2">P</th>
+                    <th className="border border-gray-200 px-3 py-2">M</th>
+                    <th className="border border-gray-200 px-3 py-2">G</th>
+                    <th className="border border-gray-200 px-3 py-2">GG</th>
+                    <th className="border border-gray-200 px-3 py-2">XG</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Largura</td>
+                    <td className="border border-gray-200 px-3 py-2">44-48</td>
+                    <td className="border border-gray-200 px-3 py-2">46-50</td>
+                    <td className="border border-gray-200 px-3 py-2">48-52</td>
+                    <td className="border border-gray-200 px-3 py-2">53-57</td>
+                    <td className="border border-gray-200 px-3 py-2">56-60</td>
+                    <td className="border border-gray-200 px-3 py-2">59-63</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Comprimento</td>
+                    <td className="border border-gray-200 px-3 py-2">63-67</td>
+                    <td className="border border-gray-200 px-3 py-2">65-69</td>
+                    <td className="border border-gray-200 px-3 py-2">67-71</td>
+                    <td className="border border-gray-200 px-3 py-2">69-73</td>
+                    <td className="border border-gray-200 px-3 py-2">72-76</td>
+                    <td className="border border-gray-200 px-3 py-2">73-77</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Feminino */}
+            <div>
+              <h3 className="font-medium text-gray-700 mb-2">♀ Feminino (cm)</h3>
+              <table className="w-full border-collapse text-center text-xs">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-200 px-3 py-2"></th>
+                    <th className="border border-gray-200 px-3 py-2">PP</th>
+                    <th className="border border-gray-200 px-3 py-2">P</th>
+                    <th className="border border-gray-200 px-3 py-2">M</th>
+                    <th className="border border-gray-200 px-3 py-2">G</th>
+                    <th className="border border-gray-200 px-3 py-2">GG</th>
+                    <th className="border border-gray-200 px-3 py-2">XG</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Largura</td>
+                    <td className="border border-gray-200 px-3 py-2">38-42</td>
+                    <td className="border border-gray-200 px-3 py-2">40-44</td>
+                    <td className="border border-gray-200 px-3 py-2">42-46</td>
+                    <td className="border border-gray-200 px-3 py-2">46-50</td>
+                    <td className="border border-gray-200 px-3 py-2">50-54</td>
+                    <td className="border border-gray-200 px-3 py-2">53-57</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Comprimento</td>
+                    <td className="border border-gray-200 px-3 py-2">58-62</td>
+                    <td className="border border-gray-200 px-3 py-2">60-64</td>
+                    <td className="border border-gray-200 px-3 py-2">62-66</td>
+                    <td className="border border-gray-200 px-3 py-2">64-68</td>
+                    <td className="border border-gray-200 px-3 py-2">67-71</td>
+                    <td className="border border-gray-200 px-3 py-2">69-73</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-xs text-gray-400">
+              * Medidas em centímetros. Encolhimento estimado: 4–7% no comprimento e 3–5% na largura após lavagem.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
