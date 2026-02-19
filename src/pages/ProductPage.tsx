@@ -502,6 +502,11 @@ function ProductLoader({ slug }: { slug: string }) {
             <div>
               <Label className="font-body font-medium mb-2 block">
                 Tamanho
+                {selectedColor && hasColorStock && availableSizes.length > 0 && (
+                  <span className="text-xs font-normal text-gray-500 ml-2">
+                    {uiGender === 'masculino' ? '— corte masculino' : '— corte feminino'}
+                  </span>
+                )}
                 {selectedColor && hasColorStock && availableSizes.length === 0 && (
                   <span className="text-xs text-red-500 ml-2 font-normal">
                     Sem estoque para essa cor
