@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -24,6 +24,94 @@ gsap.registerPlugin(ScrollTrigger);
 
 /** Max products to show in the featured grid */
 const FEATURED_LIMIT = 8;
+
+function formatPrice(price: number) {
+  return price.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
+}
+
+function FeaturedCard({ product, onClick }: { product: Product; onClick: () => void }) {
+  const [currentGender, setCurrentGender] = useState<'masculino' | 'feminino'>('masculino');
+
+  const modelImages = useMemo(() => {
+    const imgs = product.images ?? [];
+    return {
+      masculino: imgs.find((img) => img.type === 'model' && img.gender === 'masculino'),
+      feminino: imgs.find((img) => img.type === 'model' && img.gender === 'feminino'),
+      default: imgs.find((img) => img.type === 'model') ?? imgs[0] ?? null,
+    };
+  }, [product.images]);
+
+  const hasBothGenders = !!(modelImages.masculino && modelImages.feminino);
+
+  const currentImageUrl =
+    currentGender === 'feminino' && modelImages.feminino
+      ? modelImages.feminino.url
+      : modelImages.masculino?.url ?? modelImages.default?.url ?? product.image;
+
+  return (
+    <div
+      className="product-card group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
+      onClick={onClick}
+    >
+      <div
+        className="relative aspect-[3/4] overflow-hidden bg-gray-100"
+        onMouseEnter={() => hasBothGenders && setCurrentGender('feminino')}
+        onMouseLeave={() => setCurrentGender('masculino')}
+      >
+        <img
+          src={currentImageUrl ?? undefined}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {product.isNew && (
+            <Badge className="bg-[#00843D] text-white font-body text-xs">NOVO</Badge>
+          )}
+          {product.isBestseller && (
+            <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              MAIS VENDIDO
+            </Badge>
+          )}
+        </div>
+        {/* Quick Add Button */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <Button
+            className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            COMPRAR AGORA
+          </Button>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="flex items-center gap-1 mb-2">
+          <Star className="w-4 h-4 fill-[#FFCC29] text-[#FFCC29]" />
+          <span className="text-sm font-body text-gray-600">{product.rating}</span>
+        </div>
+        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
+          {product.name}
+        </h3>
+        <div className="flex items-baseline gap-2">
+          <span className="font-display text-xl text-[#00843D]">
+            {formatPrice(product.price)}
+          </span>
+        </div>
+        <p className="text-sm text-gray-500 font-body mt-1">
+          ou 3x de {formatPrice(product.price / 3)} sem juros
+        </p>
+      </div>
+    </div>
+  );
+}
 
 interface ProductDialogProps {
   product: Product | null;
@@ -51,13 +139,6 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
     addToCart(product, 1, selectedSize, selectedColor);
     toast.success(`${product.name} adicionado ao carrinho!`);
     onClose();
-  };
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
   };
 
   return (
@@ -224,21 +305,6 @@ export function FeaturedProducts() {
     return () => ctx.revert();
   }, [isLoading, featured.length]);
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-  };
-
-  const formatInstallment = (price: number) => {
-    const installment = price / 3;
-    return installment.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
-  };
-
   return (
     <section
       id="featured"
@@ -280,73 +346,11 @@ export function FeaturedProducts() {
               ))
             : null}
           {featured.map((product) => (
-            <div
+            <FeaturedCard
               key={product.id}
-              className="product-card group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
+              product={product}
               onClick={() => setSelectedProduct(product)}
-            >
-              {/* Image */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
-                <img
-                  src={product.image ?? undefined}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                
-                {/* Badges */}
-                <div className="absolute top-3 left-3 flex flex-col gap-2">
-                  {product.isNew && (
-                    <Badge className="bg-[#00843D] text-white font-body text-xs">
-                      NOVO
-                    </Badge>
-                  )}
-                  {product.isBestseller && (
-                    <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      MAIS VENDIDO
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Quick Add Button */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                  <Button
-                    className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedProduct(product);
-                    }}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    COMPRAR AGORA
-                  </Button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4">
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-4 h-4 fill-[#FFCC29] text-[#FFCC29]" />
-                  <span className="text-sm font-body text-gray-600">
-                    {product.rating}
-                  </span>
-                </div>
-                
-                <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
-                  {product.name}
-                </h3>
-                
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-xl text-[#00843D]">
-                    {formatPrice(product.price)}
-                  </span>
-                </div>
-                
-                <p className="text-sm text-gray-500 font-body mt-1">
-                  ou 3x {formatInstallment(product.price)}
-                </p>
-              </div>
-            </div>
+            />
           ))}
         </div>
 
