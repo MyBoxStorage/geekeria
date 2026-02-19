@@ -47,14 +47,6 @@ export function Header() {
     }
   }, [searchParams, isCheckoutOpen, setSearchParams]);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsMobileMenuOpen(false);
-  };
-
   const formatPrice = (price: number) => {
     return price.toLocaleString('pt-BR', {
       style: 'currency',
@@ -73,14 +65,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a
-            href="#hero"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('#hero');
-            }}
-            className="flex items-center gap-2"
-          >
+          <Link to="/" className="flex items-center gap-2">
             <span
               className={`font-display text-2xl md:text-3xl tracking-wider transition-colors ${
                 isScrolled ? 'text-[#00843D]' : 'text-white'
@@ -95,7 +80,7 @@ export function Header() {
             >
               BRASIL
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
