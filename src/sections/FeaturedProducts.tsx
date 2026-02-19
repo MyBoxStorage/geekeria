@@ -15,9 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { getAvailableColors } from '@/utils/productStock';
+import { getAvailableColors, getAvailableSizesFor } from '@/utils/productStock';
 import { toast } from 'sonner';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -123,6 +122,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [dialogGender, setDialogGender] = useState<'masculino' | 'feminino'>('masculino');
 
   if (!product) return null;
 
@@ -175,27 +175,74 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
             
             <div>
               <Label className="font-body font-medium mb-2 block">Tamanho</Label>
-              <RadioGroup
-                value={selectedSize}
-                onValueChange={setSelectedSize}
-                className="flex flex-wrap gap-2"
-              >
-                {product.sizes.map((size) => (
-                  <div key={size}>
-                    <RadioGroupItem
-                      value={size}
-                      id={`size-${size}`}
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor={`size-${size}`}
-                      className="flex items-center justify-center w-10 h-10 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D] peer-data-[state=checked]:text-white hover:bg-gray-100 transition-colors font-body"
-                    >
-                      {size}
-                    </Label>
+
+              {(() => {
+                const maleSizes = selectedColor
+                  ? getAvailableSizesFor(product, selectedColor, 'masculino')
+                  : [];
+                const femaleSizes = selectedColor
+                  ? getAvailableSizesFor(product, selectedColor, 'feminino')
+                  : [];
+                const hasMale = maleSizes.length > 0;
+                const hasFemale = femaleSizes.length > 0;
+
+                if (!selectedColor) {
+                  return <p className="text-xs text-gray-400">Selecione uma cor para ver os tamanhos</p>;
+                }
+
+                const sizes = dialogGender === 'masculino' ? maleSizes : femaleSizes;
+
+                return (
+                  <div className="space-y-2">
+                    {(hasMale || hasFemale) && (
+                      <div className="flex gap-2 mb-2">
+                        {hasMale && (
+                          <button
+                            type="button"
+                            onClick={() => { setDialogGender('masculino'); setSelectedSize(''); }}
+                            className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
+                              dialogGender === 'masculino'
+                                ? 'bg-[#00843D] text-white border-[#00843D]'
+                                : 'border-gray-300 text-gray-500 hover:bg-gray-100'
+                            }`}
+                          >
+                            ♂ Masculino
+                          </button>
+                        )}
+                        {hasFemale && (
+                          <button
+                            type="button"
+                            onClick={() => { setDialogGender('feminino'); setSelectedSize(''); }}
+                            className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
+                              dialogGender === 'feminino'
+                                ? 'bg-[#00843D] text-white border-[#00843D]'
+                                : 'border-gray-300 text-gray-500 hover:bg-gray-100'
+                            }`}
+                          >
+                            ♀ Feminino
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => setSelectedSize(size)}
+                          className={`flex items-center justify-center w-10 h-10 border-2 rounded-md transition-colors font-body text-sm ${
+                            selectedSize === size
+                              ? 'border-[#00843D] bg-[#00843D] text-white'
+                              : 'hover:bg-gray-100 border-gray-200 cursor-pointer'
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </RadioGroup>
+                );
+              })()}
             </div>
             
             {/* Cores */}
