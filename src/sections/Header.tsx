@@ -15,8 +15,8 @@ const navLinks = [
   { name: 'INÍCIO', href: '/' },
   { name: 'COLEÇÃO', href: '/#featured' },
   { name: 'CATÁLOGO', href: '/catalogo', isRoute: true },
-  { name: 'SOBRE', href: '/#values' },
-  { name: 'CONTATO', href: '/#footer' },
+  { name: 'SOBRE', href: '/sobre', isRoute: true },
+  { name: 'CONTATO', href: '/contato', isRoute: true },
 ];
 
 export function Header() {

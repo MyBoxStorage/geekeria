@@ -9,9 +9,9 @@ gsap.registerPlugin(ScrollTrigger);
 const quickLinks = [
   { name: 'Início', href: '#hero' },
   { name: 'Coleção', href: '#featured' },
-  { name: 'Catálogo', href: '#catalog' },
-  { name: 'Sobre nós', href: '#values' },
-  { name: 'Contato', href: '#footer' },
+  { name: 'Catálogo', href: '/catalogo', isRoute: true },
+  { name: 'Sobre nós', href: '/sobre', isRoute: true },
+  { name: 'Contato', href: '/contato', isRoute: true },
 ];
 
 const supportLinks = [
@@ -114,16 +114,25 @@ export function Footer() {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection(link.href);
-                    }}
-                    className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
-                  >
-                    {link.name}
-                  </a>
+                  {'isRoute' in link && link.isRoute ? (
+                    <Link
+                      to={link.href}
+                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(link.href);
+                      }}
+                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
