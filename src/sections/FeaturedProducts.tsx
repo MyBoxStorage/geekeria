@@ -57,8 +57,7 @@ function FeaturedCard({ product, onClick }: { product: Product; onClick: () => v
     >
       <div
         className="relative aspect-[3/4] overflow-hidden bg-gray-100"
-        onMouseEnter={() => hasBothGenders && setCurrentGender('feminino')}
-        onMouseLeave={() => setCurrentGender('masculino')}
+        onMouseEnter={() => hasBothGenders && setCurrentGender(prev => prev === 'masculino' ? 'feminino' : 'masculino')}
       >
         <img
           src={currentImageUrl ?? undefined}
