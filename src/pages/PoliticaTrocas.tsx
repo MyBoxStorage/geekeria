@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { CartProvider } from '@/hooks/useCart';
 import { Header } from '@/sections/Header';
 import { Footer } from '@/sections/Footer';
 import { buildWhatsAppLink } from '@/utils/whatsapp';
@@ -11,6 +12,7 @@ export default function PoliticaTrocas() {
   }, []);
 
   return (
+    <CartProvider>
     <div className="min-h-screen bg-white">
       <Header />
 
@@ -179,5 +181,6 @@ export default function PoliticaTrocas() {
 
       <Footer />
     </div>
+    </CartProvider>
   );
 }
