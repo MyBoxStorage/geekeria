@@ -14,6 +14,7 @@ import { logger } from '../../utils/logger.js';
 import { sendError } from '../../utils/errorResponse.js';
 import { fetchMpPayment, MpHttpError } from '../../services/mp/fetchPayment.js';
 import { mapMpStatusToOrderStatus } from '../../services/mp/statusMapper.js';
+import { sendOrderConfirmationEmail } from '../../utils/email.js';
 
 /**
  * Valida assinatura do webhook conforme documentação Mercado Pago.
@@ -310,7 +311,7 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
       }
     }
 
-    // Buscar Order por externalReference
+    // Buscar Order por externalReference (com dados para email de confirmação)
     const order = await prisma.order.findUnique({
       where: { externalReference },
       select: {
@@ -321,6 +322,28 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
         externalReference: true,
         buyerId: true,
         creditsGranted: true,
+        payerName: true,
+        payerEmail: true,
+        total: true,
+        shippingCost: true,
+        couponCode: true,
+        couponDiscountAmount: true,
+        shippingAddress1: true,
+        shippingNumber: true,
+        shippingDistrict: true,
+        shippingCity: true,
+        shippingState: true,
+        shippingCep: true,
+        shippingComplement: true,
+        items: {
+          select: {
+            quantity: true,
+            unitPrice: true,
+            size: true,
+            color: true,
+            product: { select: { name: true } },
+          },
+        },
       },
     });
 
@@ -458,6 +481,38 @@ async function processPaymentEvent(paymentId: string, webhookEventId: string) {
       }
     }
     // ========== FIM: LIBERAR CRÉDITOS ==========
+
+    // Enviar email de confirmação ao cliente (apenas quando pagamento aprovado)
+    if (mpStatus === 'approved' && order.payerEmail) {
+      const shippingAddress = [
+        order.shippingAddress1,
+        order.shippingNumber,
+        order.shippingDistrict,
+        order.shippingCity,
+        order.shippingState,
+        order.shippingCep,
+        order.shippingComplement,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      sendOrderConfirmationEmail({
+        name: order.payerName ?? 'Cliente',
+        email: order.payerEmail,
+        orderId: order.id,
+        total: order.total,
+        shippingCost: order.shippingCost ?? 0,
+        couponCode: order.couponCode ?? undefined,
+        couponDiscount: order.couponDiscountAmount ?? 0,
+        items: order.items.map((item) => ({
+          name: item.product.name,
+          color: item.color ?? '',
+          size: item.size ?? '',
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+        shippingAddress,
+      }).catch((err) => logger.error('mp_webhook_error', { event: 'mp_webhook_error', stage: 'order_confirmation_email', orderId: order.id, message: err instanceof Error ? err.message : 'Unknown' }));
+    }
 
     // Se pedido está READY_FOR_MONTINK, enfileirar fulfillment (fire-and-forget)
     if (orderStatus === 'READY_FOR_MONTINK') {
