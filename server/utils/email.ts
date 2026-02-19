@@ -136,3 +136,31 @@ export async function sendWelcomeEmail(data: WelcomeEmailData) {
     console.error('❌ Welcome email failed:', error);
   }
 }
+
+export async function sendVerificationEmail(data: { name: string; email: string; token: string }) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('⚠️  Email não configurado');
+    return;
+  }
+  try {
+    await transporter.sendMail({
+      from: `"Bravos Brasil" <${process.env.GMAIL_USER}>`,
+      to: data.email,
+      subject: 'Confirme seu e-mail — Bravos Brasil',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;">
+          <h2 style="color: #00843D; font-size: 24px; margin-bottom: 8px;">Confirme seu e-mail</h2>
+          <p style="color: #374151; margin-bottom: 24px;">Olá, ${data.name}! Use o código abaixo para confirmar sua conta:</p>
+          <div style="background: #f9fafb; border: 2px dashed #00843D; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 40px; font-weight: bold; color: #002776; letter-spacing: 8px;">${data.token}</span>
+          </div>
+          <p style="color: #6b7280; font-size: 14px;">O código expira em <strong>15 minutos</strong>.</p>
+          <p style="color: #6b7280; font-size: 14px;">Se não foi você, ignore este e-mail.</p>
+        </div>
+      `,
+    });
+    console.log('✅ Verification email sent to:', data.email);
+  } catch (err) {
+    console.error('Erro ao enviar e-mail de verificação:', err);
+  }
+}

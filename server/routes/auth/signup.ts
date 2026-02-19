@@ -1,14 +1,23 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../utils/prisma.js';
-import { sendWelcomeEmail } from '../../utils/email.js';
+import { sendVerificationEmail } from '../../utils/email.js';
+import { generateVerifyToken } from '../../utils/emailVerification.js';
 import { signupSchema } from './schemas.js';
-import { generateToken } from '../../utils/authMiddleware.js';
 import { sendError } from '../../utils/errorResponse.js';
+
+const BLOCKED_DOMAINS = [
+  'mailinator.com', 'tempmail.com', 'guerrillamail.com', 'throwaway.email',
+  'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
+  'guerrillamail.info', 'spam4.me', 'trashmail.com', 'trashmail.me',
+  'dispostable.com', 'mailnull.com', 'spamgourmet.com', 'spamgourmet.net',
+  'maildrop.cc', 'fakeinbox.com', 'getairmail.com', 'filzmail.com',
+  'owlpic.com', 'discard.email', 'spamherelots.com', 'binkmail.com',
+];
 
 /**
  * POST /api/auth/signup
- * Criar nova conta de usuário (ganha 5 créditos grátis)
+ * Criar nova conta de usuário (requer verificação de e-mail para ganhar 5 créditos)
  */
 export async function signup(req: Request, res: Response): Promise<void> {
   try {
@@ -20,55 +29,49 @@ export async function signup(req: Request, res: Response): Promise<void> {
 
     const { email, password, name, phone } = validation.data;
 
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (domain && BLOCKED_DOMAINS.includes(domain)) {
+      sendError(res, req, 400, 'INVALID_EMAIL', 'Use um e-mail válido para se cadastrar');
+      return;
+    }
+
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       sendError(res, req, 409, 'EMAIL_ALREADY_EXISTS', 'Email já cadastrado');
       return;
     }
 
+    const verifyToken = generateVerifyToken();
+    const verifyTokenExp = new Date(Date.now() + 15 * 60 * 1000);
+
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: {
-          email,
-          passwordHash,
-          name: name || null,
-          phone: phone || null,
-          credits: 5,
-        },
-      });
-
-      await tx.creditLog.create({
-        data: {
-          userId: newUser.id,
-          amount: 5,
-          reason: 'SIGNUP',
-        },
-      });
-
-      return newUser;
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        passwordHash,
+        name: name || null,
+        phone: phone || null,
+        credits: 0,
+        emailVerified: false,
+        verifyToken,
+        verifyTokenExp,
+      },
     });
 
-    const token = generateToken(user.id, user.email);
+    await sendVerificationEmail({
+      name: name || 'Cliente',
+      email,
+      token: verifyToken,
+    });
 
-    console.log(`✅ New user registered: ${user.email} (${user.id})`);
-
-    // Enviar email de boas-vindas (não bloqueia o response)
-    sendWelcomeEmail({
-      name: user.name || 'Cliente',
-      email: user.email,
-    }).catch((err) => console.error('Email error:', err));
+    console.log(`✅ New user registered (pending verification): ${newUser.email} (${newUser.id})`);
 
     res.status(201).json({
       success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        credits: user.credits,
-      },
+      requiresVerification: true,
+      userId: newUser.id,
+      message: 'Verifique seu e-mail para ativar a conta',
     });
   } catch (error) {
     console.error('Signup error:', error);

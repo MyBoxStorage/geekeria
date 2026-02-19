@@ -47,9 +47,11 @@ import { reconcilePending } from './routes/internal/reconcile-pending.js';
 import { cancelAbandoned } from './routes/internal/cancel-abandoned.js';
 import { createRateLimiter } from './utils/rateLimiter.js';
 import { validateProductionEnv, logEnvStatus } from './utils/env.js';
+import rateLimit from 'express-rate-limit';
 import { signup } from './routes/auth/signup.js';
 import { login } from './routes/auth/login.js';
 import { me } from './routes/auth/me.js';
+import { verifyEmail } from './routes/auth/verify-email.js';
 import { requireAuth, optionalAuth } from './utils/authMiddleware.js';
 import { generateStamp } from './routes/generate-stamp/generate.js';
 import { listMyGenerations } from './routes/generate-stamp/list.js';
@@ -284,9 +286,18 @@ app.post(
   cancelAbandoned
 );
 
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { ok: false, error: 'RATE_LIMITED', message: 'Muitas tentativas. Tente novamente em 1 hora.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Auth routes
-app.post('/api/auth/signup', signup);
+app.post('/api/auth/signup', authLimiter, signup);
 app.post('/api/auth/login', login);
+app.post('/api/auth/verify-email', authLimiter, verifyEmail);
 app.get('/api/auth/me', requireAuth, me);
 
 // Generate stamp (requires auth + credits)

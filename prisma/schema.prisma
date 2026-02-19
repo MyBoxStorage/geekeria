@@ -179,6 +179,11 @@ model User {
   name         String?
   phone        String?
 
+  // Verificação de e-mail
+  emailVerified   Boolean   @default(true) @map("email_verified")
+  verifyToken    String?   @map("verify_token")
+  verifyTokenExp DateTime? @map("verify_token_exp")
+
   // Sistema de créditos
   credits          Int @default(5)
   totalGenerations Int @default(0) @map("total_generations")
