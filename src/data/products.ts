@@ -11,8 +11,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['preto', 'branco'],
-    rating: 4.9,
-    reviews: 127,
     isBestseller: true,
   },
   {
@@ -25,8 +23,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG', 'XG'],
     colors: ['azul', 'preto'],
-    rating: 4.8,
-    reviews: 89,
     isNew: true,
   },
   {
@@ -39,8 +35,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['branco', 'preto', 'azul'],
-    rating: 4.7,
-    reviews: 56,
   },
   {
     id: '4',
@@ -52,8 +46,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG', 'XG'],
     colors: ['preto', 'cinza'],
-    rating: 4.9,
-    reviews: 143,
     isBestseller: true,
   },
   {
@@ -66,8 +58,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['Único'],
     colors: ['verde', 'preto'],
-    rating: 4.6,
-    reviews: 78,
   },
   {
     id: '6',
@@ -79,8 +69,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['cinza', 'preto'],
-    rating: 4.8,
-    reviews: 92,
     isNew: true,
   },
   {
@@ -93,8 +81,6 @@ export const featuredProducts: Product[] = [
     gender: 'masculino',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['verde'],
-    rating: 4.5,
-    reviews: 45,
   },
   {
     id: '8',
@@ -106,8 +92,6 @@ export const featuredProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G'],
     colors: ['branco', 'amarelo'],
-    rating: 4.9,
-    reviews: 67,
     isNew: true,
   },
 ];
@@ -124,8 +108,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG', 'XG'],
     colors: ['preto', 'branco'],
-    rating: 4.7,
-    reviews: 103,
   },
   {
     id: '10',
@@ -137,8 +119,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['azul', 'preto'],
-    rating: 4.8,
-    reviews: 56,
     isNew: true,
   },
   // Additional products for catalog
@@ -152,8 +132,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG'],
     colors: ['cinza', 'preto'],
-    rating: 4.6,
-    reviews: 34,
   },
   {
     id: '12',
@@ -165,8 +143,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['Único'],
     colors: ['preto', 'azul'],
-    rating: 4.5,
-    reviews: 42,
   },
   {
     id: '13',
@@ -178,8 +154,6 @@ export const allProducts: Product[] = [
     gender: 'feminino',
     sizes: ['P', 'M', 'G'],
     colors: ['branco', 'preto'],
-    rating: 4.7,
-    reviews: 28,
   },
   {
     id: '14',
@@ -191,8 +165,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['P', 'M', 'G', 'GG', 'XG'],
     colors: ['preto', 'cinza', 'azul'],
-    rating: 4.6,
-    reviews: 51,
   },
   {
     id: '15',
@@ -204,8 +176,6 @@ export const allProducts: Product[] = [
     gender: 'masculino',
     sizes: ['GG', 'XG', 'XXG'],
     colors: ['preto', 'azul', 'branco'],
-    rating: 4.8,
-    reviews: 37,
   },
   {
     id: '16',
@@ -217,8 +187,6 @@ export const allProducts: Product[] = [
     gender: 'feminino',
     sizes: ['P', 'M', 'G'],
     colors: ['verde', 'preto'],
-    rating: 4.4,
-    reviews: 23,
   },
   {
     id: '17',
@@ -230,8 +198,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['2', '4', '6', '8', '10'],
     colors: ['branco', 'preto'],
-    rating: 4.9,
-    reviews: 45,
   },
   {
     id: '18',
@@ -243,8 +209,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['2', '4', '6', '8', '10'],
     colors: ['cinza', 'azul'],
-    rating: 4.7,
-    reviews: 31,
   },
   {
     id: '19',
@@ -256,8 +220,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['Único'],
     colors: ['branco'],
-    rating: 4.8,
-    reviews: 67,
   },
   {
     id: '20',
@@ -269,8 +231,6 @@ export const allProducts: Product[] = [
     gender: 'unissex',
     sizes: ['Único'],
     colors: ['preto', 'prata'],
-    rating: 4.6,
-    reviews: 29,
   },
 ];
 
@@ -280,7 +240,6 @@ export const testimonials: Testimonial[] = [
     name: 'Carlos R.',
     city: 'Belo Horizonte',
     state: 'MG',
-    rating: 5,
     text: 'Qualidade excepcional! A estampa não desbota e o tecido é muito confortável. Uso com orgulho!',
   },
   {
@@ -288,7 +247,6 @@ export const testimonials: Testimonial[] = [
     name: 'Maria L.',
     city: 'Porto Alegre',
     state: 'RS',
-    rating: 5,
     text: 'Comprei 3 camisetas e todas chegaram perfeitas. Finalmente encontrei roupas que expressam meus valores.',
   },
   {
@@ -296,7 +254,6 @@ export const testimonials: Testimonial[] = [
     name: 'Pedro H.',
     city: 'Curitiba',
     state: 'PR',
-    rating: 5,
     text: 'Atendimento nota 10. Personalizei uma camisa com foto da família e ficou incrível!',
   },
   {
@@ -304,7 +261,6 @@ export const testimonials: Testimonial[] = [
     name: 'Ana S.',
     city: 'São Paulo',
     state: 'SP',
-    rating: 5,
     text: 'Recebi em 5 dias. Embalagem caprichada e produto de qualidade. Super recomendo!',
   },
   {
@@ -312,7 +268,6 @@ export const testimonials: Testimonial[] = [
     name: 'Roberto F.',
     city: 'Rio de Janeiro',
     state: 'RJ',
-    rating: 5,
     text: 'Uso em manifestações e eventos. Sempre recebo elogios. Orgulho de ser brasileiro!',
   },
   {
@@ -320,7 +275,6 @@ export const testimonials: Testimonial[] = [
     name: 'Juliana M.',
     city: 'Brasília',
     state: 'DF',
-    rating: 5,
     text: 'Comprei para presente e meu pai amou. Já fiz mais 2 pedidos!',
   },
 ];

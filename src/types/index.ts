@@ -36,8 +36,8 @@ export interface Product {
   gender: Gender;
   sizes: string[];
   colors: string[];
-  rating: number;
-  reviews: number;
+  rating?: number;
+  reviews?: number;
   badge?: string | null;
   isNew?: boolean;
   isBestseller?: boolean;
@@ -68,7 +68,7 @@ export interface Testimonial {
   name: string;
   city: string;
   state: string;
-  rating: number;
+  rating?: number;
   text: string;
   avatar?: string;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Package, MapPin, Users, Award } from 'lucide-react';
+import { Package, MapPin, Flag, Palette } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -19,16 +19,16 @@ const stats = [
     label: 'Estados Atendidos',
   },
   {
-    icon: Users,
-    value: 98,
+    icon: Flag,
+    value: 100,
     suffix: '%',
-    label: 'Clientes Satisfeitos',
+    label: 'Feito com Orgulho',
   },
   {
-    icon: Award,
-    value: 4,
-    suffix: '.9',
-    label: 'Avaliação Média',
+    icon: Palette,
+    value: 100,
+    suffix: '%',
+    label: 'Estampas Exclusivas',
   },
 ];
 

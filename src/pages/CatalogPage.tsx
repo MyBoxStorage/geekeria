@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Filter,
-  Star,
   ShoppingCart,
   TrendingUp,
   Sparkles,
@@ -441,12 +440,7 @@ function ProductCard({
       {/* Content */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-[#FFCC29] text-[#FFCC29]" />
-            <span className="text-sm font-body text-gray-600">
-              {product.rating}
-            </span>
-          </div>
+          <div />
 
           {/* Quick View HoverCard (desktop only) */}
           <HoverCard openDelay={200} closeDelay={100}>

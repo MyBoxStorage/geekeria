@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Star, ShoppingCart, Sparkles, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,10 +91,6 @@ function FeaturedCard({ product, onClick }: { product: Product; onClick: () => v
         </div>
       </div>
       <div className="p-4">
-        <div className="flex items-center gap-1 mb-2">
-          <Star className="w-4 h-4 fill-[#FFCC29] text-[#FFCC29]" />
-          <span className="text-sm font-body text-gray-600">{product.rating}</span>
-        </div>
         <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
           {product.name}
         </h3>
@@ -157,13 +153,6 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
           />
           
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 fill-[#FFCC29] text-[#FFCC29]" />
-              <span className="font-body">
-                {product.rating} ({product.reviews} avaliações)
-              </span>
-            </div>
-            
             <p className="font-display text-3xl text-[#00843D]">
               {formatPrice(product.price)}
             </p>

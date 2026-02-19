@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSEO } from '@/hooks/useSEO';
 import {
-  Star,
   ShoppingCart,
   ChevronLeft,
   Share2,
@@ -444,14 +443,6 @@ function ProductLoader({ slug }: { slug: string }) {
                 <Share2 className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Compartilhar</span>
               </Button>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 fill-[#FFCC29] text-[#FFCC29]" />
-              <span className="font-body text-gray-700">
-                {product.rating} ({product.reviews} avaliações)
-              </span>
             </div>
 
             {/* Price */}

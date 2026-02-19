@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { testimonials } from '@/data/products';
 
@@ -132,16 +132,6 @@ export function Testimonials() {
                   <div className="max-w-3xl mx-auto bg-white rounded-2xl p-8 md:p-12 shadow-xl relative">
                     {/* Quote Icon */}
                     <Quote className="absolute top-6 left-6 w-12 h-12 text-[#FFCC29] opacity-50" />
-                    
-                    {/* Stars */}
-                    <div className="flex gap-1 mb-6 justify-center">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="w-5 h-5 fill-[#FFCC29] text-[#FFCC29]"
-                        />
-                      ))}
-                    </div>
                     
                     {/* Text */}
                     <p className="font-body text-lg md:text-xl text-gray-700 text-center mb-8 italic">
