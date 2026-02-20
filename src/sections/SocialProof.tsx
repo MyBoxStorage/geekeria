@@ -19,9 +19,8 @@ export function SocialProof() {
     const ctx = gsap.context(() => {
       const statItems = statsRef.current?.querySelectorAll('.stat-item');
       if (statItems) {
-        gsap.fromTo(
+        gsap.to(
           statItems,
-          { y: 30, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -38,7 +37,22 @@ export function SocialProof() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -49,7 +63,7 @@ export function SocialProof() {
           className="grid grid-cols-2 md:grid-cols-4 gap-8"
         >
           {stats.map((stat, index) => (
-            <div key={index} className="stat-item text-center">
+            <div key={index} className="stat-item text-center" data-animate>
               <p className="font-display text-4xl md:text-5xl text-gradient-brand mb-2">
                 {stat.value}
               </p>

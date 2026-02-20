@@ -50,9 +50,8 @@ export function FAQ() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      gsap.to(
         headerRef.current,
-        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -66,9 +65,8 @@ export function FAQ() {
         }
       );
 
-      gsap.fromTo(
+      gsap.to(
         accordionRef.current,
-        { y: 40, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -83,14 +81,29 @@ export function FAQ() {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
     <section ref={sectionRef} className="py-24 bg-void">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
-        <div ref={headerRef} className="text-center mb-12">
+        <div ref={headerRef} className="text-center mb-12" data-animate>
           <h2 className="font-display text-4xl md:text-5xl text-ink mb-3">
             PERGUNTAS FREQUENTES
           </h2>
@@ -100,7 +113,7 @@ export function FAQ() {
         </div>
 
         {/* Accordion */}
-        <div ref={accordionRef}>
+        <div ref={accordionRef} data-animate>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((faq, index) => (
               <AccordionItem

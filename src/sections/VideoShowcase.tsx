@@ -35,9 +35,8 @@ export function VideoShowcase() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Expand animation on scroll
-      gsap.fromTo(
+      gsap.to(
         containerRef.current,
-        { width: '70%', borderRadius: '24px' },
         {
           width: '100%',
           borderRadius: '0px',
@@ -54,9 +53,8 @@ export function VideoShowcase() {
       // Cards stagger animation
       const cards = containerRef.current?.querySelectorAll('.video-card');
       if (cards) {
-        gsap.fromTo(
+        gsap.to(
           cards,
-          { opacity: 0, y: 50 },
           {
             opacity: 1,
             y: 0,
@@ -71,7 +69,22 @@ export function VideoShowcase() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -100,6 +113,7 @@ export function VideoShowcase() {
             <div
               key={video.id}
               className="video-card relative aspect-video rounded-xl overflow-hidden group cursor-pointer"
+              data-animate
               onClick={() => setActiveVideo(activeVideo === video.id ? null : video.id)}
             >
               {/* Thumbnail */}

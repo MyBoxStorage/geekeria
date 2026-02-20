@@ -24,20 +24,17 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
 
-      tl.fromTo(
+      tl.to(
         breadcrumbRef.current,
-        { opacity: 0, y: -20 },
         { opacity: 1, y: 0, duration: 0.6 }
       )
-        .fromTo(
+        .to(
           titleRef.current,
-          { opacity: 0, y: 30 },
           { opacity: 1, y: 0, duration: 0.8 },
           '-=0.3'
         )
-        .fromTo(
+        .to(
           countRef.current,
-          { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.6 },
           '-=0.4'
         );
@@ -66,7 +63,22 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
       });
     }, heroRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!heroRef?.current) return;
+      const els = heroRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -99,6 +111,7 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
           <nav
             ref={breadcrumbRef}
             className="flex items-center text-sm mb-4"
+            data-animate
           >
             <Link
               to="/"
@@ -116,6 +129,7 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
           <h1
             ref={titleRef}
             className="font-display text-3xl md:text-5xl lg:text-6xl text-white mb-3 drop-shadow-lg"
+            data-animate
           >
             EXPLORE TODA A COLEÇÃO
           </h1>
@@ -124,6 +138,7 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
           <p
             ref={countRef}
             className="font-body text-lg text-white/90 drop-shadow-md"
+            data-animate
           >
             {isLoading && totalProducts === 0
               ? 'Carregando coleção…'

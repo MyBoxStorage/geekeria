@@ -36,9 +36,8 @@ export function Values() {
     const ctx = gsap.context(() => {
       const cards = cardsRef.current?.querySelectorAll('.value-card');
       if (cards) {
-        gsap.fromTo(
+        gsap.to(
           cards,
-          { y: 30, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -55,7 +54,22 @@ export function Values() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -71,6 +85,7 @@ export function Values() {
               <div
                 key={index}
                 className="value-card group bg-surface border border-rim rounded p-6 text-center hover:border-fire/50 transition-all"
+                data-animate
               >
                 <div className="w-12 h-12 mx-auto mb-4 bg-elevated rounded flex items-center justify-center group-hover:shadow-fire transition-shadow">
                   <Icon className="w-6 h-6 text-fire" />

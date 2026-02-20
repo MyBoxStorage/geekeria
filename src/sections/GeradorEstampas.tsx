@@ -15,9 +15,8 @@ export function GeradorEstampas() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      gsap.to(
         headerRef.current,
-        { y: 40, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -33,9 +32,8 @@ export function GeradorEstampas() {
 
       const steps = stepsRef.current?.querySelectorAll('.step-card');
       if (steps) {
-        gsap.fromTo(
+        gsap.to(
           steps,
-          { y: 50, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -53,9 +51,8 @@ export function GeradorEstampas() {
 
       const connector = sectionRef.current?.querySelector('.connector-line');
       if (connector) {
-        gsap.fromTo(
+        gsap.to(
           connector,
-          { scaleX: 0 },
           {
             scaleX: 1,
             duration: 1.2,
@@ -69,9 +66,8 @@ export function GeradorEstampas() {
         );
       }
 
-      gsap.fromTo(
+      gsap.to(
         ctaRef.current,
-        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -87,9 +83,8 @@ export function GeradorEstampas() {
 
       const galleryCards = galleryRef.current?.querySelectorAll('.gallery-card');
       if (galleryCards) {
-        gsap.fromTo(
+        gsap.to(
           galleryCards,
-          { y: 40, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -106,7 +101,22 @@ export function GeradorEstampas() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const exampleImages = [
@@ -124,7 +134,7 @@ export function GeradorEstampas() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-plasma/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4">
-        <div ref={headerRef} className="text-center mb-16">
+        <div ref={headerRef} className="text-center mb-16" data-animate>
           <span className="badge badge-plasma mb-4 inline-flex">
             <Atom className="w-3 h-3" />
             POWERED BY AI
@@ -138,10 +148,10 @@ export function GeradorEstampas() {
         </div>
 
         <div ref={stepsRef} className="relative mb-16">
-          <div className="hidden lg:block absolute top-1/2 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-cosmos via-plasma to-fire origin-left connector-line" />
+          <div className="hidden lg:block absolute top-1/2 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-cosmos via-plasma to-fire origin-left connector-line" data-animate />
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="step-card relative">
+            <div className="step-card relative" data-animate>
               <div className="bg-elevated border border-dashed border-cosmos/50 rounded p-8 text-center hover:border-cosmos transition-colors">
                 <div className="w-16 h-16 mx-auto mb-4 bg-surface rounded flex items-center justify-center">
                   <Camera className="w-8 h-8 text-cosmos" />
@@ -154,7 +164,7 @@ export function GeradorEstampas() {
               </div>
             </div>
 
-            <div className="step-card relative">
+            <div className="step-card relative" data-animate>
               <div className="bg-surface border border-rim rounded p-8 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-elevated rounded flex items-center justify-center animate-pulse">
                   <Terminal className="w-8 h-8 text-plasma" />
@@ -170,7 +180,7 @@ export function GeradorEstampas() {
               </div>
             </div>
 
-            <div className="step-card relative">
+            <div className="step-card relative" data-animate>
               <div className="bg-elevated border border-rim rounded p-8 text-center hover:border-fire/50 transition-colors">
                 <div className="w-16 h-16 mx-auto mb-4 bg-surface rounded flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-fire/10 to-transparent animate-pulse" />
@@ -186,7 +196,7 @@ export function GeradorEstampas() {
           </div>
         </div>
 
-        <div ref={ctaRef} className="text-center mb-20">
+        <div ref={ctaRef} className="text-center mb-20" data-animate>
           <Link
             to="/minhas-estampas"
             className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-plasma to-fire rounded font-display text-xl text-white hover:scale-[1.02] hover:shadow-lg transition-all"
@@ -206,6 +216,7 @@ export function GeradorEstampas() {
               <div
                 key={i}
                 className="gallery-card group relative aspect-square bg-surface border border-rim rounded overflow-hidden cursor-pointer hover:border-plasma transition-colors"
+                data-animate
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${img.color} opacity-20 group-hover:opacity-40 transition-opacity`} />
                 <div className="absolute inset-0 flex items-center justify-center">

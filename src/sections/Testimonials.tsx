@@ -36,9 +36,8 @@ export function Testimonials() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      gsap.to(
         headerRef.current,
-        { y: 30, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -54,9 +53,8 @@ export function Testimonials() {
 
       const cards = cardsRef.current?.querySelectorAll('.testimonial-card');
       if (cards) {
-        gsap.fromTo(
+        gsap.to(
           cards,
-          { y: 40, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -73,13 +71,28 @@ export function Testimonials() {
       }
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
     <section ref={sectionRef} className="py-24 bg-void">
       <div className="max-w-7xl mx-auto px-4">
-        <div ref={headerRef} className="text-center mb-12">
+        <div ref={headerRef} className="text-center mb-12" data-animate>
           <h2 className="font-display text-4xl md:text-5xl text-ink mb-3">
             O QUE OS FÃS DIZEM
           </h2>
@@ -96,6 +109,7 @@ export function Testimonials() {
             <div
               key={index}
               className="testimonial-card bg-surface border border-rim rounded p-6 relative"
+              data-animate
             >
               <Quote className="absolute top-4 right-4 w-8 h-8 text-rim" />
 

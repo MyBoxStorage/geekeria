@@ -176,9 +176,8 @@ export function Catalog() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      gsap.to(
         titleRef.current,
-        { opacity: 0, y: 50 },
         {
           opacity: 1,
           y: 0,
@@ -191,7 +190,22 @@ export function Catalog() {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const formatPrice = (price: number) => {
@@ -209,7 +223,7 @@ export function Catalog() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
-        <div ref={titleRef} className="mb-8">
+        <div ref={titleRef} className="mb-8" data-animate>
           <h2 className="font-display text-5xl md:text-6xl text-fire mb-2">
             EXPLORE TODA A COLEÇÃO
           </h2>

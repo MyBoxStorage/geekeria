@@ -25,9 +25,8 @@ export function Newsletter() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
+      gsap.to(
         contentRef.current,
-        { y: 40, opacity: 0 },
         {
           y: 0,
           opacity: 1,
@@ -42,7 +41,22 @@ export function Newsletter() {
       );
     }, sectionRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      if (!sectionRef?.current) return;
+      const els = sectionRef.current.querySelectorAll('[data-animate]');
+      els.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        if (parseFloat(getComputedStyle(htmlEl).opacity) < 0.5) {
+          htmlEl.style.opacity = '1';
+          htmlEl.style.transform = 'none';
+        }
+      });
+    }, 1500);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +86,7 @@ export function Newsletter() {
       }}
     >
       <div className="max-w-4xl mx-auto px-4">
-        <div ref={contentRef} className="text-center">
+        <div ref={contentRef} className="text-center" data-animate>
           <h2 className="font-display text-4xl md:text-5xl text-gradient-brand mb-4">
             ENTRE PARA A GUILDA
           </h2>

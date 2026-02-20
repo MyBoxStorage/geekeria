@@ -28,8 +28,9 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     <div
       className="product-card group relative bg-surface border border-rim rounded overflow-hidden transition-all duration-300 hover:border-fire/50 hover:shadow-card-hover"
       data-index={index}
+      data-animate
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-elevated">
+      <div className="relative aspect-[3/4] overflow-hidden bg-elevated" style={{ backgroundColor: '#161625' }}>
         <img
           src={imageUrl ?? undefined}
           alt={product.name}
@@ -157,7 +158,7 @@ export function FeaturedProducts() {
   return (
     <section ref={sectionRef} id="featured" className="py-24 bg-void">
       <div className="max-w-7xl mx-auto px-4">
-        <div ref={headerRef} className="text-center mb-12">
+        <div ref={headerRef} className="text-center mb-12" data-animate>
           <h2 className="font-display text-4xl md:text-5xl text-ink mb-3">
             PRODUTOS EM DESTAQUE
           </h2>
