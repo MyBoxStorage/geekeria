@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* GEEKERIA DESIGN TOKENS v3.0 */
 :root {
   /* === BACKGROUNDS === */
