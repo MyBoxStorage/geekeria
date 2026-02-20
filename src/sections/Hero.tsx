@@ -18,56 +18,49 @@ export function Hero() {
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       // Badge animation
-      tl.fromTo(
+      tl.to(
         badgeRef.current,
-        { y: -20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5 }
       );
 
       // Headline 1
-      tl.fromTo(
+      tl.to(
         headline1Ref.current,
-        { x: -40, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.6 },
         '-=0.3'
       );
 
       // Headline 2
-      tl.fromTo(
+      tl.to(
         headline2Ref.current,
-        { x: -40, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.6 },
         '-=0.4'
       );
 
       // Subheadline
-      tl.fromTo(
+      tl.to(
         subheadRef.current,
-        { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5 },
         '-=0.3'
       );
 
       // CTA Group
-      tl.fromTo(
+      tl.to(
         ctaGroupRef.current,
-        { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5 },
         '-=0.3'
       );
 
       // Trust row
-      tl.fromTo(
+      tl.to(
         trustRef.current,
-        { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.5 },
         '-=0.3'
       );
 
       // Mockup
-      tl.fromTo(
+      tl.to(
         mockupRef.current,
-        { y: 30, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.6 },
         '-=0.8'
       );
@@ -82,7 +75,27 @@ export function Hero() {
       });
     }, heroRef);
 
-    return () => ctx.revert();
+    const fallbackTimer = setTimeout(() => {
+      const els = [
+        badgeRef.current,
+        headline1Ref.current,
+        headline2Ref.current,
+        subheadRef.current,
+        ctaGroupRef.current,
+        trustRef.current,
+      ];
+      els.forEach((el) => {
+        if (el && parseFloat(getComputedStyle(el).opacity) < 0.5) {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+        }
+      });
+    }, 2000);
+
+    return () => {
+      ctx.revert();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -109,7 +122,7 @@ export function Hero() {
           {/* Left Column */}
           <div className="space-y-6">
             {/* Badge */}
-            <div ref={badgeRef} className="inline-flex">
+            <div ref={badgeRef} className="inline-flex opacity-0 will-change-[opacity]">
               <span className="badge badge-outline-fire px-3 py-1.5 text-xs">
                 <Zap className="w-3 h-3" />
                 NOVA FEATURE
@@ -119,13 +132,13 @@ export function Hero() {
             {/* Headlines */}
             <h1
               ref={headline1Ref}
-              className="font-display text-hero text-ink leading-none"
+              className="font-display text-hero text-ink leading-none opacity-0 will-change-[opacity]"
             >
               VOCÊ NO UNIVERSO
             </h1>
             <h1
               ref={headline2Ref}
-              className="font-display text-hero text-gradient-brand leading-none"
+              className="font-display text-hero text-gradient-brand leading-none opacity-0 will-change-[opacity]"
             >
               DO SEU HERÓI
             </h1>
@@ -133,14 +146,14 @@ export function Hero() {
             {/* Subheadline */}
             <p
               ref={subheadRef}
-              className="font-body text-lg text-ink-2 max-w-md"
+              className="font-body text-lg text-ink-2 max-w-md opacity-0 will-change-[opacity]"
             >
               Gere sua estampa exclusiva com IA. Vista qualquer personagem.
               Transforme-se na lenda que você sempre quis ser.
             </p>
 
             {/* CTA Group */}
-            <div ref={ctaGroupRef} className="flex flex-wrap gap-4 pt-2">
+            <div ref={ctaGroupRef} className="flex flex-wrap gap-4 pt-2 opacity-0 will-change-[opacity]">
               <Link
                 to="/minhas-estampas"
                 className="btn-fire h-14 px-8 text-lg shadow-fire"
@@ -157,7 +170,7 @@ export function Hero() {
             </div>
 
             {/* Trust Row */}
-            <div ref={trustRef} className="flex flex-wrap items-center gap-6 pt-4">
+            <div ref={trustRef} className="flex flex-wrap items-center gap-6 pt-4 opacity-0 will-change-[opacity]">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-warning text-warning" />
@@ -178,7 +191,7 @@ export function Hero() {
           </div>
 
           {/* Right Column - Mockup */}
-          <div ref={mockupRef} className="relative hidden lg:flex justify-center items-center">
+          <div ref={mockupRef} className="relative hidden lg:flex justify-center items-center opacity-0 will-change-[opacity]">
             {/* Decorative circles */}
             <div className="absolute w-80 h-80 rounded-full border border-rim opacity-30" />
             <div className="absolute w-96 h-96 rounded-full border border-rim opacity-20" />
