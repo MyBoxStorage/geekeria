@@ -28,6 +28,8 @@ import { TrustBadges } from '@/components/TrustBadges';
 function GeekeriaLogo({ className = '' }: { className?: string }) {
   return (
     <svg
+      width="40"
+      height="40"
       viewBox="0 0 40 40"
       className={className}
       fill="none"
