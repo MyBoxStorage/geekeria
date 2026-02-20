@@ -54,7 +54,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#7C3AED]">
+          <DialogTitle className="font-display text-2xl text-fire">
             {product.name}
           </DialogTitle>
         </DialogHeader>
@@ -67,11 +67,11 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
           />
           
           <div className="space-y-4">
-            <p className="font-display text-3xl text-[#7C3AED]">
+            <p className="font-display text-3xl text-fire">
               {formatPrice(product.price)}
             </p>
             
-            <p className="text-gray-600 font-body text-sm">
+            <p className="text-ink-2 font-body text-sm">
               {product.description}
             </p>
             
@@ -91,7 +91,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                     />
                     <Label
                       htmlFor={`size-${size}`}
-                      className="flex items-center justify-center w-10 h-10 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED] peer-data-[state=checked]:text-white hover:bg-gray-100 transition-colors font-body"
+                      className="flex items-center justify-center w-10 h-10 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-fire peer-data-[state=checked]:bg-fire peer-data-[state=checked]:text-white hover:bg-elevated transition-colors font-body"
                     >
                       {size}
                     </Label>
@@ -116,7 +116,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                     />
                     <Label
                       htmlFor={`color-${color}`}
-                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED]/10 hover:bg-gray-100 transition-colors font-body capitalize"
+                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-fire peer-data-[state=checked]:bg-fire/10 hover:bg-elevated transition-colors font-body capitalize"
                     >
                       <span
                         className="w-4 h-4 rounded-full border"
@@ -144,7 +144,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
             
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
+              className="w-full bg-fire hover:bg-fire-bright text-white font-display text-lg py-6"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               ADICIONAR AO CARRINHO
@@ -205,15 +205,15 @@ export function Catalog() {
     <section
       id="catalog"
       ref={sectionRef}
-      className="py-20 bg-white"
+      className="py-20 bg-surface"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="mb-8">
-          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-2">
+          <h2 className="font-display text-5xl md:text-6xl text-fire mb-2">
             EXPLORE TODA A COLEÇÃO
           </h2>
-          <p className="font-body text-lg text-gray-600">
+          <p className="font-body text-lg text-ink-2">
             {filteredProducts.length}+ produtos disponíveis
           </p>
         </div>
@@ -229,7 +229,7 @@ export function Catalog() {
               <Filter className="w-4 h-4" />
               Filtros
               {hasActiveFilters && (
-                <span className="w-2 h-2 bg-[#7C3AED] rounded-full" />
+                <span className="w-2 h-2 bg-fire rounded-full" />
               )}
             </Button>
             
@@ -238,7 +238,7 @@ export function Catalog() {
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="text-gray-500"
+                className="text-ink-3"
               >
                 <X className="w-4 h-4 mr-1" />
                 Limpar
@@ -247,11 +247,11 @@ export function Catalog() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-body text-sm text-gray-600">Ordenar por:</span>
+            <span className="font-body text-sm text-ink-2">Ordenar por:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="font-body text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]"
+              className="font-body text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-fire"
             >
               <option value="bestsellers">Mais vendidos</option>
               <option value="price-asc">Menor preço</option>
@@ -270,7 +270,7 @@ export function Catalog() {
           >
             {/* Category */}
             <div>
-              <h3 className="font-display text-lg text-gray-900 mb-3">CATEGORIA</h3>
+              <h3 className="font-display text-lg text-ink mb-3">CATEGORIA</h3>
               <div className="space-y-2">
                 {categories.map((cat) => (
                   <label
@@ -281,7 +281,7 @@ export function Catalog() {
                       checked={filters.category === cat.id}
                       onCheckedChange={() => setCategory(cat.id as any)}
                     />
-                    <span className="font-body text-sm text-gray-700">
+                    <span className="font-body text-sm text-ink-2">
                       {cat.name} ({cat.count})
                     </span>
                   </label>
@@ -291,7 +291,7 @@ export function Catalog() {
 
             {/* Size */}
             <div>
-              <h3 className="font-display text-lg text-gray-900 mb-3">TAMANHO</h3>
+              <h3 className="font-display text-lg text-ink mb-3">TAMANHO</h3>
               <div className="flex flex-wrap gap-2">
                 {sizes.map((size) => (
                   <button
@@ -299,8 +299,8 @@ export function Catalog() {
                     onClick={() => toggleSize(size as any)}
                     className={`w-10 h-10 rounded-md border-2 font-body text-sm transition-colors ${
                       filters.sizes.includes(size as any)
-                        ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
-                        : 'border-gray-200 hover:border-[#7C3AED]'
+                        ? 'border-fire bg-fire text-white'
+                        : 'border-rim hover:border-fire'
                     }`}
                   >
                     {size}
@@ -311,7 +311,7 @@ export function Catalog() {
 
             {/* Color */}
             <div>
-              <h3 className="font-display text-lg text-gray-900 mb-3">COR</h3>
+              <h3 className="font-display text-lg text-ink mb-3">COR</h3>
               <div className="space-y-2">
                 {colors.map((color) => (
                   <label
@@ -326,7 +326,7 @@ export function Catalog() {
                       className="w-5 h-5 rounded-full border"
                       style={{ backgroundColor: color.hex }}
                     />
-                    <span className="font-body text-sm text-gray-700 capitalize">
+                    <span className="font-body text-sm text-ink-2 capitalize">
                       {color.name}
                     </span>
                   </label>
@@ -336,7 +336,7 @@ export function Catalog() {
 
             {/* Price Range */}
             <div>
-              <h3 className="font-display text-lg text-gray-900 mb-3">PREÇO</h3>
+              <h3 className="font-display text-lg text-ink mb-3">PREÇO</h3>
               <div className="space-y-2">
                 {[
                   { label: 'Até R$ 60', range: [0, 60] },
@@ -348,7 +348,7 @@ export function Catalog() {
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <Checkbox />
-                    <span className="font-body text-sm text-gray-700">
+                    <span className="font-body text-sm text-ink-2">
                       {price.label}
                     </span>
                   </label>
@@ -363,11 +363,11 @@ export function Catalog() {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
+                  className="group card-geek rounded-xl overflow-hidden cursor-pointer"
                   onClick={() => setSelectedProduct(product)}
                 >
                   {/* Image */}
-                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-elevated">
                     <img
                       src={product.image ?? undefined}
                       alt={product.name}
@@ -377,7 +377,7 @@ export function Catalog() {
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-2">
                       {product.isNew && (
-                        <Badge className="bg-[#7C3AED] text-white font-body text-xs">
+                        <Badge className="bg-fire text-white font-body text-xs">
                           <Sparkles className="w-3 h-3 mr-1" />
                           NOVO
                         </Badge>
@@ -393,7 +393,7 @@ export function Catalog() {
                     {/* Quick Add */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       <Button
-                        className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
+                        className="w-full bg-fire hover:bg-fire-bright text-white font-display"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedProduct(product);
@@ -407,11 +407,11 @@ export function Catalog() {
 
                   {/* Content */}
                   <div className="p-4">
-                    <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
+                    <h3 className="font-body font-medium text-ink line-clamp-2 mb-2 group-hover:text-fire transition-colors">
                       {product.name}
                     </h3>
                     
-                    <span className="font-display text-xl text-[#7C3AED]">
+                    <span className="font-display text-xl text-fire">
                       {formatPrice(product.price)}
                     </span>
                   </div>
@@ -421,7 +421,7 @@ export function Catalog() {
 
             {filteredProducts.length === 0 && (
               <div className="text-center py-12">
-                <p className="font-body text-gray-500">
+                <p className="font-body text-ink-3">
                   Nenhum produto encontrado com os filtros selecionados.
                 </p>
                 <Button

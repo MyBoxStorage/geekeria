@@ -112,7 +112,7 @@ export function ProductSelector({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-surface rounded-lg shadow-lg p-6">
       <h3 className="text-2xl font-bold mb-4">
         🎨 Escolha o Produto para Personalizar
       </h3>
@@ -156,7 +156,7 @@ export function ProductSelector({
 
         {/* Mockup do produto selecionado */}
         {selectedProduct && (
-          <div className="mt-2 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-2 p-4 bg-elevated rounded-lg">
             <img
               src={selectedProduct.image ?? undefined}
               alt={selectedProduct.name}

@@ -117,32 +117,32 @@ export function GeradorEstampas() {
   };
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-surface">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-medium mb-4">
             ✦ Exclusivo GEEKERIA
           </div>
-          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
+          <h2 className="font-display text-5xl md:text-6xl text-fire mb-4">
             GERADOR DE ESTAMPAS
           </h2>
-          <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="font-body text-lg text-ink-2 max-w-2xl mx-auto">
             Crie sua estampa exclusiva com Inteligência Artificial
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* COMO FUNCIONA */}
-          <div className="bg-white rounded-xl p-6 border border-gray-100 hover-lift">
-            <h3 className="font-display text-2xl text-[#7C3AED] mb-4">COMO FUNCIONA</h3>
+          <div className="card-geek rounded-xl p-6">
+            <h3 className="font-display text-2xl text-fire mb-4">COMO FUNCIONA</h3>
             <div className="space-y-5">
               <div className="flex items-start gap-3">
-                <div className="bg-[#7C3AED] text-white rounded-full p-2 flex-shrink-0">
+                <div className="bg-fire text-white rounded-full p-2 flex-shrink-0">
                   <span className="font-bold">1</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium mb-2">Envie sua foto (opcional)</p>
-                  <div className="w-full h-36 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <div className="w-full h-36 rounded-xl border-2 border-rim overflow-hidden bg-elevated flex items-center justify-center">
                     <img
                       src={EXEMPLOS.upload}
                       alt="Exemplo de upload"
@@ -152,12 +152,12 @@ export function GeradorEstampas() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-[#7C3AED] text-white rounded-full p-2 flex-shrink-0">
+                <div className="bg-fire text-white rounded-full p-2 flex-shrink-0">
                   <span className="font-bold">2</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium mb-2">Descreva a estampa</p>
-                  <div className="w-full h-36 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <div className="w-full h-36 rounded-xl border-2 border-rim overflow-hidden bg-elevated flex items-center justify-center">
                     <img
                       src={EXEMPLOS.prompt}
                       alt="Exemplo de prompt"
@@ -167,12 +167,12 @@ export function GeradorEstampas() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="bg-[#7C3AED] text-white rounded-full p-2 flex-shrink-0">
+                <div className="bg-fire text-white rounded-full p-2 flex-shrink-0">
                   <span className="font-bold">3</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium mb-2">Gere com IA</p>
-                  <div className="w-full h-36 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <div className="w-full h-36 rounded-xl border-2 border-rim overflow-hidden bg-elevated flex items-center justify-center">
                     <img
                       src={EXEMPLOS.estampa}
                       alt="Exemplo de estampa gerada"
@@ -185,8 +185,8 @@ export function GeradorEstampas() {
           </div>
 
           {/* GERADOR */}
-          <div className="bg-white rounded-xl p-6 border border-gray-100 hover-lift">
-            <h2 className="font-display text-2xl text-[#7C3AED] mb-2">
+          <div className="card-geek rounded-xl p-6">
+            <h2 className="font-display text-2xl text-fire mb-2">
               CRIE SUA ESTAMPA EXCLUSIVA
             </h2>
             <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs mb-3">
@@ -194,12 +194,12 @@ export function GeradorEstampas() {
             </Badge>
 
             {user && (
-              <div className="bg-[#7C3AED]/5 border border-[#7C3AED]/20 rounded-xl p-3 mb-4">
-                <p className="text-[#7C3AED] font-semibold text-sm">
+              <div className="bg-fire/5 border border-fire/20 rounded-xl p-3 mb-4">
+                <p className="text-fire font-semibold text-sm">
                   💳 Créditos: {user.credits}/5
                 </p>
                 {user.credits === 0 && (
-                  <p className="text-[#7C3AED] text-xs mt-1">
+                  <p className="text-fire text-xs mt-1">
                     Compre um produto para ganhar +5 créditos
                   </p>
                 )}
@@ -215,7 +215,7 @@ export function GeradorEstampas() {
                 type="file"
                 accept="image/*"
                 onChange={handleUpload}
-                className="w-full text-sm border-2 border-gray-200 rounded-xl focus:border-[#7C3AED] focus:ring-0 p-2"
+                className="w-full text-sm border-2 border-rim rounded-xl focus:border-fire focus:ring-0 p-2"
               />
               {uploadedPreview && (
                 <img
@@ -234,12 +234,12 @@ export function GeradorEstampas() {
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-[#7C3AED] focus:ring-0"
+                className="w-full border-2 border-rim rounded-xl p-3 text-sm focus:border-fire focus:ring-0"
                 rows={4}
                 placeholder="Exemplo: Uma águia rasgando uma bandeira vermelha, com a frase 'LIBERDADE' em dourado"
                 maxLength={500}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-ink-3 mt-1">
                 {prompt.length}/500 caracteres
               </p>
             </div>
@@ -282,7 +282,7 @@ export function GeradorEstampas() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="flex-1 border-2 border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED] hover:text-white font-display text-lg px-8 py-6 rounded-full transition-all"
+                className="flex-1 border-2 border-fire text-fire hover:bg-fire hover:text-white font-display text-lg px-8 py-6 rounded-full transition-all"
               >
                 <a
                   href="https://wa.me/5524981313689?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20as%20estampas%20personalizadas"
@@ -297,22 +297,22 @@ export function GeradorEstampas() {
             </div>
 
             {!user && (
-              <p className="text-xs text-gray-500 text-center mt-2">
+              <p className="text-xs text-ink-3 text-center mt-2">
                 Faça login para gerar estampas
               </p>
             )}
           </div>
 
           {/* RESULTADO */}
-          <div className="bg-white rounded-xl p-6 border border-gray-100 hover-lift">
-            <h3 className="font-display text-2xl text-[#7C3AED] mb-4">SUA ESTAMPA</h3>
+          <div className="card-geek rounded-xl p-6">
+            <h3 className="font-display text-2xl text-fire mb-4">SUA ESTAMPA</h3>
 
             {generatedImage ? (
               <>
                 <img
                   src={generatedImage}
                   alt="Estampa gerada"
-                  className="w-full rounded-xl border-2 border-[#7C3AED] mb-4"
+                  className="w-full rounded-xl border-2 border-fire mb-4"
                 />
 
                 {expiresAt && (
@@ -329,7 +329,7 @@ export function GeradorEstampas() {
                   <Button
                     onClick={handleWhatsApp}
                     size="lg"
-                    className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
+                    className="w-full bg-fire hover:bg-fire-bright text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
                   >
                     <MessageCircle className="w-5 h-5" />
                     FAZER PEDIDO NO WHATSAPP
@@ -372,8 +372,8 @@ export function GeradorEstampas() {
                 )}
               </>
             ) : (
-              <div className="flex items-center justify-center h-64 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                <p className="text-gray-400">Sua estampa aparecerá aqui</p>
+              <div className="flex items-center justify-center h-64 bg-elevated rounded-xl border-2 border-dashed border-rim">
+                <p className="text-ink-3">Sua estampa aparecerá aqui</p>
               </div>
             )}
           </div>

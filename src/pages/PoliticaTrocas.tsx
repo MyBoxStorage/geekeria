@@ -11,13 +11,13 @@ export default function PoliticaTrocas() {
 
   return (
     <CartProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-void">
         <Header />
 
         {/* Hero */}
-        <section className="bg-[#2563EB] py-20 pt-32">
+        <section className="bg-cosmos py-20 pt-32">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#F59E0B] px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 bg-cosmos/20 text-cosmos px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
               <Shield className="w-4 h-4" />
               Sua satisfação é nossa prioridade
             </div>
@@ -29,18 +29,18 @@ export default function PoliticaTrocas() {
         </section>
 
         {/* Cards resumo */}
-        <section className="py-12 bg-gray-50 border-b border-gray-200">
+        <section className="py-12 bg-void border-b border-rim">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { icon: <Clock className="w-6 h-6 text-[#7C3AED]" />, bg: 'bg-[#7C3AED]/10', value: '7 DIAS', desc: 'Prazo para arrependimento após recebimento', color: 'text-[#7C3AED]' },
-                { icon: <RefreshCw className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#2563EB]/10', value: '30 DIAS', desc: 'Para troca por defeito de fabricação', color: 'text-[#2563EB]' },
-                { icon: <Truck className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#F59E0B]/20', value: 'GRÁTIS', desc: 'Frete de devolução em caso de defeito', color: 'text-[#2563EB]' },
+                { icon: <Clock className="w-6 h-6 text-fire" />, bg: 'bg-fire/10', value: '7 DIAS', desc: 'Prazo para arrependimento após recebimento', color: 'text-fire' },
+                { icon: <RefreshCw className="w-6 h-6 text-cosmos" />, bg: 'bg-cosmos/10', value: '30 DIAS', desc: 'Para troca por defeito de fabricação', color: 'text-cosmos' },
+                { icon: <Truck className="w-6 h-6 text-cosmos" />, bg: 'bg-cosmos/20', value: 'GRÁTIS', desc: 'Frete de devolução em caso de defeito', color: 'text-cosmos' },
               ].map(({ icon, bg, value, desc, color }) => (
-                <div key={value} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm text-center hover-lift">
+                <div key={value} className="card-geek rounded-xl p-6 text-center hover-lift">
                   <div className={`w-12 h-12 ${bg} rounded-full flex items-center justify-center mx-auto mb-4`}>{icon}</div>
                   <p className={`font-display text-2xl ${color} mb-1`}>{value}</p>
-                  <p className="font-body text-sm text-gray-600">{desc}</p>
+                  <p className="font-body text-sm text-ink-2">{desc}</p>
                 </div>
               ))}
             </div>
@@ -53,24 +53,24 @@ export default function PoliticaTrocas() {
 
             {[
               {
-                num: '1', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'DIREITO DE ARREPENDIMENTO', titleColor: 'text-[#7C3AED]',
+                num: '1', color: 'bg-fire', border: 'border-fire', title: 'DIREITO DE ARREPENDIMENTO', titleColor: 'text-fire',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">De acordo com o <strong>Art. 49 do Código de Defesa do Consumidor</strong>, você tem o direito de desistir da compra em até <strong>7 (sete) dias corridos</strong> a partir do recebimento do produto, sem necessidade de justificativa.</p>
-                  <p className="font-body text-gray-700 leading-relaxed">O produto deve ser devolvido em sua embalagem original, sem sinais de uso, com etiquetas intactas. O reembolso será processado em até <strong>10 dias úteis</strong> após o recebimento.</p>
+                  <p className="font-body text-ink-2 leading-relaxed mb-4">De acordo com o <strong>Art. 49 do Código de Defesa do Consumidor</strong>, você tem o direito de desistir da compra em até <strong>7 (sete) dias corridos</strong> a partir do recebimento do produto, sem necessidade de justificativa.</p>
+                  <p className="font-body text-ink-2 leading-relaxed">O produto deve ser devolvido em sua embalagem original, sem sinais de uso, com etiquetas intactas. O reembolso será processado em até <strong>10 dias úteis</strong> após o recebimento.</p>
                 </>)
               },
               {
-                num: '2', color: 'bg-[#2563EB]', border: 'border-[#2563EB]', title: 'TROCA POR DEFEITO', titleColor: 'text-[#2563EB]',
+                num: '2', color: 'bg-cosmos', border: 'border-cosmos', title: 'TROCA POR DEFEITO', titleColor: 'text-cosmos',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">Caso o produto apresente <strong>defeito de fabricação</strong>, você pode solicitar a troca em até <strong>30 (trinta) dias</strong>. O frete de retorno será custeado integralmente pela GEEKERIA.</p>
-                  <p className="font-body text-gray-700 leading-relaxed">Entre em contato via WhatsApp com fotos do defeito e o número do pedido. Nossa equipe responderá em até <strong>2 dias úteis</strong>.</p>
+                  <p className="font-body text-ink-2 leading-relaxed mb-4">Caso o produto apresente <strong>defeito de fabricação</strong>, você pode solicitar a troca em até <strong>30 (trinta) dias</strong>. O frete de retorno será custeado integralmente pela GEEKERIA.</p>
+                  <p className="font-body text-ink-2 leading-relaxed">Entre em contato via WhatsApp com fotos do defeito e o número do pedido. Nossa equipe responderá em até <strong>2 dias úteis</strong>.</p>
                 </>)
               },
               {
-                num: '3', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'TROCA DE TAMANHO', titleColor: 'text-[#7C3AED]',
+                num: '3', color: 'bg-fire', border: 'border-fire', title: 'TROCA DE TAMANHO', titleColor: 'text-fire',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">Aceitamos troca de tamanho em até <strong>30 dias</strong> após o recebimento, desde que o produto esteja sem uso, lavagem ou danos, com etiquetas originais.</p>
-                  <p className="font-body text-gray-700 leading-relaxed">O frete de envio de volta é de <strong>responsabilidade do cliente</strong>. Sugerimos consultar nosso <strong>Guia de Tamanhos</strong> antes de finalizar a compra.</p>
+                  <p className="font-body text-ink-2 leading-relaxed mb-4">Aceitamos troca de tamanho em até <strong>30 dias</strong> após o recebimento, desde que o produto esteja sem uso, lavagem ou danos, com etiquetas originais.</p>
+                  <p className="font-body text-ink-2 leading-relaxed">O frete de envio de volta é de <strong>responsabilidade do cliente</strong>. Sugerimos consultar nosso <strong>Guia de Tamanhos</strong> antes de finalizar a compra.</p>
                 </>)
               },
             ].map(({ num, color, border, title, titleColor, content }) => (
@@ -81,17 +81,17 @@ export default function PoliticaTrocas() {
                   </div>
                   <h2 className={`font-display text-3xl ${titleColor}`}>{title}</h2>
                 </div>
-                <div className={`bg-gray-50 rounded-xl p-6 border-l-4 ${border}`}>{content}</div>
+                <div className={`bg-void rounded-xl p-6 border-l-4 ${border}`}>{content}</div>
               </div>
             ))}
 
             {/* Como solicitar */}
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-[#2563EB] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-cosmos rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="font-display text-white text-sm">4</span>
                 </div>
-                <h2 className="font-display text-3xl text-[#2563EB]">COMO SOLICITAR</h2>
+                <h2 className="font-display text-3xl text-cosmos">COMO SOLICITAR</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
@@ -100,9 +100,9 @@ export default function PoliticaTrocas() {
                   { step: '03', text: 'Aguarde a aprovação da equipe em até 2 dias úteis' },
                   { step: '04', text: 'Envie o produto no endereço que será informado pelo nosso time' },
                 ].map(({ step, text }) => (
-                  <div key={step} className="flex items-start gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <span className="font-display text-3xl text-[#F59E0B] leading-none flex-shrink-0" style={{ WebkitTextStroke: '1px #2563EB' }}>{step}</span>
-                    <p className="font-body text-gray-700 text-sm leading-relaxed pt-1">{text}</p>
+                  <div key={step} className="flex items-start gap-4 bg-void rounded-xl p-4 border border-rim">
+                    <span className="font-display text-3xl text-cosmos leading-none flex-shrink-0" style={{ WebkitTextStroke: '1px #2563EB' }}>{step}</span>
+                    <p className="font-body text-ink-2 text-sm leading-relaxed pt-1">{text}</p>
                   </div>
                 ))}
               </div>
@@ -120,21 +120,21 @@ export default function PoliticaTrocas() {
             </div>
 
             {/* CTA */}
-            <div className="bg-[#2563EB] rounded-xl p-8 text-center">
+            <div className="bg-cosmos rounded-xl p-8 text-center">
               <h3 className="font-display text-3xl text-white mb-3">PRECISA DE AJUDA?</h3>
               <p className="font-body text-white/70 mb-6">Nossa equipe está pronta para te atender via WhatsApp</p>
               <a
                 href={buildWhatsAppLink('Olá! Vim pela página de atendimento da GEEKERIA e preciso de ajuda.')}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 bg-cosmos text-cosmos font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105"
               >
                 FALAR NO WHATSAPP →
               </a>
             </div>
 
             <div className="mt-10">
-              <Link to="/" className="inline-flex items-center gap-2 font-body text-[#7C3AED] hover:text-[#5B21B6] transition-colors">
+              <Link to="/" className="inline-flex items-center gap-2 font-body text-fire hover:text-fire-bright transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 Voltar para a loja
               </Link>

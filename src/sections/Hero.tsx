@@ -1,161 +1,231 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowDown, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-gsap.registerPlugin(ScrollTrigger);
+import { Sparkles, Star, Truck, Shield, Zap } from 'lucide-react';
 
 export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
+  const headline1Ref = useRef<HTMLHeadingElement>(null);
+  const headline2Ref = useRef<HTMLHeadingElement>(null);
+  const subheadRef = useRef<HTMLParagraphElement>(null);
+  const ctaGroupRef = useRef<HTMLDivElement>(null);
+  const trustRef = useRef<HTMLDivElement>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Initial animations
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
+      // Badge animation
       tl.fromTo(
         badgeRef.current,
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.6 }
-      )
-        .fromTo(
-          titleRef.current?.querySelectorAll('.title-line') || [],
-          { opacity: 0, y: 100, rotateX: 45 },
-          { opacity: 1, y: 0, rotateX: 0, duration: 1, stagger: 0.15 },
-          '-=0.3'
-        )
-        .fromTo(
-          subtitleRef.current,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.8 },
-          '-=0.5'
-        )
-        .fromTo(
-          ctaRef.current?.children || [],
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 },
-          '-=0.4'
-        );
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 }
+      );
 
-      // Parallax effect on scroll
-      gsap.to(imageRef.current, {
-        yPercent: 30,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      });
+      // Headline 1
+      tl.fromTo(
+        headline1Ref.current,
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6 },
+        '-=0.3'
+      );
 
-      // Fade out content on scroll
-      gsap.to([titleRef.current, subtitleRef.current, ctaRef.current], {
-        opacity: 0,
-        filter: 'blur(10px)',
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '50% top',
-          scrub: true,
-        },
+      // Headline 2
+      tl.fromTo(
+        headline2Ref.current,
+        { x: -40, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6 },
+        '-=0.4'
+      );
+
+      // Subheadline
+      tl.fromTo(
+        subheadRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 },
+        '-=0.3'
+      );
+
+      // CTA Group
+      tl.fromTo(
+        ctaGroupRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 },
+        '-=0.3'
+      );
+
+      // Trust row
+      tl.fromTo(
+        trustRef.current,
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5 },
+        '-=0.3'
+      );
+
+      // Mockup
+      tl.fromTo(
+        mockupRef.current,
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 },
+        '-=0.8'
+      );
+
+      // Float animation for mockup
+      gsap.to(mockupRef.current, {
+        y: -8,
+        duration: 3,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
       });
-    }, sectionRef);
+    }, heroRef);
 
     return () => ctx.revert();
   }, []);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section
-      id="hero"
-      ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      ref={heroRef}
+      className="relative min-h-screen flex items-center overflow-hidden bg-void"
     >
-      {/* Background Image with Parallax */}
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-radial from-cosmos/10 via-transparent to-transparent" />
+
+      {/* Vignette */}
       <div
-        ref={imageRef}
-        className="absolute inset-0 w-full h-[120%] -top-[10%]"
-      >
-        <img
-          src="/hero-bg.jpg"
-          alt="GEEKERIA"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-      </div>
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse at center, transparent 0%, var(--void) 70%)'
+        }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-left w-full">
-        {/* Badge */}
-        <div
-          ref={badgeRef}
-          className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-bold mb-8 animate-pulse-slow"
-        >
-          <Sparkles className="w-4 h-4" />
-          ESTAMPAS NOVAS TODA SEMANA
+      {/* Scanline Effect */}
+      <div className="absolute inset-0 scanline pointer-events-none opacity-50" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Column */}
+          <div className="space-y-6">
+            {/* Badge */}
+            <div ref={badgeRef} className="inline-flex">
+              <span className="badge badge-outline-fire px-3 py-1.5 text-xs">
+                <Zap className="w-3 h-3" />
+                NOVA FEATURE
+              </span>
+            </div>
+
+            {/* Headlines */}
+            <h1
+              ref={headline1Ref}
+              className="font-display text-hero text-ink leading-none"
+            >
+              VOCÊ NO UNIVERSO
+            </h1>
+            <h1
+              ref={headline2Ref}
+              className="font-display text-hero text-gradient-brand leading-none"
+            >
+              DO SEU HERÓI
+            </h1>
+
+            {/* Subheadline */}
+            <p
+              ref={subheadRef}
+              className="font-body text-lg text-ink-2 max-w-md"
+            >
+              Gere sua estampa exclusiva com IA. Vista qualquer personagem.
+              Transforme-se na lenda que você sempre quis ser.
+            </p>
+
+            {/* CTA Group */}
+            <div ref={ctaGroupRef} className="flex flex-wrap gap-4 pt-2">
+              <Link
+                to="/minhas-estampas"
+                className="btn-fire h-14 px-8 text-lg shadow-fire"
+              >
+                <Sparkles className="w-5 h-5" />
+                CRIAR MINHA ESTAMPA
+              </Link>
+              <Link
+                to="/catalogo"
+                className="btn-cosmos h-14 px-8"
+              >
+                VER CATÁLOGO
+              </Link>
+            </div>
+
+            {/* Trust Row */}
+            <div ref={trustRef} className="flex flex-wrap items-center gap-6 pt-4">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-warning text-warning" />
+                ))}
+                <span className="text-ink-2 text-sm ml-2 font-heading">
+                  10K+ estampas criadas
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-ink-3 text-sm">
+                <Truck className="w-4 h-4" />
+                <span>Entrega em todo Brasil</span>
+              </div>
+              <div className="flex items-center gap-2 text-ink-3 text-sm">
+                <Shield className="w-4 h-4" />
+                <span>Pagamento seguro</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Mockup */}
+          <div ref={mockupRef} className="relative hidden lg:flex justify-center items-center">
+            {/* Decorative circles */}
+            <div className="absolute w-80 h-80 rounded-full border border-rim opacity-30" />
+            <div className="absolute w-96 h-96 rounded-full border border-rim opacity-20" />
+            <div className="absolute w-[28rem] h-[28rem] rounded-full border border-rim opacity-10" />
+
+            {/* T-shirt Mockup */}
+            <div className="relative">
+              <svg
+                viewBox="0 0 200 240"
+                className="w-64 h-80 drop-shadow-2xl"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                {/* T-shirt shape */}
+                <path
+                  d="M50 20 L80 20 L100 40 L120 20 L150 20 L170 50 L150 70 L140 60 L140 220 L60 220 L60 60 L50 70 L30 50 Z"
+                  fill="#1a1a2e"
+                  stroke="#FF4500"
+                  strokeWidth="2"
+                />
+                {/* Print area */}
+                <rect x="70" y="70" width="60" height="70" rx="4" fill="#0f0f1a" stroke="#252538" />
+                {/* Character silhouette */}
+                <circle cx="100" cy="95" r="15" fill="#FF4500" opacity="0.8" />
+                <path
+                  d="M85 115 Q100 105 115 115 L115 135 Q100 140 85 135 Z"
+                  fill="#0A84FF"
+                  opacity="0.8"
+                />
+                {/* Spark effect */}
+                <path d="M100 50 L100 40" stroke="#FF4500" strokeWidth="2" />
+                <path d="M100 160 L100 170" stroke="#FF4500" strokeWidth="2" />
+                <path d="M60 105 L50 105" stroke="#0A84FF" strokeWidth="2" />
+                <path d="M140 105 L150 105" stroke="#0A84FF" strokeWidth="2" />
+              </svg>
+
+              {/* Floating Badge */}
+              <div className="absolute -top-4 -right-4 badge badge-plasma animate-glow-pulse">
+                <Sparkles className="w-3 h-3" />
+                GERADO COM IA
+              </div>
+            </div>
+          </div>
         </div>
-
-        {/* Title */}
-        <h1
-          ref={titleRef}
-          className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.9] mb-6"
-          style={{ perspective: '1000px' }}
-        >
-          <span className="title-line block">VISTA O QUE</span>
-          <span className="title-line block text-gradient-geekeria">
-            VOCÊ AMA
-          </span>
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          ref={subtitleRef}
-          className="font-body text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-10"
-        >
-          Camisetas geek com as estampas que marcaram sua vida. Dragon Ball, Marvel, games e muito mais — para quem cresceu amando essa arte.
-        </p>
-
-        {/* CTAs */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4">
-          <Button
-            size="lg"
-            onClick={() => scrollToSection('#featured')}
-            className="bg-gradient-geekeria text-white hover:opacity-90 font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105 hover:shadow-xl"
-          >
-            VER COLEÇÃO COMPLETA
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => scrollToSection('#customization')}
-            className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#7C3AED] font-display text-lg px-8 py-6 rounded-full transition-all [&:not(:hover)]:bg-transparent"
-          >
-            PERSONALIZAR VIA WHATSAPP
-          </Button>
-        </div>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white text-center animate-bounce-slow">
-        <p className="font-body text-sm mb-2 opacity-70">Role para descobrir</p>
-        <ArrowDown className="w-6 h-6 mx-auto" />
       </div>
     </section>
   );
 }
+
+export default Hero;

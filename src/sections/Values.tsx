@@ -1,88 +1,54 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Cross, Award, Flag } from 'lucide-react';
+import { Truck, Shield, RotateCcw, Headphones } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const values = [
   {
-    icon: Cross,
-    title: 'TRADIÇÃO BRASILEIRA',
-    description: 'Celebramos a herança cultural e os valores que construíram nossa nação. Cada peça é uma homenagem à nossa história.',
-    color: '#7C3AED',
+    icon: Truck,
+    title: 'Frete Grátis',
+    description: 'Em compras acima de R$ 299 para todo o Brasil',
   },
   {
-    icon: Award,
-    title: 'QUALIDADE PREMIUM',
-    description: 'Tecidos nobres, estampas duráveis, acabamento impecável. Não aceitamos nada menos que o melhor.',
-    color: '#F59E0B',
+    icon: Shield,
+    title: 'Pagamento Seguro',
+    description: 'Seus dados protegidos com criptografia SSL',
   },
   {
-    icon: Flag,
-    title: 'ORGULHO NACIONAL',
-    description: 'Vista-se com as cores que representam nossa soberania. Seja um embaixador do Brasil onde quer que vá.',
-    color: '#2563EB',
+    icon: RotateCcw,
+    title: 'Devolução Fácil',
+    description: '7 dias para trocar ou devolver sem burocracia',
+  },
+  {
+    icon: Headphones,
+    title: 'Suporte Geek',
+    description: 'Atendimento especializado para fãs de verdade',
   },
 ];
 
 export function Values() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Title animation
-      gsap.fromTo(
-        titleRef.current,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 80%',
-          },
-        }
-      );
-
-      // SVG line draw animation
-      if (lineRef.current) {
-        const length = lineRef.current.getTotalLength();
-        gsap.set(lineRef.current, {
-          strokeDasharray: length,
-          strokeDashoffset: length,
-        });
-        
-        gsap.to(lineRef.current, {
-          strokeDashoffset: 0,
-          duration: 1.5,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: cardsRef.current,
-            start: 'top 70%',
-          },
-        });
-      }
-
-      // Cards animation
       const cards = cardsRef.current?.querySelectorAll('.value-card');
       if (cards) {
         gsap.fromTo(
           cards,
-          { opacity: 0, scale: 0.8 },
+          { y: 30, opacity: 0 },
           {
+            y: 0,
             opacity: 1,
-            scale: 1,
-            duration: 0.6,
-            stagger: 0.2,
-            ease: 'back.out(1.7)',
+            duration: 0.5,
+            stagger: 0.1,
+            ease: 'power3.out',
             scrollTrigger: {
               trigger: cardsRef.current,
-              start: 'top 70%',
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
             },
           }
         );
@@ -93,72 +59,33 @@ export function Values() {
   }, []);
 
   return (
-    <section
-      id="values"
-      ref={sectionRef}
-      className="py-20 bg-white overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Title */}
-        <div ref={titleRef} className="text-center mb-16">
-          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
-            MAIS QUE ROUPAS
-          </h2>
-          <p className="font-display text-3xl md:text-4xl text-[#2563EB]">
-            UMA DECLARAÇÃO DE VALORES
-          </p>
-        </div>
-
-        {/* Cards with connecting line */}
-        <div ref={cardsRef} className="relative">
-          {/* SVG Connecting Line - Desktop only */}
-          <svg
-            className="absolute top-1/2 left-0 w-full h-20 -translate-y-1/2 hidden lg:block pointer-events-none"
-            viewBox="0 0 1200 80"
-            fill="none"
-            preserveAspectRatio="none"
-          >
-            <path
-              ref={lineRef}
-              d="M100 40 Q300 0 400 40 T700 40 T1100 40"
-              stroke="#7C3AED"
-              strokeWidth="2"
-              strokeDasharray="8 8"
-              fill="none"
-            />
-          </svg>
-
-          {/* Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-8 relative z-10">
-            {values.map((value, index) => (
+    <section ref={sectionRef} className="py-16 bg-void">
+      <div className="max-w-7xl mx-auto px-4">
+        <div
+          ref={cardsRef}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {values.map((value, index) => {
+            const Icon = value.icon;
+            return (
               <div
                 key={index}
-                className="value-card group bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 border-l-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                style={{ borderLeftColor: value.color }}
+                className="value-card group bg-surface border border-rim rounded p-6 text-center hover:border-fire/50 transition-all"
               >
-                {/* Icon */}
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 transition-transform duration-500 group-hover:rotate-[360deg]"
-                  style={{ backgroundColor: `${value.color}20` }}
-                >
-                  <value.icon
-                    className="w-8 h-8"
-                    style={{ color: value.color }}
-                  />
+                <div className="w-12 h-12 mx-auto mb-4 bg-elevated rounded flex items-center justify-center group-hover:shadow-fire transition-shadow">
+                  <Icon className="w-6 h-6 text-fire" />
                 </div>
-
-                {/* Content */}
-                <h3 className="font-display text-2xl text-gray-900 mb-4">
+                <h3 className="font-heading font-bold text-ink mb-2">
                   {value.title}
                 </h3>
-                <p className="font-body text-gray-600 leading-relaxed">
-                  {value.description}
-                </p>
+                <p className="text-ink-3 text-sm">{value.description}</p>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
+
+export default Values;

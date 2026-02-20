@@ -1,291 +1,105 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ShoppingCart, Sparkles, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShoppingCart, Star, Sparkles } from 'lucide-react';
 import { useCatalogProducts } from '@/hooks/useCatalogProducts';
-import { useCart } from '@/hooks/useCart';
 import type { Product } from '@/types';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { getAvailableColors, getAvailableSizesFor } from '@/utils/productStock';
-import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Max products to show in the featured grid */
 const FEATURED_LIMIT = 8;
 
 function formatPrice(price: number) {
-  return price.toLocaleString('pt-BR', {
+  return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  });
+  }).format(price);
 }
 
-function FeaturedCard({ product, onClick }: { product: Product; onClick: () => void }) {
-  const [currentGender, setCurrentGender] = useState<'masculino' | 'feminino'>('masculino');
-
-  const modelImages = useMemo(() => {
-    const imgs = product.images ?? [];
-    return {
-      masculino: imgs.find((img) => img.type === 'model' && img.gender === 'masculino'),
-      feminino: imgs.find((img) => img.type === 'model' && img.gender === 'feminino'),
-      default: imgs.find((img) => img.type === 'model') ?? imgs[0] ?? null,
-    };
-  }, [product.images]);
-
-  const hasBothGenders = !!(modelImages.masculino && modelImages.feminino);
-
-  const currentImageUrl =
-    currentGender === 'feminino' && modelImages.feminino
-      ? modelImages.feminino.url
-      : modelImages.masculino?.url ?? modelImages.default?.url ?? product.image;
+function ProductCard({ product, index }: { product: Product; index: number }) {
+  const imageUrl =
+    product.image ??
+    (product.images && product.images.length > 0 ? product.images[0].url : null);
+  const productSlug = product.slug ?? product.id;
 
   return (
     <div
-      className="product-card group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
-      onClick={onClick}
+      className="product-card group relative bg-surface border border-rim rounded overflow-hidden transition-all duration-300 hover:border-fire/50 hover:shadow-card-hover"
+      data-index={index}
     >
-      <div
-        className="relative aspect-[3/4] overflow-hidden bg-gray-100"
-        onMouseEnter={() => hasBothGenders && setCurrentGender(prev => prev === 'masculino' ? 'feminino' : 'masculino')}
-      >
+      <div className="relative aspect-[3/4] overflow-hidden bg-elevated">
         <img
-          src={currentImageUrl ?? undefined}
+          src={imageUrl ?? undefined}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
         />
-        {/* Badges */}
+
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && (
-            <Badge className="bg-[#7C3AED] text-white font-body text-xs">NOVO</Badge>
+            <span className="badge badge-fire">NOVO</span>
           )}
           {product.isBestseller && (
-            <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              MAIS VENDIDO
-            </Badge>
+            <span className="badge badge-fire">
+              <Sparkles className="w-3 h-3" />
+              DESTAQUE
+            </span>
           )}
         </div>
-        {/* Quick Add Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <Button
-            className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick();
-            }}
+
+        <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <Link
+            to={`/produto/${productSlug}`}
+            className="flex items-center justify-center gap-2 w-full h-12 bg-fire hover:bg-fire-bright text-white font-heading font-bold uppercase tracking-wide transition-colors"
           >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            COMPRAR AGORA
-          </Button>
+            <ShoppingCart className="w-4 h-4" />
+            Comprar
+          </Link>
         </div>
       </div>
+
       <div className="p-4">
-        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
+        <span className="text-ink-3 text-xs uppercase tracking-[0.1em] font-heading">
+          {product.category}
+        </span>
+        <h3 className="font-heading font-bold text-ink text-base mt-1 line-clamp-2 min-h-[2.5rem]">
           {product.name}
         </h3>
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-xl text-[#7C3AED]">
+
+        {typeof product.rating === 'number' && (
+          <div className="flex items-center gap-1 mt-2">
+            <Star className="w-4 h-4 fill-warning text-warning" />
+            <span className="text-ink text-sm font-heading">{product.rating}</span>
+            {typeof product.reviews === 'number' && (
+              <span className="text-ink-3 text-xs">({product.reviews})</span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-baseline gap-2 mt-2">
+          <span className="font-display text-2xl text-fire">
             {formatPrice(product.price)}
           </span>
+          {product.originalPrice != null && product.originalPrice > product.price && (
+            <span className="text-ink-4 text-sm line-through">
+              {formatPrice(product.originalPrice)}
+            </span>
+          )}
         </div>
-        <p className="text-sm text-gray-500 font-body mt-1">
-          ou 3x de {formatPrice(product.price / 3)} sem juros
-        </p>
       </div>
     </div>
   );
 }
 
-interface ProductDialogProps {
-  product: Product | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
-  const { addToCart } = useCart();
-  const [selectedSize, setSelectedSize] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
-  const [dialogGender, setDialogGender] = useState<'masculino' | 'feminino'>('masculino');
-
-  if (!product) return null;
-
-  const colorOptions = getAvailableColors(product);
-  const currentImage = colorOptions.find((co) => co.id === selectedColor)?.image
-    ?? product.image
-    ?? undefined;
-
-  const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) {
-      toast.error('Selecione o tamanho e a cor');
-      return;
-    }
-    addToCart(product, 1, selectedSize, selectedColor);
-    toast.success(`${product.name} adicionado ao carrinho!`);
-    onClose();
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#7C3AED]">
-            {product.name}
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="grid md:grid-cols-2 gap-6">
-          <img
-            src={currentImage}
-            alt={product.name}
-            className="w-full h-80 object-cover rounded-lg transition-all duration-300"
-          />
-          
-          <div className="space-y-4">
-            <p className="font-display text-3xl text-[#7C3AED]">
-              {formatPrice(product.price)}
-            </p>
-            
-            <p className="text-gray-600 font-body text-sm line-clamp-3 whitespace-pre-wrap">
-              {product.description}
-            </p>
-            
-            <div>
-              <Label className="font-body font-medium mb-2 block">Tamanho</Label>
-
-              {(() => {
-                const maleSizes = selectedColor
-                  ? getAvailableSizesFor(product, selectedColor, 'masculino')
-                  : [];
-                const femaleSizes = selectedColor
-                  ? getAvailableSizesFor(product, selectedColor, 'feminino')
-                  : [];
-                const hasMale = maleSizes.length > 0;
-                const hasFemale = femaleSizes.length > 0;
-
-                if (!selectedColor) {
-                  return <p className="text-xs text-gray-400">Selecione uma cor para ver os tamanhos</p>;
-                }
-
-                const sizes = dialogGender === 'masculino' ? maleSizes : femaleSizes;
-
-                return (
-                  <div className="space-y-2">
-                    {(hasMale || hasFemale) && (
-                      <div className="flex gap-2 mb-2">
-                        {hasMale && (
-                          <button
-                            type="button"
-                            onClick={() => { setDialogGender('masculino'); setSelectedSize(''); }}
-                            className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
-                              dialogGender === 'masculino'
-                                ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
-                                : 'border-gray-300 text-gray-500 hover:bg-gray-100'
-                            }`}
-                          >
-                            ♂ Masculino
-                          </button>
-                        )}
-                        {hasFemale && (
-                          <button
-                            type="button"
-                            onClick={() => { setDialogGender('feminino'); setSelectedSize(''); }}
-                            className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
-                              dialogGender === 'feminino'
-                                ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
-                                : 'border-gray-300 text-gray-500 hover:bg-gray-100'
-                            }`}
-                          >
-                            ♀ Feminino
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {sizes.map((size) => (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => setSelectedSize(size)}
-                          className={`flex items-center justify-center w-10 h-10 border-2 rounded-md transition-colors font-body text-sm ${
-                            selectedSize === size
-                              ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
-                              : 'hover:bg-gray-100 border-gray-200 cursor-pointer'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-            
-            {/* Cores */}
-            {colorOptions.length > 0 && (
-                <div>
-                  <Label className="font-body font-medium mb-2 block">Cor</Label>
-                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-1">
-                    {colorOptions.map((co) => (
-                      <button
-                        key={co.id}
-                        type="button"
-                        onClick={() => setSelectedColor(co.id)}
-                        className={`flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer transition-colors font-body capitalize text-sm ${
-                          selectedColor === co.id
-                            ? 'border-[#7C3AED] bg-[#7C3AED]/10'
-                            : 'border-gray-200 hover:bg-gray-100'
-                        }`}
-                      >
-                        {co.hex && (
-                          <span
-                            className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
-                            style={{ backgroundColor: co.hex }}
-                          />
-                        )}
-                        {co.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-            )}
-            
-            <Button
-              onClick={handleAddToCart}
-              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
-            >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              ADICIONAR AO CARRINHO
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 export function FeaturedProducts() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { products: allProducts, isLoading } = useCatalogProducts();
 
-  // Pick featured products: bestsellers first, then new, then the rest — capped at FEATURED_LIMIT
-  const featured = allProducts
+  const featuredProducts = allProducts
     .slice()
     .sort((a, b) => {
       if (a.isBestseller && !b.isBestseller) return -1;
@@ -297,40 +111,40 @@ export function FeaturedProducts() {
     .slice(0, FEATURED_LIMIT);
 
   useEffect(() => {
-    if (isLoading || featured.length === 0) return;
+    if (isLoading || featuredProducts.length === 0) return;
 
     const ctx = gsap.context(() => {
-      // Title animation
       gsap.fromTo(
-        titleRef.current,
-        { opacity: 0, y: 50 },
+        headerRef.current,
+        { y: 30, opacity: 0 },
         {
-          opacity: 1,
           y: 0,
-          duration: 0.8,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power3.out',
           scrollTrigger: {
-            trigger: titleRef.current,
-            start: 'top 80%',
+            trigger: headerRef.current,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
           },
         }
       );
 
-      // Cards animation
       const cards = gridRef.current?.querySelectorAll('.product-card');
       if (cards) {
         gsap.fromTo(
           cards,
-          { opacity: 0, y: 80, rotateY: 15 },
+          { y: 40, opacity: 0 },
           {
-            opacity: 1,
             y: 0,
-            rotateY: 0,
-            duration: 0.8,
-            stagger: 0.1,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.08,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: gridRef.current,
-              start: 'top 75%',
+              start: 'top 80%',
+              toggleActions: 'play none none reverse',
             },
           }
         );
@@ -338,78 +152,52 @@ export function FeaturedProducts() {
     }, sectionRef);
 
     return () => ctx.revert();
-  }, [isLoading, featured.length]);
+  }, [isLoading, featuredProducts.length]);
 
   return (
-    <section
-      id="featured"
-      ref={sectionRef}
-      className="py-20 bg-white"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Title */}
-        <div ref={titleRef} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" />
-            COMPRE 3+ E GANHE ATÉ 15% OFF
-          </div>
-          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
-            COLEÇÃO GEEKERIA
+    <section ref={sectionRef} id="featured" className="py-24 bg-void">
+      <div className="max-w-7xl mx-auto px-4">
+        <div ref={headerRef} className="text-center mb-12">
+          <h2 className="font-display text-4xl md:text-5xl text-ink mb-3">
+            PRODUTOS EM DESTAQUE
           </h2>
-          <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">
-            Estampas exclusivas do universo geek que você ama. Cada peça é uma declaração de quem você é.
+          <p className="text-ink-3 font-body text-lg">
+            Os mais vendidos da semana, escolhidos pela comunidade geek
           </p>
         </div>
 
-        {/* Products Grid */}
         <div
           ref={gridRef}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          style={{ perspective: '1000px' }}
         >
-          {isLoading && featured.length === 0
+          {isLoading && featuredProducts.length === 0
             ? Array.from({ length: FEATURED_LIMIT }).map((_, i) => (
-                <div key={`skel-${i}`} className="product-card bg-white rounded-xl overflow-hidden border border-gray-100">
+                <div key={`skel-${i}`} className="product-card bg-surface border border-rim rounded overflow-hidden">
                   <Skeleton className="aspect-[3/4] w-full" />
                   <div className="p-4 space-y-2">
                     <Skeleton className="h-4 w-16" />
                     <Skeleton className="h-5 w-3/4" />
                     <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-4 w-20" />
                   </div>
                 </div>
               ))
             : null}
-          {featured.map((product) => (
-            <FeaturedCard
-              key={product.id}
-              product={product}
-              onClick={() => setSelectedProduct(product)}
-            />
+          {featuredProducts.map((product, index) => (
+            <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>
 
-        {/* CTA */}
         <div className="text-center mt-12">
-          <Button
-            asChild
-            size="lg"
-            className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
+          <Link
+            to="/catalogo"
+            className="btn-cosmos inline-flex"
           >
-            <Link to="/catalogo">
-              {allProducts.length > 0
-                ? `VER TODA A COLEÇÃO (${allProducts.length}+ produtos)`
-                : 'VER TODA A COLEÇÃO'}
-            </Link>
-          </Button>
+            VER TODOS OS PRODUTOS
+          </Link>
         </div>
       </div>
-
-      <ProductDialog
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
     </section>
   );
 }
+
+export default FeaturedProducts;

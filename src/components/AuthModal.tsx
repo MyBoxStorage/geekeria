@@ -152,15 +152,15 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
 
   if (!isOpen) return null;
 
-  const inputBase = 'w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-[#7C3AED] focus:ring-0 font-body';
-  const labelBase = 'block text-sm font-medium text-gray-700 mb-1 font-body';
+  const inputBase = 'w-full px-3 py-2 border-2 border-rim rounded-xl focus:border-fire focus:ring-0 font-body';
+  const labelBase = 'block text-sm font-medium text-ink-2 mb-1 font-body';
 
   return createPortal(
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
-      <div className="bg-white rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto border border-gray-100 shadow-xl">
+      <div className="bg-surface rounded-xl max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto border border-rim shadow-xl">
         <button
           onClick={step === 'verify' ? backToForm : onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-[#7C3AED] transition-colors"
+          className="absolute top-4 right-4 text-ink-3 hover:text-fire transition-colors"
           type="button"
           aria-label={step === 'verify' ? 'Voltar' : 'Fechar'}
         >
@@ -169,10 +169,10 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
 
         {step === 'verify' ? (
           <>
-            <h2 className="font-display text-2xl text-[#7C3AED] mb-2">
+            <h2 className="font-display text-2xl text-fire mb-2">
               Confirme seu e-mail
             </h2>
-            <p className="font-body text-gray-600 text-sm mb-6">
+            <p className="font-body text-ink-2 text-sm mb-6">
               Enviamos um código de 6 dígitos para o seu e-mail. Digite abaixo:
             </p>
 
@@ -203,7 +203,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white py-3 rounded-full font-display text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+                className="w-full bg-fire hover:bg-fire-bright text-white py-3 rounded-full font-display text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
               >
                 {loading ? 'Verificando...' : 'Confirmar'}
               </button>
@@ -212,7 +212,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
                 type="button"
                 onClick={handleResendCode}
                 disabled={resendCountdown > 0 || loading}
-                className="w-full font-body text-sm text-[#7C3AED] hover:text-[#5B21B6] disabled:text-gray-400 transition-colors py-2"
+                className="w-full font-body text-sm text-fire hover:text-fire-bright disabled:text-ink-3 transition-colors py-2"
               >
                 {resendCountdown > 0
                   ? `Reenviar código em ${resendCountdown}s`
@@ -223,23 +223,23 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
             <button
               type="button"
               onClick={backToForm}
-              className="mt-4 w-full text-[#7C3AED] hover:text-[#5B21B6] text-sm font-body font-medium"
+              className="mt-4 w-full text-fire hover:text-fire-bright text-sm font-body font-medium"
             >
               ← Voltar ao cadastro
             </button>
           </>
         ) : (
           <>
-            <h2 className="font-display text-2xl text-[#7C3AED] mb-6">
+            <h2 className="font-display text-2xl text-fire mb-6">
               {mode === 'login' ? 'Entrar' : 'Criar Conta'}
             </h2>
 
             {mode === 'signup' && (
-              <div className="bg-[#7C3AED]/5 border border-[#7C3AED]/20 rounded-xl p-4 mb-6">
-                <p className="text-[#7C3AED] text-sm font-medium font-body">
+              <div className="bg-fire/5 border border-fire/20 rounded-xl p-4 mb-6">
+                <p className="text-fire text-sm font-medium font-body">
                   🎁 Ganhe 5 créditos grátis após confirmar seu e-mail!
                 </p>
-                <p className="text-[#7C3AED]/80 text-xs mt-1 font-body">
+                <p className="text-fire/80 text-xs mt-1 font-body">
                   Use para gerar suas próprias estampas com IA
                 </p>
               </div>
@@ -305,7 +305,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white py-3 rounded-full font-display text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+                className="w-full bg-fire hover:bg-fire-bright text-white py-3 rounded-full font-display text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
               >
                 {loading
                   ? 'Carregando...'
@@ -319,7 +319,7 @@ export function AuthModal({ isOpen, onClose, defaultMode = 'login' }: AuthModalP
               <button
                 onClick={toggleMode}
                 type="button"
-                className="text-[#7C3AED] hover:text-[#5B21B6] text-sm font-medium font-body"
+                className="text-fire hover:text-fire-bright text-sm font-medium font-body"
               >
                 {mode === 'login'
                   ? 'Não tem conta? Cadastre-se'

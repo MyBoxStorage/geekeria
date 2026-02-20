@@ -69,8 +69,8 @@ export default function CheckoutFailure() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500/10 via-red-500/5 to-[#2563EB]/10 p-4">
-      <Card className="max-w-lg w-full shadow-2xl border-0 rounded-xl overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500/10 via-red-500/5 to-cosmos/10 p-4">
+      <Card className="max-w-lg w-full card-geek shadow-2xl rounded-xl overflow-hidden">
         <CardContent className="p-6 sm:p-8 text-center">
           {/* Ícone com animação */}
           <div className="mb-6">
@@ -84,7 +84,7 @@ export default function CheckoutFailure() {
           </div>
 
           {/* Título */}
-          <h1 className="font-display text-3xl sm:text-4xl text-[#2563EB] mb-3 tracking-wide">
+          <h1 className="font-display text-3xl sm:text-4xl text-ink mb-3 tracking-wide">
             Pagamento Nao Concluido
           </h1>
 
@@ -157,7 +157,7 @@ export default function CheckoutFailure() {
           {/* CTAs */}
           <div className="space-y-3">
             <Button
-              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
+              className="w-full bg-fire hover:bg-fire-bright text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
               size="lg"
               onClick={() => navigate('/?checkout=1')}
               aria-label="Tentar novamente"
@@ -180,7 +180,7 @@ export default function CheckoutFailure() {
 
             <Link to="/catalogo" className="block">
               <Button
-                className="w-full border-2 border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED] hover:text-white rounded-lg transition-all duration-300"
+                className="w-full border-2 border-fire text-fire hover:bg-fire hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
                 variant="outline"
                 aria-label="Voltar ao catálogo"

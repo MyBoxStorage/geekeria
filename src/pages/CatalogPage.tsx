@@ -101,7 +101,7 @@ function FiltersContent({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-sm text-[#7C3AED] hover:text-[#5B21B6] px-0"
+            className="text-sm text-fire hover:text-fire-bright px-0"
           >
             Limpar tudo
           </Button>
@@ -110,7 +110,7 @@ function FiltersContent({
 
       {/* CATEGORIA */}
       <div className="mb-6">
-        <h3 className="font-display text-sm uppercase text-gray-700 mb-3 tracking-wide">
+        <h3 className="font-display text-sm uppercase text-ink-2 mb-3 tracking-wide">
           CATEGORIA
         </h3>
         <div className="space-y-2">
@@ -122,9 +122,9 @@ function FiltersContent({
               <Checkbox
                 checked={filters.category === cat.id}
                 onCheckedChange={() => setCategory(cat.id as Category)}
-                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
+                className="border-rim data-[state=checked]:bg-fire data-[state=checked]:border-fire"
               />
-              <span className="font-body text-sm text-gray-700">
+              <span className="font-body text-sm text-ink-2">
                 {cat.name} ({categoryCounts[cat.id] ?? 0})
               </span>
             </label>
@@ -132,11 +132,11 @@ function FiltersContent({
         </div>
       </div>
 
-      <div className="border-t border-gray-200 my-6" />
+      <div className="border-t border-rim my-6" />
 
       {/* GENERO */}
       <div className="mb-6">
-        <h3 className="font-display text-sm uppercase text-gray-700 mb-3 tracking-wide">
+        <h3 className="font-display text-sm uppercase text-ink-2 mb-3 tracking-wide">
           GENERO
         </h3>
         <div className="flex flex-col gap-2">
@@ -156,9 +156,9 @@ function FiltersContent({
                 value={option.id}
                 checked={filters.gender === option.id}
                 onChange={() => setGender(option.id)}
-                className="accent-[#7C3AED]"
+                className="accent-fire"
               />
-              <span className="text-sm text-gray-700 group-hover:text-[#7C3AED] transition-colors font-body">
+              <span className="text-sm text-ink-2 group-hover:text-fire transition-colors font-body">
                 {option.label}
               </span>
             </label>
@@ -166,11 +166,11 @@ function FiltersContent({
         </div>
       </div>
 
-      <div className="border-t border-gray-200 my-6" />
+      <div className="border-t border-rim my-6" />
 
       {/* TAMANHO */}
       <div className="mb-6">
-        <h3 className="font-display text-sm uppercase text-gray-700 mb-3 tracking-wide">
+        <h3 className="font-display text-sm uppercase text-ink-2 mb-3 tracking-wide">
           TAMANHO
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -180,8 +180,8 @@ function FiltersContent({
               onClick={() => toggleSize(size as Size)}
               className={`w-12 h-12 rounded-lg border-2 font-display text-sm transition-all duration-200 ${
                 filters.sizes.includes(size as Size)
-                  ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
-                  : 'border-gray-300 text-gray-700 hover:border-[#7C3AED]'
+                  ? 'border-fire bg-fire text-white'
+                  : 'border-rim text-ink-2 hover:border-fire'
               }`}
             >
               {size}
@@ -190,11 +190,11 @@ function FiltersContent({
         </div>
       </div>
 
-      <div className="border-t border-gray-200 my-6" />
+      <div className="border-t border-rim my-6" />
 
       {/* COR */}
       <div className="mb-6">
-        <h3 className="font-display text-sm uppercase text-gray-700 mb-3 tracking-wide">
+        <h3 className="font-display text-sm uppercase text-ink-2 mb-3 tracking-wide">
           COR
         </h3>
         <div className="space-y-2">
@@ -206,13 +206,13 @@ function FiltersContent({
               <Checkbox
                 checked={filters.colors.includes(color.id as Color)}
                 onCheckedChange={() => toggleColor(color.id as Color)}
-                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
+                className="border-rim data-[state=checked]:bg-fire data-[state=checked]:border-fire"
               />
               <span
                 className="w-5 h-5 rounded-full border"
                 style={{ backgroundColor: color.hex }}
               />
-              <span className="font-body text-sm text-gray-700 capitalize">
+              <span className="font-body text-sm text-ink-2 capitalize">
                 {color.name}
               </span>
             </label>
@@ -220,11 +220,11 @@ function FiltersContent({
         </div>
       </div>
 
-      <div className="border-t border-gray-200 my-6" />
+      <div className="border-t border-rim my-6" />
 
       {/* FAIXA DE PRECO */}
       <div className="mb-6">
-        <h3 className="font-display text-sm uppercase text-gray-700 mb-3 tracking-wide">
+        <h3 className="font-display text-sm uppercase text-ink-2 mb-3 tracking-wide">
           FAIXA DE PREÇO
         </h3>
         <div className="space-y-2">
@@ -254,9 +254,9 @@ function FiltersContent({
                       filters.priceRange[1] === price.range[1]
                 }
                 onCheckedChange={() => setPriceRange(price.range)}
-                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
+                className="border-rim data-[state=checked]:bg-fire data-[state=checked]:border-fire"
               />
-              <span className="font-body text-sm text-gray-700">
+              <span className="font-body text-sm text-ink-2">
                 {price.label}
               </span>
             </label>
@@ -345,12 +345,12 @@ function ProductCard({
 
   return (
     <div
-      className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover-lift cursor-pointer"
+      className="group card-geek rounded-xl overflow-hidden hover-lift cursor-pointer"
       onClick={() => navigate(`/produto/${product.slug}`)}
     >
       {/* Image */}
       <div
-        className="relative aspect-[3/4] overflow-hidden bg-gray-100"
+        className="relative aspect-[3/4] overflow-hidden bg-elevated"
         onMouseEnter={handleToggleGender}
       >
         <img
@@ -363,13 +363,13 @@ function ProductCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && (
-            <Badge className="bg-[#7C3AED] text-white font-body text-xs">
+            <Badge className="bg-fire text-white font-body text-xs">
               <Sparkles className="w-3 h-3 mr-1" />
               NOVO
             </Badge>
           )}
           {product.isBestseller && (
-            <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
+            <Badge className="bg-cosmos text-cosmos font-body text-xs">
               <TrendingUp className="w-3 h-3 mr-1" />
               MAIS VENDIDO
             </Badge>
@@ -382,8 +382,8 @@ function ProductCard({
             <span
               className={`text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider transition-all ${
                 currentGender === 'masculino'
-                  ? 'bg-[#2563EB] text-white'
-                  : 'bg-white/50 text-gray-500'
+                  ? 'bg-cosmos text-white'
+                  : 'bg-surface/50 text-ink-3'
               }`}
             >
               &#9794;
@@ -391,8 +391,8 @@ function ProductCard({
             <span
               className={`text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider transition-all ${
                 currentGender === 'feminino'
-                  ? 'bg-[#7C3AED] text-white'
-                  : 'bg-white/50 text-gray-500'
+                  ? 'bg-fire text-white'
+                  : 'bg-surface/50 text-ink-3'
               }`}
             >
               &#9792;
@@ -425,7 +425,7 @@ function ProductCard({
         {/* Quick Add */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <Button
-            className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
+            className="w-full bg-[#7C3AED] hover:bg-fire-bright text-white font-display"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/produto/${product.slug}`);
@@ -446,7 +446,7 @@ function ProductCard({
           <HoverCard openDelay={200} closeDelay={100}>
             <HoverCardTrigger asChild>
               <button
-                className="hidden md:flex items-center gap-1 text-xs text-gray-400 hover:text-[#7C3AED] transition-colors"
+                className="hidden md:flex items-center gap-1 text-xs text-ink-3 hover:text-fire transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -464,17 +464,17 @@ function ProductCard({
                 className="w-full h-40 object-cover"
               />
               <div className="p-3 space-y-1.5">
-                <p className="font-body font-medium text-sm text-gray-900 line-clamp-1">
+                <p className="font-body font-medium text-sm text-ink line-clamp-1">
                   {product.name}
                 </p>
-                <p className="text-xs text-gray-500 font-body line-clamp-2">
+                <p className="text-xs text-ink-3 font-body line-clamp-2">
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-lg text-[#7C3AED]">
+                  <span className="font-display text-lg text-fire">
                     {formatPrice(product.price)}
                   </span>
-                  <span className="text-xs text-gray-400 font-body">
+                  <span className="text-xs text-ink-3 font-body">
                     {product.sizes.length} tamanhos
                   </span>
                 </div>
@@ -483,17 +483,17 @@ function ProductCard({
           </HoverCard>
         </div>
 
-        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
+        <h3 className="font-body font-medium text-ink line-clamp-2 mb-2 group-hover:text-fire transition-colors">
           {product.name}
         </h3>
 
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-xl text-[#7C3AED]">
+          <span className="font-display text-xl text-fire">
             {formatPrice(product.price)}
           </span>
         </div>
 
-        <p className="text-sm text-gray-500 font-body mt-1">
+        <p className="text-sm text-ink-3 font-body mt-1">
           ou 3x {formatInstallment(product.price)}
         </p>
       </div>
@@ -736,7 +736,7 @@ function CatalogContent() {
   }, [page, totalPages]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-void">
       <JsonLd data={{
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -769,8 +769,8 @@ function CatalogContent() {
         <div className="flex gap-8">
           {/* SIDEBAR FILTROS - DESKTOP */}
           <aside className="hidden lg:block w-72 shrink-0">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-28">
-              <h2 className="font-display text-xl text-gray-900 mb-4">
+            <div className="card-geek rounded-2xl p-6 sticky top-28">
+              <h2 className="font-display text-xl text-ink mb-4">
                 FILTROS
               </h2>
               <FiltersContent {...filterProps} />
@@ -780,7 +780,7 @@ function CatalogContent() {
           {/* MAIN CONTENT */}
           <div className="flex-1">
             {/* Top Bar: Mobile Filters + Sort */}
-            <div className="flex items-center justify-between mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between mb-6 card-geek rounded-2xl p-4">
               {/* Mobile Filter Button */}
               <Sheet>
                 <SheetTrigger asChild>
@@ -791,7 +791,7 @@ function CatalogContent() {
                     <Filter className="w-4 h-4" />
                     <span className="font-display text-sm">FILTROS</span>
                     {hasActiveFilters && (
-                      <span className="w-2 h-2 bg-[#7C3AED] rounded-full" />
+                      <span className="w-2 h-2 bg-fire rounded-full" />
                     )}
                   </Button>
                 </SheetTrigger>
@@ -809,7 +809,7 @@ function CatalogContent() {
 
               {/* Desktop: active filters count */}
               <div className="hidden lg:flex items-center gap-3">
-                <span className="font-body text-sm text-gray-500">
+                <span className="font-body text-sm text-ink-3">
                   {catalogLoading && publicProducts.length === 0
                     ? 'Carregando…'
                     : hasClientFilters
@@ -821,7 +821,7 @@ function CatalogContent() {
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
-                    className="text-sm text-[#7C3AED]"
+                    className="text-sm text-fire"
                   >
                     Limpar filtros
                   </Button>
@@ -830,7 +830,7 @@ function CatalogContent() {
 
               {/* Sort */}
               <div className="flex items-center gap-3">
-                <span className="font-body text-sm text-gray-600 hidden sm:block">
+                <span className="font-body text-sm text-ink-2 hidden sm:block">
                   Ordenar por:
                 </span>
                 <Select
@@ -855,7 +855,7 @@ function CatalogContent() {
               {catalogLoading && publicProducts.length === 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-                    <div key={`skel-${i}`} className="bg-white rounded-2xl overflow-hidden border border-gray-100">
+                    <div key={`skel-${i}`} className="bg-surface rounded-2xl overflow-hidden border border-rim">
                       <Skeleton className="aspect-[3/4] w-full" />
                       <div className="p-4 space-y-3">
                         <Skeleton className="h-4 w-20" />
@@ -867,13 +867,13 @@ function CatalogContent() {
                   ))}
                 </div>
               ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
-                  <p className="font-body text-lg text-gray-500 mb-4">
+                <div className="text-center py-16 bg-surface rounded-2xl border border-rim">
+                  <p className="font-body text-lg text-ink-3 mb-4">
                     Nenhum produto encontrado com esses filtros.
                   </p>
                   <Button
                     onClick={clearFilters}
-                    className="bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
+                    className="bg-[#7C3AED] hover:bg-fire-bright text-white font-display"
                   >
                     Limpar filtros
                   </Button>
@@ -895,8 +895,8 @@ function CatalogContent() {
 
             {/* Pagination */}
             {pagination.total > PAGE_SIZE && (
-              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 gap-4">
-                <span className="text-sm text-gray-500 font-body">
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 bg-surface rounded-2xl p-4 shadow-sm border border-rim gap-4">
+                <span className="text-sm text-ink-3 font-body">
                   Mostrando {showingFrom}–{showingTo} de {pagination.total}
                 </span>
                 <div className="flex items-center gap-2">
@@ -910,7 +910,7 @@ function CatalogContent() {
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="flex items-center px-3 text-sm font-body text-gray-600 tabular-nums">
+                  <span className="flex items-center px-3 text-sm font-body text-ink-2 tabular-nums">
                     {page} / {totalPages}
                   </span>
                   <Button

@@ -96,17 +96,17 @@ function ProductNotFound() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <div className="text-center space-y-6">
-        <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-          <ShoppingCart className="w-10 h-10 text-gray-400" />
+        <div className="w-24 h-24 mx-auto bg-elevated rounded-full flex items-center justify-center">
+          <ShoppingCart className="w-10 h-10 text-ink-3" />
         </div>
-        <h1 className="font-display text-4xl text-gray-900">
+        <h1 className="font-display text-4xl text-ink">
           Produto não encontrado
         </h1>
-        <p className="font-body text-gray-500 text-lg max-w-md mx-auto">
+        <p className="font-body text-ink-3 text-lg max-w-md mx-auto">
           O produto que você está procurando pode ter sido removido ou não está mais disponível.
         </p>
         <Link to="/catalogo">
-          <Button className="bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg px-8 py-6">
+          <Button className="bg-fire hover:bg-fire-bright text-white font-display text-lg px-8 py-6">
             <ChevronLeft className="w-5 h-5 mr-2" />
             VOLTAR AO CATÁLOGO
           </Button>
@@ -246,7 +246,7 @@ function ProductLoader({ slug }: { slug: string }) {
   // ── Loading state ──
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-void">
         <Header />
         <ProductSkeleton />
         <Footer />
@@ -257,7 +257,7 @@ function ProductLoader({ slug }: { slug: string }) {
   // ── Not found state ──
   if (notFound || !product) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-void">
         <Header />
         <ProductNotFound />
         <Footer />
@@ -314,7 +314,7 @@ function ProductLoader({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-void">
       {product && (
         <JsonLd data={{
           "@context": "https://schema.org",
@@ -374,7 +374,7 @@ function ProductLoader({ slug }: { slug: string }) {
         <div className="grid md:grid-cols-2 gap-8">
           {/* ── Left Column: Image ── */}
           <div className="space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border border-gray-100 bg-white">
+            <div className="relative rounded-2xl overflow-hidden card-geek">
               <img
                 src={imageUrl ?? undefined}
                 alt={product.name}
@@ -385,13 +385,13 @@ function ProductLoader({ slug }: { slug: string }) {
               {/* Badges */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                 {product.isNew && (
-                  <Badge className="bg-[#7C3AED] text-white font-body text-xs">
+                  <Badge className="bg-fire text-white font-body text-xs">
                     <Sparkles className="w-3 h-3 mr-1" />
                     NOVO
                   </Badge>
                 )}
                 {product.isBestseller && (
-                  <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
+                  <Badge className="bg-cosmos text-cosmos font-body text-xs">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     MAIS VENDIDO
                   </Badge>
@@ -401,14 +401,14 @@ function ProductLoader({ slug }: { slug: string }) {
 
             {/* Gender toggle (unissex only) */}
             {isUnissex && (
-              <div className="flex items-center justify-center gap-2 bg-white rounded-xl border border-gray-100 p-3">
-                <span className="font-body text-sm text-gray-500 mr-2">Modelo:</span>
+              <div className="flex items-center justify-center gap-2 card-geek rounded-xl p-3">
+                <span className="font-body text-sm text-ink-3 mr-2">Modelo:</span>
                 <button
                   onClick={() => handleGenderToggle('masculino')}
                   className={`px-4 py-2 rounded-lg font-body text-sm transition-all ${
                     uiGender === 'masculino'
-                      ? 'bg-[#2563EB] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-cosmos text-white'
+                      : 'bg-elevated text-ink-2 hover:bg-overlay'
                   }`}
                 >
                   &#9794; Masculino
@@ -417,8 +417,8 @@ function ProductLoader({ slug }: { slug: string }) {
                   onClick={() => handleGenderToggle('feminino')}
                   className={`px-4 py-2 rounded-lg font-body text-sm transition-all ${
                     uiGender === 'feminino'
-                      ? 'bg-[#7C3AED] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-fire text-white'
+                      : 'bg-elevated text-ink-2 hover:bg-overlay'
                   }`}
                 >
                   &#9792; Feminino
@@ -431,7 +431,7 @@ function ProductLoader({ slug }: { slug: string }) {
           <div className="space-y-6">
             {/* Title + Share */}
             <div className="flex items-start justify-between gap-4">
-              <h1 className="font-display text-4xl text-[#7C3AED]">
+              <h1 className="font-display text-4xl text-ink">
                 {product.name}
               </h1>
               <Button
@@ -447,16 +447,16 @@ function ProductLoader({ slug }: { slug: string }) {
 
             {/* Price */}
             <div>
-              <p className="font-display text-4xl text-[#7C3AED]">
+              <p className="font-display text-4xl text-fire">
                 {formatPrice(product.price)}
               </p>
-              <p className="text-sm text-gray-500 font-body mt-1">
+              <p className="text-sm text-ink-3 font-body mt-1">
                 ou 3x de {formatInstallment(product.price)} sem juros
               </p>
             </div>
 
             {/* Description */}
-            <p className="text-gray-600 font-body leading-relaxed whitespace-pre-wrap">
+            <p className="text-ink-2 font-body leading-relaxed whitespace-pre-wrap">
               {product.description}
             </p>
 
@@ -477,11 +477,11 @@ function ProductLoader({ slug }: { slug: string }) {
                     />
                     <Label
                       htmlFor={`pdp-color-${co.id}`}
-                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED]/10 hover:bg-gray-100 transition-colors font-body capitalize"
+                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-fire peer-data-[state=checked]:bg-fire/10 hover:bg-overlay transition-colors font-body capitalize"
                     >
                       {co.hex && (
                         <span
-                          className="w-4 h-4 rounded-full border border-gray-300"
+                          className="w-4 h-4 rounded-full border border-rim"
                           style={{ backgroundColor: co.hex }}
                         />
                       )}
@@ -498,7 +498,7 @@ function ProductLoader({ slug }: { slug: string }) {
                 <Label className="font-body font-medium">
                   Tamanho
                   {selectedColor && hasColorStock && availableSizes.length > 0 && (
-                    <span className="text-xs font-normal text-gray-500 ml-2">
+                    <span className="text-xs font-normal text-ink-3 ml-2">
                       {uiGender === 'masculino' ? '— corte masculino' : '— corte feminino'}
                     </span>
                   )}
@@ -511,7 +511,7 @@ function ProductLoader({ slug }: { slug: string }) {
                 <button
                   type="button"
                   onClick={() => setShowSizeGuide(true)}
-                  className="flex items-center gap-1 text-xs text-[#7C3AED] hover:underline font-body"
+                  className="flex items-center gap-1 text-xs text-fire hover:underline font-body"
                 >
                   <Ruler className="w-3 h-3" />
                   Guia de tamanhos
@@ -539,7 +539,7 @@ function ProductLoader({ slug }: { slug: string }) {
                         className={`flex items-center justify-center w-12 h-12 border-2 rounded-md transition-colors font-body text-sm
                           ${disabled
                             ? 'opacity-30 cursor-not-allowed line-through'
-                            : 'cursor-pointer hover:bg-gray-100 peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED] peer-data-[state=checked]:text-white'
+                            : 'cursor-pointer hover:bg-overlay peer-data-[state=checked]:border-fire peer-data-[state=checked]:bg-fire peer-data-[state=checked]:text-white'
                           }`}
                       >
                         {size}
@@ -549,7 +549,7 @@ function ProductLoader({ slug }: { slug: string }) {
                 })}
               </RadioGroup>
               {!selectedColor && (
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-ink-3 mt-1">
                   Selecione uma cor para ver os tamanhos disponíveis
                 </p>
               )}
@@ -559,7 +559,7 @@ function ProductLoader({ slug }: { slug: string }) {
             <Button
               onClick={handleAddToCart}
               disabled={!canAdd}
-              className="hidden md:flex w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="hidden md:flex w-full bg-fire hover:bg-fire-bright text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               ADICIONAR AO CARRINHO
@@ -572,11 +572,11 @@ function ProductLoader({ slug }: { slug: string }) {
       </div>
 
       {/* Sticky Mobile CTA */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-sm border-t border-gray-200 md:hidden z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-surface/95 backdrop-blur-sm border-t border-rim md:hidden z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
         <Button
           onClick={handleAddToCart}
           disabled={!canAdd}
-          className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-fire hover:bg-fire-bright text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ShoppingCart className="w-5 h-5 mr-2" />
           COMPRAR &mdash; {formatPrice(product.price)}
@@ -599,34 +599,34 @@ function ProductLoader({ slug }: { slug: string }) {
               <h3 className="font-medium text-gray-700 mb-2">♂ Masculino (cm)</h3>
               <table className="w-full border-collapse text-center text-xs">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-200 px-3 py-2"></th>
-                    <th className="border border-gray-200 px-3 py-2">PP</th>
-                    <th className="border border-gray-200 px-3 py-2">P</th>
-                    <th className="border border-gray-200 px-3 py-2">M</th>
-                    <th className="border border-gray-200 px-3 py-2">G</th>
-                    <th className="border border-gray-200 px-3 py-2">GG</th>
-                    <th className="border border-gray-200 px-3 py-2">XG</th>
+                  <tr className="bg-elevated">
+                    <th className="border border-rim px-3 py-2"></th>
+                    <th className="border border-rim px-3 py-2">PP</th>
+                    <th className="border border-rim px-3 py-2">P</th>
+                    <th className="border border-rim px-3 py-2">M</th>
+                    <th className="border border-rim px-3 py-2">G</th>
+                    <th className="border border-rim px-3 py-2">GG</th>
+                    <th className="border border-rim px-3 py-2">XG</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Largura</td>
-                    <td className="border border-gray-200 px-3 py-2">44-48</td>
-                    <td className="border border-gray-200 px-3 py-2">46-50</td>
-                    <td className="border border-gray-200 px-3 py-2">48-52</td>
-                    <td className="border border-gray-200 px-3 py-2">53-57</td>
-                    <td className="border border-gray-200 px-3 py-2">56-60</td>
-                    <td className="border border-gray-200 px-3 py-2">59-63</td>
+                    <td className="border border-rim px-3 py-2 font-medium text-left">Largura</td>
+                    <td className="border border-rim px-3 py-2">44-48</td>
+                    <td className="border border-rim px-3 py-2">46-50</td>
+                    <td className="border border-rim px-3 py-2">48-52</td>
+                    <td className="border border-rim px-3 py-2">53-57</td>
+                    <td className="border border-rim px-3 py-2">56-60</td>
+                    <td className="border border-rim px-3 py-2">59-63</td>
                   </tr>
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Comprimento</td>
-                    <td className="border border-gray-200 px-3 py-2">63-67</td>
-                    <td className="border border-gray-200 px-3 py-2">65-69</td>
-                    <td className="border border-gray-200 px-3 py-2">67-71</td>
-                    <td className="border border-gray-200 px-3 py-2">69-73</td>
-                    <td className="border border-gray-200 px-3 py-2">72-76</td>
-                    <td className="border border-gray-200 px-3 py-2">73-77</td>
+                  <tr className="bg-void">
+                    <td className="border border-rim px-3 py-2 font-medium text-left">Comprimento</td>
+                    <td className="border border-rim px-3 py-2">63-67</td>
+                    <td className="border border-rim px-3 py-2">65-69</td>
+                    <td className="border border-rim px-3 py-2">67-71</td>
+                    <td className="border border-rim px-3 py-2">69-73</td>
+                    <td className="border border-rim px-3 py-2">72-76</td>
+                    <td className="border border-rim px-3 py-2">73-77</td>
                   </tr>
                 </tbody>
               </table>
@@ -637,40 +637,40 @@ function ProductLoader({ slug }: { slug: string }) {
               <h3 className="font-medium text-gray-700 mb-2">♀ Feminino (cm)</h3>
               <table className="w-full border-collapse text-center text-xs">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-200 px-3 py-2"></th>
-                    <th className="border border-gray-200 px-3 py-2">PP</th>
-                    <th className="border border-gray-200 px-3 py-2">P</th>
-                    <th className="border border-gray-200 px-3 py-2">M</th>
-                    <th className="border border-gray-200 px-3 py-2">G</th>
-                    <th className="border border-gray-200 px-3 py-2">GG</th>
-                    <th className="border border-gray-200 px-3 py-2">XG</th>
+                  <tr className="bg-elevated">
+                    <th className="border border-rim px-3 py-2"></th>
+                    <th className="border border-rim px-3 py-2">PP</th>
+                    <th className="border border-rim px-3 py-2">P</th>
+                    <th className="border border-rim px-3 py-2">M</th>
+                    <th className="border border-rim px-3 py-2">G</th>
+                    <th className="border border-rim px-3 py-2">GG</th>
+                    <th className="border border-rim px-3 py-2">XG</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Largura</td>
-                    <td className="border border-gray-200 px-3 py-2">38-42</td>
-                    <td className="border border-gray-200 px-3 py-2">40-44</td>
-                    <td className="border border-gray-200 px-3 py-2">42-46</td>
-                    <td className="border border-gray-200 px-3 py-2">46-50</td>
-                    <td className="border border-gray-200 px-3 py-2">50-54</td>
-                    <td className="border border-gray-200 px-3 py-2">53-57</td>
+                    <td className="border border-rim px-3 py-2 font-medium text-left">Largura</td>
+                    <td className="border border-rim px-3 py-2">38-42</td>
+                    <td className="border border-rim px-3 py-2">40-44</td>
+                    <td className="border border-rim px-3 py-2">42-46</td>
+                    <td className="border border-rim px-3 py-2">46-50</td>
+                    <td className="border border-rim px-3 py-2">50-54</td>
+                    <td className="border border-rim px-3 py-2">53-57</td>
                   </tr>
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-200 px-3 py-2 font-medium text-left">Comprimento</td>
-                    <td className="border border-gray-200 px-3 py-2">58-62</td>
-                    <td className="border border-gray-200 px-3 py-2">60-64</td>
-                    <td className="border border-gray-200 px-3 py-2">62-66</td>
-                    <td className="border border-gray-200 px-3 py-2">64-68</td>
-                    <td className="border border-gray-200 px-3 py-2">67-71</td>
-                    <td className="border border-gray-200 px-3 py-2">69-73</td>
+                  <tr className="bg-void">
+                    <td className="border border-rim px-3 py-2 font-medium text-left">Comprimento</td>
+                    <td className="border border-rim px-3 py-2">58-62</td>
+                    <td className="border border-rim px-3 py-2">60-64</td>
+                    <td className="border border-rim px-3 py-2">62-66</td>
+                    <td className="border border-rim px-3 py-2">64-68</td>
+                    <td className="border border-rim px-3 py-2">67-71</td>
+                    <td className="border border-rim px-3 py-2">69-73</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-3">
               * Medidas em centímetros. Encolhimento estimado: 4–7% no comprimento e 3–5% na largura após lavagem.
             </p>
           </div>
@@ -688,7 +688,7 @@ function ProductContent() {
 
   if (!slug) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-void">
         <Header />
         <ProductNotFound />
         <Footer />

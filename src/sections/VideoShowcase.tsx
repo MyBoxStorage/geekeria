@@ -114,7 +114,7 @@ export function VideoShowcase() {
 
               {/* Play Button */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#F59E0B]">
+                <div className="w-16 h-16 rounded-full bg-ink/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-fire">
                   <Play className="w-8 h-8 text-white ml-1" />
                 </div>
               </div>

@@ -163,7 +163,7 @@ export function PaymentBrickWithPreference({
           onError?.(error);
         }}
       />
-      <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+      <div className="mt-4 p-3 bg-elevated border border-rim rounded-lg">
         <p className="text-xs text-gray-600">
           💡 Se os métodos de pagamento não aparecerem, verifique o console do navegador (F12) para mais informações.
         </p>

@@ -68,13 +68,13 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   READY_FOR_MONTINK: { label: 'Preparando', color: 'bg-blue-100 text-blue-800' },
   SENT_TO_MONTINK: { label: 'Em Produção', color: 'bg-indigo-100 text-indigo-800' },
   FAILED_MONTINK: { label: 'Falha Produção', color: 'bg-red-100 text-red-800' },
-  CANCELED: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800' },
+  CANCELED: { label: 'Cancelado', color: 'bg-elevated text-ink' },
   FAILED: { label: 'Falhou', color: 'bg-red-100 text-red-800' },
   REFUNDED: { label: 'Reembolsado', color: 'bg-purple-100 text-purple-800' },
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const config = STATUS_CONFIG[status] || { label: status, color: 'bg-gray-100 text-gray-800' };
+  const config = STATUS_CONFIG[status] || { label: status, color: 'bg-elevated text-ink' };
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
       {config.label}
@@ -135,8 +135,8 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
-        <span className="ml-2 text-gray-600">Carregando estampas...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-fire" />
+        <span className="ml-2 text-ink-2">Carregando estampas...</span>
       </div>
     );
   }
@@ -145,7 +145,7 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
     return (
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-        <p className="text-gray-600 mb-4">{error}</p>
+        <p className="text-ink-2 mb-4">{error}</p>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Tentar Novamente
@@ -157,11 +157,11 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
   if (generations.length === 0) {
     return (
       <div className="text-center py-12">
-        <Sparkles className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <Sparkles className="w-16 h-16 text-ink-4 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-ink mb-2">
           Nenhuma estampa ainda
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-ink-2 mb-6">
           Crie sua primeira estampa personalizada com IA
         </p>
         <Link to="/">
@@ -174,7 +174,7 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{generations.length} estampa(s)</p>
+        <p className="text-sm text-ink-3">{generations.length} estampa(s)</p>
         <Button variant="ghost" size="sm" onClick={onRefresh}>
           <RefreshCw className="w-4 h-4 mr-1" /> Atualizar
         </Button>
@@ -183,7 +183,7 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
         {generations.map((gen) => (
           <div
             key={gen.id}
-            className={`group relative rounded-xl overflow-hidden border bg-white shadow-sm hover:shadow-md transition-shadow ${gen.isExpired ? 'opacity-60' : ''}`}
+            className={`group relative rounded-xl overflow-hidden card-geek transition-shadow ${gen.isExpired ? 'opacity-60' : ''}`}
           >
             {gen.imageUrl ? (
               <img
@@ -193,11 +193,11 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
                 loading="lazy"
               />
             ) : (
-              <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
+              <div className="w-full aspect-square bg-elevated flex items-center justify-center">
                 {gen.status === 'PENDING' ? (
-                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                  <Loader2 className="w-8 h-8 animate-spin text-ink-3" />
                 ) : (
-                  <AlertCircle className="w-8 h-8 text-gray-400" />
+                  <AlertCircle className="w-8 h-8 text-ink-3" />
                 )}
               </div>
             )}
@@ -207,9 +207,9 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
               </div>
             )}
             <div className="p-3">
-              <p className="text-xs text-gray-600 line-clamp-2">{gen.prompt}</p>
+              <p className="text-xs text-ink-2 line-clamp-2">{gen.prompt}</p>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-gray-400 flex items-center gap-1">
+                <span className="text-xs text-ink-3 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {formatDate(gen.createdAt)}
                 </span>
@@ -240,8 +240,8 @@ function OrdersList({ orders, loading, error, onRefresh }: {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
-        <span className="ml-2 text-gray-600">Carregando pedidos...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-fire" />
+        <span className="ml-2 text-ink-2">Carregando pedidos...</span>
       </div>
     );
   }
@@ -250,7 +250,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
     return (
       <div className="text-center py-12">
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-        <p className="text-gray-600 mb-4">{error}</p>
+        <p className="text-ink-2 mb-4">{error}</p>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="w-4 h-4 mr-2" />
           Tentar Novamente
@@ -262,11 +262,11 @@ function OrdersList({ orders, loading, error, onRefresh }: {
   if (orders.length === 0) {
     return (
       <div className="text-center py-12">
-        <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <ShoppingBag className="w-16 h-16 text-ink-4 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-ink mb-2">
           Nenhum pedido ainda
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-ink-2 mb-6">
           Faça sua primeira compra na loja
         </p>
         <Link to="/">
@@ -279,7 +279,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm text-gray-500">{orders.length} pedido(s)</p>
+        <p className="text-sm text-ink-3">{orders.length} pedido(s)</p>
         <Button variant="ghost" size="sm" onClick={onRefresh}>
           <RefreshCw className="w-4 h-4 mr-1" /> Atualizar
         </Button>
@@ -288,17 +288,17 @@ function OrdersList({ orders, loading, error, onRefresh }: {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="border rounded-xl p-4 bg-white hover:shadow-sm transition-shadow"
+            className="card-geek rounded-xl p-4 transition-shadow"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-mono font-medium text-gray-900 truncate">
+                  <span className="text-sm font-mono font-medium text-ink truncate">
                     #{order.externalReference.slice(-8).toUpperCase()}
                   </span>
                   <StatusBadge status={order.status} />
                 </div>
-                <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                <div className="flex items-center gap-3 mt-2 text-xs text-ink-3">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatDate(order.createdAt)}
@@ -320,14 +320,14 @@ function OrdersList({ orders, loading, error, onRefresh }: {
                             <img
                               src={thumb}
                               alt={item.product.name}
-                              className="w-8 h-8 rounded object-cover border border-gray-200 flex-shrink-0"
+                              className="w-8 h-8 rounded object-cover border border-rim flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
-                              <Package className="w-4 h-4 text-gray-300" />
+                            <div className="w-8 h-8 rounded bg-elevated flex items-center justify-center flex-shrink-0">
+                              <Package className="w-4 h-4 text-ink-4" />
                             </div>
                           )}
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-ink-3">
                             {item.product.name}{item.size ? ` (${item.size})` : ''}{item.quantity > 1 ? ` x${item.quantity}` : ''}
                           </span>
                         </div>
@@ -337,7 +337,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
                 )}
               </div>
               <div className="text-right shrink-0">
-                <p className="text-lg font-bold text-gray-900">
+                <p className="text-lg font-bold text-ink">
                   {formatCurrency(order.total)}
                 </p>
                 <Link to={`/order?ref=${order.externalReference}`}>
@@ -391,15 +391,15 @@ export default function UserDashboard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+      <div className="min-h-screen flex items-center justify-center bg-void">
+        <Loader2 className="w-8 h-8 animate-spin text-fire" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-void">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Acesso Negado</CardTitle>
@@ -416,17 +416,17 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-void to-elevated">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-surface border-b border-rim">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-display font-bold text-gray-900">
+              <h1 className="text-3xl font-display font-bold text-ink">
                 Minha Conta
               </h1>
-              <p className="text-gray-600 mt-1">
-                Olá, <span className="font-semibold text-[#7C3AED]">{user.name || user.email}</span>
+              <p className="text-ink-2 mt-1">
+                Olá, <span className="font-semibold text-fire">{user.name || user.email}</span>
               </p>
             </div>
             <Link to="/">
@@ -468,13 +468,13 @@ export default function UserDashboard() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <CreditCard className="w-5 h-5 text-[#7C3AED]" />
+                    <CreditCard className="w-5 h-5 text-fire" />
                     Créditos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-4xl font-bold text-[#7C3AED]">{user.credits || 0}</p>
-                  <p className="text-sm text-gray-500 mt-1">disponíveis para gerar estampas</p>
+                  <p className="text-4xl font-bold text-fire">{user.credits || 0}</p>
+                  <p className="text-sm text-ink-3 mt-1">disponíveis para gerar estampas</p>
                   <Link to="/">
                     <Button className="w-full mt-3" variant="outline" size="sm">
                       Comprar Mais
@@ -495,7 +495,7 @@ export default function UserDashboard() {
                   <p className="text-4xl font-bold text-blue-600">
                     {genLoading ? '...' : generations.length}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">estampas geradas com IA</p>
+                  <p className="text-sm text-ink-3 mt-1">estampas geradas com IA</p>
                 </CardContent>
               </Card>
 
@@ -511,7 +511,7 @@ export default function UserDashboard() {
                   <p className="text-4xl font-bold text-purple-600">
                     {ordLoading ? '...' : orders.length}
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">pedidos realizados</p>
+                  <p className="text-sm text-ink-3 mt-1">pedidos realizados</p>
                 </CardContent>
               </Card>
             </div>
@@ -530,7 +530,7 @@ export default function UserDashboard() {
                 <CardContent>
                   <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                     {recentGenerations.map((gen) => (
-                      <div key={gen.id} className="rounded-lg overflow-hidden border bg-gray-50">
+                      <div key={gen.id} className="rounded-lg overflow-hidden border bg-void">
                         {gen.imageUrl ? (
                           <img
                             src={gen.imageUrl}
@@ -540,7 +540,7 @@ export default function UserDashboard() {
                           />
                         ) : (
                           <div className="w-full aspect-square flex items-center justify-center">
-                            <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
+                            <Loader2 className="w-5 h-5 animate-spin text-ink-4" />
                           </div>
                         )}
                       </div>
@@ -566,7 +566,7 @@ export default function UserDashboard() {
                     {recentOrders.slice(0, 3).map((order) => (
                       <div key={order.id} className="flex items-center justify-between py-2 border-b last:border-0">
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-mono text-gray-700">
+                          <span className="text-sm font-mono text-ink-2">
                             #{order.externalReference.slice(-8).toUpperCase()}
                           </span>
                           <StatusBadge status={order.status} />
@@ -632,19 +632,19 @@ export default function UserDashboard() {
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Informações da Conta</h3>
-                  <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                  <div className="space-y-3 bg-void p-4 rounded-lg">
                     {user.name && (
                       <div>
-                        <p className="text-sm text-gray-600">Nome</p>
+                        <p className="text-sm text-ink-2">Nome</p>
                         <p className="font-medium">{user.name}</p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="text-sm text-ink-2">Email</p>
                       <p className="font-medium">{user.email}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Créditos</p>
+                      <p className="text-sm text-ink-2">Créditos</p>
                       <p className="font-medium">{user.credits || 0} créditos disponíveis</p>
                     </div>
                   </div>

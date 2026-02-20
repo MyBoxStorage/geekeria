@@ -65,7 +65,7 @@ export function MinhasEstampasPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-void flex items-center justify-center">
         <div className="text-xl">Carregando...</div>
       </div>
     );
@@ -73,9 +73,9 @@ export function MinhasEstampasPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-void flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-gray-600 mb-4">
+          <p className="text-xl text-ink-2 mb-4">
             Você precisa estar logado para ver suas estampas.
           </p>
           <Link
@@ -90,7 +90,7 @@ export function MinhasEstampasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-void py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-center">
           🎨 Minhas Estampas
@@ -98,7 +98,7 @@ export function MinhasEstampasPage() {
 
         {generations.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600 mb-4">
+            <p className="text-xl text-ink-2 mb-4">
               Você ainda não gerou nenhuma estampa
             </p>
             <Link
@@ -113,7 +113,7 @@ export function MinhasEstampasPage() {
             {generations.map((gen) => (
               <div
                 key={gen.id}
-                className="bg-white rounded-lg shadow-lg overflow-hidden"
+                className="bg-surface rounded-lg shadow-lg overflow-hidden"
               >
                 {gen.imageUrl && !gen.isExpired ? (
                   <img
@@ -122,19 +122,19 @@ export function MinhasEstampasPage() {
                     className="w-full h-64 object-cover"
                   />
                 ) : (
-                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">
+                  <div className="w-full h-64 bg-elevated flex items-center justify-center">
+                    <span className="text-ink-3">
                       {gen.isExpired ? '⏰ Expirada' : 'Processando...'}
                     </span>
                   </div>
                 )}
 
                 <div className="p-4">
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-ink-2 mb-2">
                     📝 {gen.prompt}
                   </p>
 
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-ink-3 mb-3">
                     Gerada em:{' '}
                     {new Date(gen.createdAt).toLocaleDateString('pt-BR')}
                   </p>

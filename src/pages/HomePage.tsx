@@ -13,6 +13,7 @@ import { FAQ } from '@/sections/FAQ';
 import { Newsletter } from '@/sections/Newsletter';
 import { Footer } from '@/sections/Footer';
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp';
+import StarField from '@/components/StarField';
 import { useSEO } from '@/hooks/useSEO';
 import { JsonLd } from '@/components/JsonLd';
 
@@ -26,7 +27,8 @@ export default function HomePage() {
   return (
     <MercadoPagoProvider>
       <CartProvider>
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-void relative">
+          <StarField />
           {/* Schema: Organization */}
           <JsonLd data={{
             "@context": "https://schema.org",

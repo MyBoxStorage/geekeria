@@ -126,14 +126,14 @@ export function AdaptiveCheckout({
             )}
           </Button>
         ) : (
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
+          <div className="text-center p-4 bg-elevated rounded-lg">
             <p className="text-sm text-gray-600">
               Redirecionando para o checkout...
             </p>
           </div>
         )}
 
-        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="p-3 bg-elevated border border-rim rounded-lg">
           <p className="text-xs text-gray-600">
             <strong>Plataforma detectada:</strong> {deviceInfo.platform === 'ios' ? 'iOS' : deviceInfo.platform === 'android' ? 'Android' : 'Web'}
           </p>
