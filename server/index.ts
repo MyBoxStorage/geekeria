@@ -1,5 +1,5 @@
 /**
- * Express Server - BRAVOS BRASIL Backend
+ * Express Server - GEEKERIA Backend
  * 
  * Integração com Mercado Pago Payments API
  * Suporte a PIX, Boleto, Cartão de Crédito e Débito

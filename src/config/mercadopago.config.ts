@@ -1,5 +1,5 @@
 /**
- * Configuração do Mercado Pago para BRAVOS BRASIL
+ * Configuração do Mercado Pago para GEEKERIA
  * 
  * Este arquivo centraliza todas as configurações relacionadas ao Mercado Pago
  * baseado nas recomendações da checklist de qualidade.
@@ -8,11 +8,11 @@
 export const MERCADOPAGO_CONFIG = {
   // App ID da aplicação
   APP_ID: '8109795162351103',
-  APP_NAME: 'Bravos Brasil Real',
+  APP_NAME: 'GEEKERIA Real',
 
   // Statement Descriptor (aparece na fatura do cartão)
   // Máximo 22 caracteres
-  STATEMENT_DESCRIPTOR: 'BRAVOS BRASIL',
+  STATEMENT_DESCRIPTOR: 'GEEKERIA',
 
   // URLs de redirecionamento após pagamento
   BACK_URLS: {
@@ -74,9 +74,9 @@ export const MERCADOPAGO_CONFIG = {
  */
 export function generateExternalReference(orderId?: string): string {
   if (orderId) {
-    return `BRAVOS-${orderId}`;
+    return `GEEKERIA-${orderId}`;
   }
-  return `BRAVOS-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  return `GEEKERIA-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 }
 
 /**

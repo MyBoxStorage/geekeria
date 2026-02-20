@@ -86,7 +86,7 @@ const CATEGORIES = [
 const PRODUCT_COLORS = [
   { id: 'vinho',           name: 'Vinho',           hex: '#722F37' },
   { id: 'verde-musgo',     name: 'Verde Musgo',     hex: '#4A5C45' },
-  { id: 'verde-bandeira',  name: 'Verde Bandeira',  hex: '#00843D' },
+  { id: 'verde-bandeira',  name: 'Verde Bandeira',  hex: '#7C3AED' },
   { id: 'roxo',            name: 'Roxo',            hex: '#6B3FA0' },
   { id: 'rosa-pink',       name: 'Rosa Pink',       hex: '#FF69B4' },
   { id: 'preto',           name: 'Preto',           hex: '#111111' },
@@ -96,8 +96,8 @@ const PRODUCT_COLORS = [
   { id: 'branco',          name: 'Branco',          hex: '#F5F5F5' },
   { id: 'azul-turquesa',   name: 'Azul Turquesa',   hex: '#00BCD4' },
   { id: 'azul-royal',      name: 'Azul Royal',      hex: '#4169E1' },
-  { id: 'azul-marinho',    name: 'Azul Marinho',    hex: '#002776' },
-  { id: 'amarelo-ouro',    name: 'Amarelo Ouro',    hex: '#FFCC29' },
+  { id: 'azul-marinho',    name: 'Azul Marinho',    hex: '#2563EB' },
+  { id: 'amarelo-ouro',    name: 'Amarelo Ouro',    hex: '#F59E0B' },
   { id: 'amarelo-canario', name: 'Amarelo Canário', hex: '#FFE135' },
 ] as const;
 
@@ -213,7 +213,7 @@ const s = {
       display: 'flex',
       alignItems: 'center',
       gap: 6,
-      background: active ? '#00843D' : 'transparent',
+      background: active ? '#7C3AED' : 'transparent',
       color: active ? '#fff' : '#888',
       transition: 'all 0.2s',
     }) as React.CSSProperties,
@@ -261,7 +261,7 @@ const s = {
   } as React.CSSProperties,
   btnPrimary: {
     padding: '12px 24px',
-    background: '#00843D',
+    background: '#7C3AED',
     color: '#fff',
     border: 'none',
     borderRadius: 8,
@@ -289,7 +289,7 @@ const s = {
     position: 'fixed' as const,
     bottom: 24,
     right: 24,
-    background: '#00843D',
+    background: '#7C3AED',
     color: '#fff',
     padding: '12px 20px',
     borderRadius: 8,
@@ -480,7 +480,7 @@ function ColorStockSection({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: '#888', letterSpacing: 0.5 }}>🎨 Cores e Estoque</span>
         {activeCount > 0 && (
-          <span style={{ fontSize: 10, background: '#00843D20', color: '#00843D', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>
+          <span style={{ fontSize: 10, background: '#7C3AED20', color: '#7C3AED', padding: '2px 8px', borderRadius: 10, fontWeight: 600 }}>
             {activeCount} cor{activeCount !== 1 ? 'es' : ''} ativa{activeCount !== 1 ? 's' : ''}
           </span>
         )}
@@ -678,7 +678,7 @@ function ImageUploadSection({
           <UploadZone
             label="♂ Modelo Masculino"
             hint="Foto do modelo homem usando a peça"
-            color="#002776"
+            color="#2563EB"
             photos={photosMasc}
             inputRef={inputRefMasc}
             onDrop={(files) => processFiles(files, 'model', 'masculino')}
@@ -691,7 +691,7 @@ function ImageUploadSection({
           <UploadZone
             label="♀ Modelo Feminina"
             hint="Foto da modelo mulher usando a peça"
-            color="#00843D"
+            color="#7C3AED"
             photos={photosFem}
             inputRef={inputRefFem}
             onDrop={(files) => processFiles(files, 'model', 'feminino')}
@@ -763,8 +763,8 @@ function ImageUploadSection({
         if (okMasc && okFem) return (
           <div style={{
             padding: '10px 14px', borderRadius: 8,
-            background: '#00843D15', border: '1px solid #00843D40',
-            fontSize: 12, color: '#00843D',
+            background: '#7C3AED15', border: '1px solid #7C3AED40',
+            fontSize: 12, color: '#7C3AED',
           }}>
             ✅ Toggle ativo — o catálogo vai alternar entre ♂ e ♀ ao passar o mouse
           </div>
@@ -772,8 +772,8 @@ function ImageUploadSection({
         return (
           <div style={{
             padding: '10px 14px', borderRadius: 8,
-            background: '#FFCC2915', border: '1px solid #FFCC2940',
-            fontSize: 12, color: '#FFCC29',
+            background: '#F59E0B15', border: '1px solid #F59E0B40',
+            fontSize: 12, color: '#F59E0B',
           }}>
             ⚠️ Produto unissex — adicione foto{' '}
             {!okMasc && '♂ masculino'}
@@ -1253,7 +1253,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
     });
     const output = {
       generatedAt: new Date().toISOString(),
-      generatedBy: 'Bravos Brasil Admin',
+      generatedBy: 'GEEKERIA Admin',
       note: 'Debug export (opcional) — produtos já são persistidos no banco via API',
       fileNaming: 'slug_masculino_model_01.webp, slug_vinho_product_01.webp, slug_detail_01.webp',
       products: enriched,
@@ -1277,13 +1277,13 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
       <div style={s.header}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={s.logo}>
-            BRAVOS <span style={{ color: '#FFCC29' }}>ADMIN</span>
+            GEEKERIA ADMIN
           </span>
           <span
             style={{
               fontSize: 11,
-              color: '#00843D',
-              background: '#00843D20',
+              color: '#7C3AED',
+              background: '#7C3AED20',
               padding: '2px 10px',
               borderRadius: 20,
               fontWeight: 600,
@@ -1404,8 +1404,8 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                   ...s.card,
                   padding: 16,
                   marginBottom: 16,
-                  border: healthCounts.withIssues > 0 ? '1px solid #b4540080' : '1px solid #00843D60',
-                  background: healthCounts.withIssues > 0 ? '#b4540010' : '#00843D10',
+                  border: healthCounts.withIssues > 0 ? '1px solid #b4540080' : '1px solid #7C3AED60',
+                  background: healthCounts.withIssues > 0 ? '#b4540010' : '#7C3AED10',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1413,12 +1413,12 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                     {healthCounts.withIssues > 0 ? (
                       <AlertTriangle size={18} style={{ color: '#b45400' }} />
                     ) : (
-                      <CheckCircle2 size={18} style={{ color: '#00843D' }} />
+                      <CheckCircle2 size={18} style={{ color: '#7C3AED' }} />
                     )}
                     <span style={{
                       fontSize: 13,
                       fontWeight: 600,
-                      color: healthCounts.withIssues > 0 ? '#b45400' : '#00843D',
+                      color: healthCounts.withIssues > 0 ? '#b45400' : '#7C3AED',
                     }}>
                       {healthCounts.withIssues > 0
                         ? `Atenção: ${healthCounts.withIssues} produto(s) com ajustes pendentes para ficar premium.`
@@ -1594,7 +1594,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                           gap: 12,
                         }}
                       >
-                        <span style={{ color: '#00843D', fontWeight: 600 }}>
+                        <span style={{ color: '#7C3AED', fontWeight: 600 }}>
                           {formatPrice(product.price)}
                         </span>
                         <span>{product.category}</span>
@@ -1683,11 +1683,11 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                   justifyContent: 'space-between',
                   padding: '10px 14px',
                   borderRadius: 8,
-                  background: '#FFCC2915',
-                  border: '1px solid #FFCC2940',
+                  background: '#F59E0B15',
+                  border: '1px solid #F59E0B40',
                   marginBottom: 16,
                   fontSize: 12,
-                  color: '#FFCC29',
+                  color: '#F59E0B',
                 }}
               >
                 <span>⚡ Rascunho restaurado automaticamente</span>
@@ -1706,8 +1706,8 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                   }}
                   style={{
                     background: 'none',
-                    border: '1px solid #FFCC2940',
-                    color: '#FFCC29',
+                    border: '1px solid #F59E0B40',
+                    color: '#F59E0B',
                     borderRadius: 4,
                     padding: '2px 10px',
                     fontSize: 11,
@@ -1755,7 +1755,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                     onChange={(e) =>
                       setDraft((p) => ({ ...p, name: e.target.value }))
                     }
-                    placeholder="T-Shirt Classic - Patriota"
+                    placeholder="T-Shirt Classic - Geek"
                   />
                 </div>
 
@@ -1959,7 +1959,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                     onChange={(e) =>
                       setDraft((p) => ({ ...p, isNew: e.target.checked }))
                     }
-                    style={{ accentColor: '#00843D' }}
+                    style={{ accentColor: '#7C3AED' }}
                   />
                   Novo
                 </label>
@@ -1982,7 +1982,7 @@ export default function ProductAdmin({ onLogout }: ProductAdminProps) {
                         isBestseller: e.target.checked,
                       }))
                     }
-                    style={{ accentColor: '#FFCC29' }}
+                    style={{ accentColor: '#F59E0B' }}
                   />
                   Mais Vendido
                 </label>

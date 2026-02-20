@@ -81,7 +81,7 @@ export function CatalogHero({ totalProducts, hasActiveFilters, isLoading }: Cata
       >
         <img
           src="/hero-catalogo.webp"
-          alt="Catálogo Bravos Brasil"
+          alt="Catálogo GEEKERIA"
           className="w-full h-full object-cover"
           loading="eager"
         />

@@ -12,7 +12,7 @@ interface LegacyPending {
 }
 
 export default function CheckoutFailure() {
-  useSEO({ title: 'Pagamento não realizado | BRAVOS BRASIL', description: '', noindex: true });
+  useSEO({ title: 'Pagamento não realizado | GEEKERIA', description: '', noindex: true });
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const statusDetail = searchParams.get('status_detail');
@@ -69,7 +69,7 @@ export default function CheckoutFailure() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500/10 via-red-500/5 to-[#002776]/10 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500/10 via-red-500/5 to-[#2563EB]/10 p-4">
       <Card className="max-w-lg w-full shadow-2xl border-0 rounded-xl overflow-hidden">
         <CardContent className="p-6 sm:p-8 text-center">
           {/* Ícone com animação */}
@@ -84,12 +84,12 @@ export default function CheckoutFailure() {
           </div>
 
           {/* Título */}
-          <h1 className="font-display text-3xl sm:text-4xl text-[#002776] mb-3 tracking-wide">
+          <h1 className="font-display text-3xl sm:text-4xl text-[#2563EB] mb-3 tracking-wide">
             Pagamento Nao Concluido
           </h1>
 
           {/* Subtítulo */}
-          <p className="text-base sm:text-lg text-[#002776]/70 mb-6 font-body">
+          <p className="text-base sm:text-lg text-[#2563EB]/70 mb-6 font-body">
             Voce pode tentar novamente ou acompanhar o pedido caso ele tenha sido criado.
           </p>
 
@@ -121,34 +121,34 @@ export default function CheckoutFailure() {
 
           {/* Referência do pedido (se existir) */}
           {resolvedRef && (
-            <div className="bg-gradient-to-r from-[#002776]/10 to-[#002776]/5 rounded-xl p-4 sm:p-5 mb-6 border border-[#002776]/20">
-              <p className="text-sm font-medium text-[#002776]/70 mb-1 font-body">Referencia do pedido</p>
-              <p className="text-lg sm:text-xl font-mono font-bold text-[#002776]">
+            <div className="bg-gradient-to-r from-[#2563EB]/10 to-[#2563EB]/5 rounded-xl p-4 sm:p-5 mb-6 border border-[#2563EB]/20">
+              <p className="text-sm font-medium text-[#2563EB]/70 mb-1 font-body">Referencia do pedido</p>
+              <p className="text-lg sm:text-xl font-mono font-bold text-[#2563EB]">
                 #{resolvedRef}
               </p>
             </div>
           )}
 
           {/* Dicas */}
-          <div className="mb-6 p-4 sm:p-5 bg-[#002776]/5 rounded-xl border border-[#002776]/10">
-            <p className="text-sm font-semibold text-[#002776] mb-3 font-body">
+          <div className="mb-6 p-4 sm:p-5 bg-[#2563EB]/5 rounded-xl border border-[#2563EB]/10">
+            <p className="text-sm font-semibold text-[#2563EB] mb-3 font-body">
               O que você pode fazer:
             </p>
-            <ul className="text-xs text-[#002776]/60 space-y-2 text-left font-body">
+            <ul className="text-xs text-[#2563EB]/60 space-y-2 text-left font-body">
               <li className="flex items-start gap-2">
-                <span className="text-[#002776]/40 mt-0.5">•</span>
+                <span className="text-[#2563EB]/40 mt-0.5">•</span>
                 Verifique os dados do cartão e tente novamente
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#002776]/40 mt-0.5">•</span>
+                <span className="text-[#2563EB]/40 mt-0.5">•</span>
                 Certifique-se de ter saldo ou limite disponível
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#002776]/40 mt-0.5">•</span>
+                <span className="text-[#2563EB]/40 mt-0.5">•</span>
                 Experimente outro método de pagamento (ex.: PIX)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#002776]/40 mt-0.5">•</span>
+                <span className="text-[#2563EB]/40 mt-0.5">•</span>
                 Se o problema persistir, entre em contato com seu banco
               </li>
             </ul>
@@ -157,7 +157,7 @@ export default function CheckoutFailure() {
           {/* CTAs */}
           <div className="space-y-3">
             <Button
-              className="w-full bg-[#00843D] hover:bg-[#006633] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
+              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg font-display"
               size="lg"
               onClick={() => navigate('/?checkout=1')}
               aria-label="Tentar novamente"
@@ -168,7 +168,7 @@ export default function CheckoutFailure() {
 
             {resolvedRef && (
               <Button
-                className="w-full border-2 border-[#002776] text-[#002776] hover:bg-[#002776] hover:text-white rounded-lg transition-all duration-300"
+                className="w-full border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB] hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
                 variant="outline"
                 onClick={() => navigate(`/order?ref=${encodeURIComponent(resolvedRef)}`)}
@@ -180,7 +180,7 @@ export default function CheckoutFailure() {
 
             <Link to="/catalogo" className="block">
               <Button
-                className="w-full border-2 border-[#00843D] text-[#00843D] hover:bg-[#00843D] hover:text-white rounded-lg transition-all duration-300"
+                className="w-full border-2 border-[#7C3AED] text-[#7C3AED] hover:bg-[#7C3AED] hover:text-white rounded-lg transition-all duration-300"
                 size="lg"
                 variant="outline"
                 aria-label="Voltar ao catálogo"
@@ -219,7 +219,7 @@ export default function CheckoutFailure() {
           </div>
 
           {/* Footer */}
-          <p className="text-xs text-[#002776]/50 mt-6 font-body">
+          <p className="text-xs text-[#2563EB]/50 mt-6 font-body">
             Precisa de ajuda? Fale com a gente pelo WhatsApp.
           </p>
         </CardContent>

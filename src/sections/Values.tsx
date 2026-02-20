@@ -10,19 +10,19 @@ const values = [
     icon: Cross,
     title: 'TRADIÇÃO BRASILEIRA',
     description: 'Celebramos a herança cultural e os valores que construíram nossa nação. Cada peça é uma homenagem à nossa história.',
-    color: '#00843D',
+    color: '#7C3AED',
   },
   {
     icon: Award,
     title: 'QUALIDADE PREMIUM',
     description: 'Tecidos nobres, estampas duráveis, acabamento impecável. Não aceitamos nada menos que o melhor.',
-    color: '#FFCC29',
+    color: '#F59E0B',
   },
   {
     icon: Flag,
     title: 'ORGULHO NACIONAL',
     description: 'Vista-se com as cores que representam nossa soberania. Seja um embaixador do Brasil onde quer que vá.',
-    color: '#002776',
+    color: '#2563EB',
   },
 ];
 
@@ -101,10 +101,10 @@ export function Values() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="text-center mb-16">
-          <h2 className="font-display text-5xl md:text-6xl text-[#00843D] mb-4">
+          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
             MAIS QUE ROUPAS
           </h2>
-          <p className="font-display text-3xl md:text-4xl text-[#002776]">
+          <p className="font-display text-3xl md:text-4xl text-[#2563EB]">
             UMA DECLARAÇÃO DE VALORES
           </p>
         </div>
@@ -121,7 +121,7 @@ export function Values() {
             <path
               ref={lineRef}
               d="M100 40 Q300 0 400 40 T700 40 T1100 40"
-              stroke="#00843D"
+              stroke="#7C3AED"
               strokeWidth="2"
               strokeDasharray="8 8"
               fill="none"

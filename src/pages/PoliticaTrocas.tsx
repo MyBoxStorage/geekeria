@@ -15,9 +15,9 @@ export default function PoliticaTrocas() {
         <Header />
 
         {/* Hero */}
-        <section className="bg-[#002776] py-20 pt-32">
+        <section className="bg-[#2563EB] py-20 pt-32">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-[#FFCC29]/20 text-[#FFCC29] px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#F59E0B] px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
               <Shield className="w-4 h-4" />
               Sua satisfação é nossa prioridade
             </div>
@@ -33,9 +33,9 @@ export default function PoliticaTrocas() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { icon: <Clock className="w-6 h-6 text-[#00843D]" />, bg: 'bg-[#00843D]/10', value: '7 DIAS', desc: 'Prazo para arrependimento após recebimento', color: 'text-[#00843D]' },
-                { icon: <RefreshCw className="w-6 h-6 text-[#002776]" />, bg: 'bg-[#002776]/10', value: '30 DIAS', desc: 'Para troca por defeito de fabricação', color: 'text-[#002776]' },
-                { icon: <Truck className="w-6 h-6 text-[#002776]" />, bg: 'bg-[#FFCC29]/20', value: 'GRÁTIS', desc: 'Frete de devolução em caso de defeito', color: 'text-[#002776]' },
+                { icon: <Clock className="w-6 h-6 text-[#7C3AED]" />, bg: 'bg-[#7C3AED]/10', value: '7 DIAS', desc: 'Prazo para arrependimento após recebimento', color: 'text-[#7C3AED]' },
+                { icon: <RefreshCw className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#2563EB]/10', value: '30 DIAS', desc: 'Para troca por defeito de fabricação', color: 'text-[#2563EB]' },
+                { icon: <Truck className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#F59E0B]/20', value: 'GRÁTIS', desc: 'Frete de devolução em caso de defeito', color: 'text-[#2563EB]' },
               ].map(({ icon, bg, value, desc, color }) => (
                 <div key={value} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm text-center hover-lift">
                   <div className={`w-12 h-12 ${bg} rounded-full flex items-center justify-center mx-auto mb-4`}>{icon}</div>
@@ -53,21 +53,21 @@ export default function PoliticaTrocas() {
 
             {[
               {
-                num: '1', color: 'bg-[#00843D]', border: 'border-[#00843D]', title: 'DIREITO DE ARREPENDIMENTO', titleColor: 'text-[#00843D]',
+                num: '1', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'DIREITO DE ARREPENDIMENTO', titleColor: 'text-[#7C3AED]',
                 content: (<>
                   <p className="font-body text-gray-700 leading-relaxed mb-4">De acordo com o <strong>Art. 49 do Código de Defesa do Consumidor</strong>, você tem o direito de desistir da compra em até <strong>7 (sete) dias corridos</strong> a partir do recebimento do produto, sem necessidade de justificativa.</p>
                   <p className="font-body text-gray-700 leading-relaxed">O produto deve ser devolvido em sua embalagem original, sem sinais de uso, com etiquetas intactas. O reembolso será processado em até <strong>10 dias úteis</strong> após o recebimento.</p>
                 </>)
               },
               {
-                num: '2', color: 'bg-[#002776]', border: 'border-[#002776]', title: 'TROCA POR DEFEITO', titleColor: 'text-[#002776]',
+                num: '2', color: 'bg-[#2563EB]', border: 'border-[#2563EB]', title: 'TROCA POR DEFEITO', titleColor: 'text-[#2563EB]',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">Caso o produto apresente <strong>defeito de fabricação</strong>, você pode solicitar a troca em até <strong>30 (trinta) dias</strong>. O frete de retorno será custeado integralmente pela Bravos Brasil.</p>
+                  <p className="font-body text-gray-700 leading-relaxed mb-4">Caso o produto apresente <strong>defeito de fabricação</strong>, você pode solicitar a troca em até <strong>30 (trinta) dias</strong>. O frete de retorno será custeado integralmente pela GEEKERIA.</p>
                   <p className="font-body text-gray-700 leading-relaxed">Entre em contato via WhatsApp com fotos do defeito e o número do pedido. Nossa equipe responderá em até <strong>2 dias úteis</strong>.</p>
                 </>)
               },
               {
-                num: '3', color: 'bg-[#00843D]', border: 'border-[#00843D]', title: 'TROCA DE TAMANHO', titleColor: 'text-[#00843D]',
+                num: '3', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'TROCA DE TAMANHO', titleColor: 'text-[#7C3AED]',
                 content: (<>
                   <p className="font-body text-gray-700 leading-relaxed mb-4">Aceitamos troca de tamanho em até <strong>30 dias</strong> após o recebimento, desde que o produto esteja sem uso, lavagem ou danos, com etiquetas originais.</p>
                   <p className="font-body text-gray-700 leading-relaxed">O frete de envio de volta é de <strong>responsabilidade do cliente</strong>. Sugerimos consultar nosso <strong>Guia de Tamanhos</strong> antes de finalizar a compra.</p>
@@ -88,10 +88,10 @@ export default function PoliticaTrocas() {
             {/* Como solicitar */}
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-[#002776] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-[#2563EB] rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="font-display text-white text-sm">4</span>
                 </div>
-                <h2 className="font-display text-3xl text-[#002776]">COMO SOLICITAR</h2>
+                <h2 className="font-display text-3xl text-[#2563EB]">COMO SOLICITAR</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
@@ -101,7 +101,7 @@ export default function PoliticaTrocas() {
                   { step: '04', text: 'Envie o produto no endereço que será informado pelo nosso time' },
                 ].map(({ step, text }) => (
                   <div key={step} className="flex items-start gap-4 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <span className="font-display text-3xl text-[#FFCC29] leading-none flex-shrink-0" style={{ WebkitTextStroke: '1px #002776' }}>{step}</span>
+                    <span className="font-display text-3xl text-[#F59E0B] leading-none flex-shrink-0" style={{ WebkitTextStroke: '1px #2563EB' }}>{step}</span>
                     <p className="font-body text-gray-700 text-sm leading-relaxed pt-1">{text}</p>
                   </div>
                 ))}
@@ -120,21 +120,21 @@ export default function PoliticaTrocas() {
             </div>
 
             {/* CTA */}
-            <div className="bg-[#002776] rounded-xl p-8 text-center">
+            <div className="bg-[#2563EB] rounded-xl p-8 text-center">
               <h3 className="font-display text-3xl text-white mb-3">PRECISA DE AJUDA?</h3>
               <p className="font-body text-white/70 mb-6">Nossa equipe está pronta para te atender via WhatsApp</p>
               <a
-                href={buildWhatsAppLink('Olá! Vim pela página de atendimento da Bravos Brasil e preciso de ajuda.')}
+                href={buildWhatsAppLink('Olá! Vim pela página de atendimento da GEEKERIA e preciso de ajuda.')}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#FFCC29] text-[#002776] font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105"
+                className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105"
               >
                 FALAR NO WHATSAPP →
               </a>
             </div>
 
             <div className="mt-10">
-              <Link to="/" className="inline-flex items-center gap-2 font-body text-[#00843D] hover:text-[#006633] transition-colors">
+              <Link to="/" className="inline-flex items-center gap-2 font-body text-[#7C3AED] hover:text-[#5B21B6] transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 Voltar para a loja
               </Link>

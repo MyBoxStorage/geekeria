@@ -135,13 +135,13 @@ export function ProductSelector({
           }}
           disabled={isLoading && products.length === 0}
         >
-          <SelectTrigger className="w-full font-body text-base h-12 rounded-lg border-gray-300 focus:border-[#00843D] focus:ring-[#00843D]/30">
+          <SelectTrigger className="w-full font-body text-base h-12 rounded-lg border-gray-300 focus:border-[#7C3AED] focus:ring-[#7C3AED]/30">
             <SelectValue placeholder={isLoading && products.length === 0 ? 'Carregando produtos…' : 'Selecione um produto'} />
           </SelectTrigger>
           <SelectContent className="font-body max-h-80">
             {Object.entries(groupedProducts).map(([category, items]) => (
               <SelectGroup key={category}>
-                <SelectLabel className="font-display text-[#002776] text-sm tracking-wide">
+                <SelectLabel className="font-display text-[#2563EB] text-sm tracking-wide">
                   {CATEGORY_LABELS[category] ?? category}
                 </SelectLabel>
                 {items.map((product) => (
@@ -283,7 +283,7 @@ export function ProductSelector({
           <Button
             onClick={handleAddToCart}
             size="lg"
-            className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
+            className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
           >
             <ShoppingCart className="w-5 h-5" />
             ADICIONAR AO CARRINHO

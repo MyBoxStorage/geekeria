@@ -15,15 +15,15 @@ export default function TermosDeUso() {
         <Header />
 
         {/* Hero */}
-        <section className="bg-[#002776] py-20 pt-32">
+        <section className="bg-[#2563EB] py-20 pt-32">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-[#FFCC29]/20 text-[#FFCC29] px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#F59E0B] px-4 py-2 rounded-full font-body text-sm font-medium mb-6">
               <FileText className="w-4 h-4" />
               Transparência e clareza nas regras
             </div>
             <h1 className="font-display text-5xl md:text-6xl text-white mb-4">TERMOS DE USO</h1>
             <p className="font-body text-lg text-white/70 max-w-2xl mx-auto">
-              Ao utilizar o site da Bravos Brasil, você concorda com os termos abaixo
+              Ao utilizar o site da GEEKERIA, você concorda com os termos abaixo
             </p>
           </div>
         </section>
@@ -33,9 +33,9 @@ export default function TermosDeUso() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
-                { icon: <ShoppingBag className="w-6 h-6 text-[#00843D]" />, bg: 'bg-[#00843D]/10', value: 'COMPRAS', desc: 'Regras claras para pedidos, pagamentos e entregas', color: 'text-[#00843D]' },
-                { icon: <Scale className="w-6 h-6 text-[#002776]" />, bg: 'bg-[#002776]/10', value: 'CDC', desc: 'Conformidade com o Código de Defesa do Consumidor', color: 'text-[#002776]' },
-                { icon: <AlertCircle className="w-6 h-6 text-[#002776]" />, bg: 'bg-[#FFCC29]/20', value: 'DIREITOS', desc: 'Seus direitos e responsabilidades como cliente', color: 'text-[#002776]' },
+                { icon: <ShoppingBag className="w-6 h-6 text-[#7C3AED]" />, bg: 'bg-[#7C3AED]/10', value: 'COMPRAS', desc: 'Regras claras para pedidos, pagamentos e entregas', color: 'text-[#7C3AED]' },
+                { icon: <Scale className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#2563EB]/10', value: 'CDC', desc: 'Conformidade com o Código de Defesa do Consumidor', color: 'text-[#2563EB]' },
+                { icon: <AlertCircle className="w-6 h-6 text-[#2563EB]" />, bg: 'bg-[#F59E0B]/20', value: 'DIREITOS', desc: 'Seus direitos e responsabilidades como cliente', color: 'text-[#2563EB]' },
               ].map(({ icon, bg, value, desc, color }) => (
                 <div key={value} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm text-center hover-lift">
                   <div className={`w-12 h-12 ${bg} rounded-full flex items-center justify-center mx-auto mb-4`}>{icon}</div>
@@ -53,46 +53,46 @@ export default function TermosDeUso() {
 
             {[
               {
-                num: '1', color: 'bg-[#00843D]', border: 'border-[#00843D]', title: 'ACEITAÇÃO DOS TERMOS', titleColor: 'text-[#00843D]',
-                content: (<p className="font-body text-gray-700 leading-relaxed">Ao acessar e utilizar o site <strong>bravosbrasil.com.br</strong>, você declara ter lido, compreendido e concordado com estes Termos de Uso. Caso não concorde com alguma condição, recomendamos que não utilize nossos serviços. A Bravos Brasil reserva o direito de atualizar estes termos a qualquer momento, sendo sua responsabilidade verificá-los periodicamente.</p>)
+                num: '1', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'ACEITAÇÃO DOS TERMOS', titleColor: 'text-[#7C3AED]',
+                content: (<p className="font-body text-gray-700 leading-relaxed">Ao acessar e utilizar o site <strong>bravosbrasil.com.br</strong>, você declara ter lido, compreendido e concordado com estes Termos de Uso. Caso não concorde com alguma condição, recomendamos que não utilize nossos serviços. A GEEKERIA reserva o direito de atualizar estes termos a qualquer momento, sendo sua responsabilidade verificá-los periodicamente.</p>)
               },
               {
-                num: '2', color: 'bg-[#002776]', border: 'border-[#002776]', title: 'CADASTRO E CONTA', titleColor: 'text-[#002776]',
+                num: '2', color: 'bg-[#2563EB]', border: 'border-[#2563EB]', title: 'CADASTRO E CONTA', titleColor: 'text-[#2563EB]',
                 content: (<>
                   <p className="font-body text-gray-700 leading-relaxed mb-4">Para realizar compras, você pode criar uma conta ou comprar como visitante. Ao se cadastrar, você concorda em:</p>
                   <ul className="font-body text-gray-700 space-y-2">
-                    <li className="flex items-start gap-2"><span className="text-[#002776] font-bold mt-0.5">✦</span><span>Fornecer informações verídicas e atualizadas</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#002776] font-bold mt-0.5">✦</span><span>Manter a confidencialidade da sua senha</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#002776] font-bold mt-0.5">✦</span><span>Notificar-nos imediatamente sobre uso não autorizado da sua conta</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#002776] font-bold mt-0.5">✦</span><span>Ser responsável por todas as atividades realizadas na sua conta</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#2563EB] font-bold mt-0.5">✦</span><span>Fornecer informações verídicas e atualizadas</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#2563EB] font-bold mt-0.5">✦</span><span>Manter a confidencialidade da sua senha</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#2563EB] font-bold mt-0.5">✦</span><span>Notificar-nos imediatamente sobre uso não autorizado da sua conta</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#2563EB] font-bold mt-0.5">✦</span><span>Ser responsável por todas as atividades realizadas na sua conta</span></li>
                   </ul>
                 </>)
               },
               {
-                num: '3', color: 'bg-[#00843D]', border: 'border-[#00843D]', title: 'PEDIDOS E PAGAMENTOS', titleColor: 'text-[#00843D]',
+                num: '3', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'PEDIDOS E PAGAMENTOS', titleColor: 'text-[#7C3AED]',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">Ao realizar um pedido na Bravos Brasil:</p>
+                  <p className="font-body text-gray-700 leading-relaxed mb-4">Ao realizar um pedido na GEEKERIA:</p>
                   <ul className="font-body text-gray-700 space-y-2">
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Os preços estão em Reais (BRL) e incluem impostos aplicáveis</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>O pagamento é processado com segurança pelo Mercado Pago</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>O pedido só é confirmado após a aprovação do pagamento</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Reservamo-nos o direito de cancelar pedidos com indícios de fraude</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Cupons de desconto são de uso único e não acumuláveis, salvo indicação contrária</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Os preços estão em Reais (BRL) e incluem impostos aplicáveis</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>O pagamento é processado com segurança pelo Mercado Pago</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>O pedido só é confirmado após a aprovação do pagamento</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Reservamo-nos o direito de cancelar pedidos com indícios de fraude</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Cupons de desconto são de uso único e não acumuláveis, salvo indicação contrária</span></li>
                   </ul>
                 </>)
               },
               {
-                num: '4', color: 'bg-[#002776]', border: 'border-[#002776]', title: 'PROPRIEDADE INTELECTUAL', titleColor: 'text-[#002776]',
-                content: (<p className="font-body text-gray-700 leading-relaxed">Todo o conteúdo do site — incluindo textos, imagens, logotipos, estampas, designs e código-fonte — é de propriedade exclusiva da <strong>Bravos Brasil</strong> e está protegido pelas leis de direitos autorais. É proibida a reprodução, distribuição ou uso comercial sem autorização prévia e por escrito. As estampas geradas pelo Gerador de Estampas com IA são de uso pessoal do cliente que as criou.</p>)
+                num: '4', color: 'bg-[#2563EB]', border: 'border-[#2563EB]', title: 'PROPRIEDADE INTELECTUAL', titleColor: 'text-[#2563EB]',
+                content: (<p className="font-body text-gray-700 leading-relaxed">Todo o conteúdo do site — incluindo textos, imagens, logotipos, estampas, designs e código-fonte — é de propriedade exclusiva da <strong>GEEKERIA</strong> e está protegido pelas leis de direitos autorais. É proibida a reprodução, distribuição ou uso comercial sem autorização prévia e por escrito. As estampas geradas pelo Gerador de Estampas com IA são de uso pessoal do cliente que as criou.</p>)
               },
               {
-                num: '5', color: 'bg-[#00843D]', border: 'border-[#00843D]', title: 'LIMITAÇÃO DE RESPONSABILIDADE', titleColor: 'text-[#00843D]',
+                num: '5', color: 'bg-[#7C3AED]', border: 'border-[#7C3AED]', title: 'LIMITAÇÃO DE RESPONSABILIDADE', titleColor: 'text-[#7C3AED]',
                 content: (<>
-                  <p className="font-body text-gray-700 leading-relaxed mb-4">A Bravos Brasil não se responsabiliza por:</p>
+                  <p className="font-body text-gray-700 leading-relaxed mb-4">A GEEKERIA não se responsabiliza por:</p>
                   <ul className="font-body text-gray-700 space-y-2">
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Atrasos causados por transportadoras ou eventos de força maior</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Danos causados pelo uso indevido dos produtos</span></li>
-                    <li className="flex items-start gap-2"><span className="text-[#00843D] font-bold mt-0.5">✦</span><span>Indisponibilidade temporária do site por manutenção ou falhas técnicas</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Atrasos causados por transportadoras ou eventos de força maior</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Danos causados pelo uso indevido dos produtos</span></li>
+                    <li className="flex items-start gap-2"><span className="text-[#7C3AED] font-bold mt-0.5">✦</span><span>Indisponibilidade temporária do site por manutenção ou falhas técnicas</span></li>
                   </ul>
                 </>)
               },
@@ -117,16 +117,16 @@ export default function TermosDeUso() {
             </div>
 
             {/* CTA */}
-            <div className="bg-[#002776] rounded-xl p-8 text-center mb-10">
+            <div className="bg-[#2563EB] rounded-xl p-8 text-center mb-10">
               <h3 className="font-display text-3xl text-white mb-3">AINDA TEM DÚVIDAS?</h3>
               <p className="font-body text-white/70 mb-6">Nossa equipe está pronta para te atender</p>
-              <a href={buildWhatsAppLink('Olá! Vim pela página de atendimento da Bravos Brasil e preciso de ajuda.')} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#FFCC29] text-[#002776] font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105">
+              <a href={buildWhatsAppLink('Olá! Vim pela página de atendimento da GEEKERIA e preciso de ajuda.')} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] font-display text-lg px-8 py-4 rounded-full hover:opacity-90 transition-all hover:scale-105">
                 FALAR NO WHATSAPP →
               </a>
             </div>
 
-            <Link to="/" className="inline-flex items-center gap-2 font-body text-[#00843D] hover:text-[#006633] transition-colors">
+            <Link to="/" className="inline-flex items-center gap-2 font-body text-[#7C3AED] hover:text-[#5B21B6] transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Voltar para a loja
             </Link>

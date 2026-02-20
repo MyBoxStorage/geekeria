@@ -38,7 +38,7 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
           position: 'fixed',
           inset: 0,
           backgroundImage:
-            'radial-gradient(circle at 50% 0%, #00843D15 0%, transparent 60%)',
+            'radial-gradient(circle at 50% 0%, #7C3AED15 0%, transparent 60%)',
           pointerEvents: 'none',
         }}
       />
@@ -47,7 +47,7 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
         style={{
           background: '#161616',
           border: '1px solid #2a2a2a',
-          borderTop: '3px solid #FFCC29',
+          borderTop: '3px solid #F59E0B',
           borderRadius: 16,
           padding: '48px 40px',
           width: '100%',
@@ -67,7 +67,7 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
               marginBottom: 4,
             }}
           >
-            BRAVOS <span style={{ color: '#FFCC29' }}>BRASIL</span>
+            GEEKERIA
           </div>
           <div
             style={{
@@ -88,14 +88,14 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
               width: 56,
               height: 56,
               borderRadius: '50%',
-              background: '#00843D20',
-              border: '2px solid #00843D40',
+              background: '#7C3AED20',
+              border: '2px solid #7C3AED40',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Lock size={22} color="#00843D" />
+            <Lock size={22} color="#7C3AED" />
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
           style={{
             width: '100%',
             padding: '14px',
-            background: password.trim() ? '#00843D' : '#1a1a1a',
+            background: password.trim() ? '#7C3AED' : '#1a1a1a',
             color: password.trim() ? '#fff' : '#444',
             border: 'none',
             borderRadius: 10,
@@ -220,7 +220,7 @@ export function AdminLogin({ onLogin, error, onBack }: AdminLoginProps) {
             marginTop: 24,
           }}
         >
-          Acesso restrito &bull; Bravos Brasil &copy; 2026
+          Acesso restrito &bull; GEEKERIA &copy; 2026
         </p>
       </div>
 

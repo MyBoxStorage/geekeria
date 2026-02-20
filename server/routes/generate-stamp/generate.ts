@@ -91,66 +91,13 @@ export async function generateStamp(
         !!prompt.toLowerCase().match(/'[^']+'/);
 
       const defaultPrompt = `TAREFA: Criar arte PROFISSIONAL para estampa de camiseta (impressão DTF, 300 DPI, PNG transparente, 3:4).
-
-ESTILO: Ilustração digital vibrante inspirada em arte de camiseta premium.
-
-IMAGEM ENVIADA: {{UPLOADED_IMAGE}}
-{{UPLOADED_IMAGE}} = SIM: Use as instruções de imagem abaixo.
-{{UPLOADED_IMAGE}} = NÃO: Use as instruções sem foto abaixo.
-
-Se {{UPLOADED_IMAGE}} = SIM:
-IMAGEM ENVIADA - ANÁLISE E ADAPTAÇÃO:
-1. ANALISE o conteúdo: pessoa, família, pet, objeto, paisagem, etc.
-2. TRANSFORME em arte de estampa mantendo o TEMA CENTRAL reconhecível
-3. ADAPTE a composição para camiseta:
-   - Se pessoa sozinha: formato busto/retrato (ombros para cima)
-   - Se família/grupo: enquadre todos dentro da composição
-   - Se pet/animal: centralize o animal, composição fechada
-   - Se objeto: destaque o objeto centralizado
-   - Se paisagem: adapte para formato vertical/quadrado
-
-IMPORTANTE:
-- NÃO deixe elementos saindo da composição (braços, pernas cortadas)
-- Composição FECHADA e equilibrada
-- Arte deve caber perfeitamente em uma camiseta
-- Mantenha características reconhecíveis do conteúdo original
-- Cores naturais preservadas (só altere se pedido)
-
-ELEMENTOS BRASILEIROS (sutis):
-- Bandeira do Brasil desfocada ao fundo
-- Respingos de tinta verde (#00843D) e amarelo (#FFCC29)
-- Efeitos de luz dourada
-- Elementos decorativos discretos
-
-Se {{UPLOADED_IMAGE}} = NÃO:
-SEM FOTO:
-- Criar ilustração original relacionada ao tema brasileiro
-- Estilo: arte de camiseta profissional
-- Composição equilibrada para impressão
-
-BANDEIRAS E ELEMENTOS VISUAIS:
-- Se o usuário pedir "bandeira do Brasil E Estados Unidos" ou similar: mostrar AMBAS as bandeiras
-- Se pedir "bandeira do Brasil" apenas: mostrar só bandeira do Brasil
-- Se pedir elementos de múltiplos países: incluir TODOS os elementos pedidos
-
+ESTILO: Ilustração digital vibrante inspirada em arte de camiseta geek premium — anime, games, cultura pop brasileira.
+IMAGEM ENVIADA: {{UPLOADED_IMAGE}} → SIM: usar instruções com foto; NÃO: ilustração original tema geek/cultura pop.
+Se SIM: analisar conteúdo (pessoa/família/pet/objeto), transformar em arte estilo geek — pode virar personagem de anime, herói, guerreiro pixel art, etc.
+Se NÃO: ilustração original tema geek/cultura pop, estilo camiseta premium — animes, games, filmes, séries, HQs.
 PEDIDO DO USUÁRIO: "{{USER_PROMPT}}"
-
-TEXTO SOLICITADO: {{HAS_TEXT}}
-Se {{HAS_TEXT}} = SIM:
-- Texto em dourado 3D com contorno
-- Fonte bold, impactante
-- Posição: embaixo ou conforme pedido
-- Efeito: relevo, sombra, brilho metálico
-- IMPORTANTE: Incluir exatamente o texto que o usuário pediu
-
-Se {{HAS_TEXT}} = NÃO:
-- Não adicione textos, palavras ou frases (usuário não pediu).
-
-OBRIGATÓRIO:
-- Fundo 100% transparente (PNG com canal alfa)
-- Sem mockups, modelos ou marcas d'água
-- Qualidade profissional de impressão
-- Proporção adequada para camiseta`;
+TEXTO: {{HAS_TEXT}} → SIM: texto em estilo geek/neon/pixel art, exatamente o que o usuário pediu; NÃO: não adicionar texto.
+OBRIGATÓRIO: Fundo 100% transparente (PNG), sem mockups/marcas d'água, qualidade profissional, proporção para camiseta.`;
 
       const activeTemplate = await prisma.promptTemplate.findFirst({
         where: { isActive: true },

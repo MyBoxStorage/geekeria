@@ -57,7 +57,7 @@ async function main() {
     },
     {
       id: '5',
-      name: 'Boné Americano - Escudo Patriota',
+      name: 'Boné Americano - Escudo Geek',
       description: 'Boné estilo trucker com escudo bordado',
       price: 69.90,
       image: '/products/bone-americano.jpg',

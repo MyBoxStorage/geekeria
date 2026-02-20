@@ -18,7 +18,7 @@ import { JsonLd } from '@/components/JsonLd';
 
 export default function HomePage() {
   useSEO({
-    title: 'BRAVOS BRASIL - Vista Seu Patriotismo',
+    title: 'GEEKERIA - Seu universo na estampa',
     description: 'Roupas patrióticas brasileiras com identidade nacional, fé e tradição. Camisetas premium com estampas exclusivas. Frete grátis acima de R$199.',
     canonical: '/',
   });
@@ -31,12 +31,12 @@ export default function HomePage() {
           <JsonLd data={{
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "BRAVOS BRASIL",
+            "name": "GEEKERIA",
             "url": "https://bravosbrasil.com.br",
             "logo": "https://bravosbrasil.com.br/og-image.jpg",
             "taxID": "65.125.279/0001-85",
             "sameAs": [
-              "https://www.instagram.com/bravosbrasilco/"
+              "https://www.instagram.com/geekeria/"
             ],
             "contactPoint": {
               "@type": "ContactPoint",
@@ -49,7 +49,7 @@ export default function HomePage() {
           <JsonLd data={{
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "name": "BRAVOS BRASIL",
+            "name": "GEEKERIA",
             "url": "https://bravosbrasil.com.br",
             "potentialAction": {
               "@type": "SearchAction",

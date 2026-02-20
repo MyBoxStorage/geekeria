@@ -17,10 +17,10 @@ export const ALL_SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'] as const;
 const LEGACY_COLOR_HEX: Record<string, string> = {
   preto: '#000000',
   branco: '#FFFFFF',
-  verde: '#00843D',
-  azul: '#002776',
+  verde: '#7C3AED',
+  azul: '#2563EB',
   cinza: '#666666',
-  amarelo: '#FFCC29',
+  amarelo: '#F59E0B',
   vermelho: '#DC2626',
   rosa: '#EC4899',
   roxo: '#7C3AED',

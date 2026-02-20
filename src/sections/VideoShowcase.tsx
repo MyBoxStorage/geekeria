@@ -16,7 +16,7 @@ const videos = [
     id: 2,
     thumbnail: '/products/bone-americano.jpg',
     title: 'Boné Americano',
-    description: 'Proteção solar com atitude patriota',
+    description: 'Estilo geek para qualquer ocasião',
   },
   {
     id: 3,
@@ -77,7 +77,7 @@ export function VideoShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="py-20 bg-gradient-to-br from-[#002776] via-[#001F5C] to-[#00843D] overflow-hidden"
+      className="py-20 bg-gradient-to-br from-[#2563EB] via-[#1E40AF] to-[#7C3AED] overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <div className="text-center">
@@ -114,7 +114,7 @@ export function VideoShowcase() {
 
               {/* Play Button */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FFCC29]">
+                <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#F59E0B]">
                   <Play className="w-8 h-8 text-white ml-1" />
                 </div>
               </div>

@@ -68,17 +68,10 @@ export function Header() {
           <Link to="/" className="flex items-center gap-2">
             <span
               className={`font-display text-2xl md:text-3xl tracking-wider transition-colors ${
-                isScrolled ? 'text-[#00843D]' : 'text-white'
+                isScrolled ? 'text-[#7C3AED]' : 'text-white'
               }`}
             >
-              BRAVOS
-            </span>
-            <span
-              className={`font-display text-2xl md:text-3xl tracking-wider transition-colors ${
-                isScrolled ? 'text-[#002776]' : 'text-[#FFCC29]'
-              }`}
-            >
-              BRASIL
+              GEEKERIA
             </span>
           </Link>
 
@@ -89,11 +82,11 @@ export function Header() {
                 key={link.name}
                 to={link.href}
                 className={`font-body text-sm font-medium tracking-wider relative group transition-colors ${
-                  isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'
+                  isScrolled ? 'text-gray-800 hover:text-[#7C3AED]' : 'text-white hover:text-[#F59E0B]'
                 }`}
               >
                 {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FFCC29] transition-all duration-300 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#F59E0B] transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </nav>
@@ -105,7 +98,7 @@ export function Header() {
               <div className="flex items-center gap-2 sm:gap-4">
                 <Link
                   to="/minha-conta"
-                  className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#00843D]' : 'text-white hover:text-[#FFCC29]'}`}
+                  className={`text-sm hidden sm:block hover:underline ${isScrolled ? 'text-gray-800 hover:text-[#7C3AED]' : 'text-white hover:text-[#F59E0B]'}`}
                 >
                   Olá, {user.name || user.email.split('@')[0]}
                   <br />
@@ -148,7 +141,7 @@ export function Header() {
                 >
                   <ShoppingCart className="w-5 h-5" />
                   {totalItems > 0 && (
-                    <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-[#FFCC29] text-[#002776] text-xs font-bold animate-pulse-slow">
+                    <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-[#F59E0B] text-[#2563EB] text-xs font-bold animate-pulse-slow">
                       {totalItems}
                     </Badge>
                   )}
@@ -156,18 +149,18 @@ export function Header() {
               </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md flex flex-col">
                 <SheetHeader>
-                  <SheetTitle className="font-display text-2xl text-[#00843D]">
+                  <SheetTitle className="font-display text-2xl text-[#7C3AED]">
                     SEU CARRINHO
                   </SheetTitle>
                 </SheetHeader>
-                
+
                 <div className="flex-1 overflow-auto py-4">
                   {cart.items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 px-4 flex-1">
                       <div className="w-20 h-20 mb-5 bg-gray-100 rounded-full flex items-center justify-center">
                         <ShoppingBag className="w-10 h-10 text-gray-300" />
                       </div>
-                      <h3 className="font-display text-xl text-[#002776] mb-2">
+                      <h3 className="font-display text-xl text-[#2563EB] mb-2">
                         SEU CARRINHO ESTÁ VAZIO
                       </h3>
                       <p className="font-body text-sm text-gray-500 text-center mb-6">
@@ -178,7 +171,7 @@ export function Header() {
                         onClick={() => setIsCartOpen(false)}
                       >
                         <Button
-                          className="bg-[#00843D] hover:bg-[#006633] text-white font-display px-8 py-5"
+                          className="bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display px-8 py-5"
                           size="lg"
                         >
                           VER CATÁLOGO
@@ -204,7 +197,7 @@ export function Header() {
                             <p className="text-xs text-gray-500 mt-1">
                               Tam: {item.size} | Cor: {item.color}
                             </p>
-                            <p className="font-display text-lg text-[#00843D] mt-1">
+                            <p className="font-display text-lg text-[#7C3AED] mt-1">
                               {formatPrice(item.product.price)}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
@@ -254,7 +247,7 @@ export function Header() {
                     {/* Desconto badge */}
                     {totalItems >= 3 && (
                       <div className="text-center">
-                        <span className="inline-flex items-center gap-1.5 bg-[#00843D]/10 text-[#00843D] rounded-full px-3 py-1.5 text-xs font-medium font-body">
+                        <span className="inline-flex items-center gap-1.5 bg-[#7C3AED]/10 text-[#7C3AED] rounded-full px-3 py-1.5 text-xs font-medium font-body">
                           Você ganhou {totalItems >= 5 ? '15%' : totalItems >= 4 ? '10%' : '5%'} de desconto!
                         </span>
                       </div>
@@ -262,7 +255,7 @@ export function Header() {
 
                     {/* Resumo do pedido */}
                     <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                      <h3 className="font-display text-sm text-[#002776] tracking-wider mb-3">
+                      <h3 className="font-display text-sm text-[#2563EB] tracking-wider mb-3">
                         RESUMO DO PEDIDO
                       </h3>
                       <div className="space-y-2 text-sm">
@@ -275,7 +268,7 @@ export function Header() {
                           </span>
                         </div>
                         {cart.discount > 0 && (
-                          <div className="flex justify-between text-[#00843D]">
+                          <div className="flex justify-between text-[#7C3AED]">
                             <span className="font-body">Desconto</span>
                             <span className="font-medium font-body">
                               -{formatPrice(cart.discount)}
@@ -290,10 +283,10 @@ export function Header() {
                         </div>
                         <Separator className="my-1" />
                         <div className="flex justify-between items-baseline">
-                          <span className="font-display text-base text-[#002776]">
+                          <span className="font-display text-base text-[#2563EB]">
                             TOTAL ESTIMADO
                           </span>
-                          <span className="font-display text-xl text-[#00843D]">
+                          <span className="font-display text-xl text-[#7C3AED]">
                             {formatPrice(cart.total)}
                           </span>
                         </div>
@@ -306,7 +299,7 @@ export function Header() {
                     <TrustBadges variant="cart" />
 
                     <Button
-                      className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
+                      className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
                       onClick={() => {
                         setIsCartOpen(false);
                         setIsCheckoutOpen(true);
@@ -341,7 +334,7 @@ export function Header() {
                     to="/minha-conta"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`font-body text-sm font-medium tracking-wider py-2 transition-colors font-semibold ${
-                      isScrolled ? 'text-[#00843D]' : 'text-[#FFCC29]'
+                      isScrolled ? 'text-[#7C3AED]' : 'text-[#F59E0B]'
                     }`}
                   >
                     Minha Conta

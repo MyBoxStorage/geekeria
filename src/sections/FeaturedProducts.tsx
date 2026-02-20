@@ -67,10 +67,10 @@ function FeaturedCard({ product, onClick }: { product: Product; onClick: () => v
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && (
-            <Badge className="bg-[#00843D] text-white font-body text-xs">NOVO</Badge>
+            <Badge className="bg-[#7C3AED] text-white font-body text-xs">NOVO</Badge>
           )}
           {product.isBestseller && (
-            <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
+            <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
               <TrendingUp className="w-3 h-3 mr-1" />
               MAIS VENDIDO
             </Badge>
@@ -79,7 +79,7 @@ function FeaturedCard({ product, onClick }: { product: Product; onClick: () => v
         {/* Quick Add Button */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <Button
-            className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
+            className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
             onClick={(e) => {
               e.stopPropagation();
               onClick();
@@ -91,11 +91,11 @@ function FeaturedCard({ product, onClick }: { product: Product; onClick: () => v
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
+        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
           {product.name}
         </h3>
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-xl text-[#00843D]">
+          <span className="font-display text-xl text-[#7C3AED]">
             {formatPrice(product.price)}
           </span>
         </div>
@@ -140,7 +140,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#00843D]">
+          <DialogTitle className="font-display text-2xl text-[#7C3AED]">
             {product.name}
           </DialogTitle>
         </DialogHeader>
@@ -153,7 +153,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
           />
           
           <div className="space-y-4">
-            <p className="font-display text-3xl text-[#00843D]">
+            <p className="font-display text-3xl text-[#7C3AED]">
               {formatPrice(product.price)}
             </p>
             
@@ -190,7 +190,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                             onClick={() => { setDialogGender('masculino'); setSelectedSize(''); }}
                             className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
                               dialogGender === 'masculino'
-                                ? 'bg-[#00843D] text-white border-[#00843D]'
+                                ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
                                 : 'border-gray-300 text-gray-500 hover:bg-gray-100'
                             }`}
                           >
@@ -203,7 +203,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                             onClick={() => { setDialogGender('feminino'); setSelectedSize(''); }}
                             className={`text-xs px-3 py-1 rounded-full border transition-colors font-body ${
                               dialogGender === 'feminino'
-                                ? 'bg-[#00843D] text-white border-[#00843D]'
+                                ? 'bg-[#7C3AED] text-white border-[#7C3AED]'
                                 : 'border-gray-300 text-gray-500 hover:bg-gray-100'
                             }`}
                           >
@@ -220,7 +220,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                           onClick={() => setSelectedSize(size)}
                           className={`flex items-center justify-center w-10 h-10 border-2 rounded-md transition-colors font-body text-sm ${
                             selectedSize === size
-                              ? 'border-[#00843D] bg-[#00843D] text-white'
+                              ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
                               : 'hover:bg-gray-100 border-gray-200 cursor-pointer'
                           }`}
                         >
@@ -245,7 +245,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                         onClick={() => setSelectedColor(co.id)}
                         className={`flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer transition-colors font-body capitalize text-sm ${
                           selectedColor === co.id
-                            ? 'border-[#00843D] bg-[#00843D]/10'
+                            ? 'border-[#7C3AED] bg-[#7C3AED]/10'
                             : 'border-gray-200 hover:bg-gray-100'
                         }`}
                       >
@@ -264,7 +264,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
             
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
+              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               ADICIONAR AO CARRINHO
@@ -349,15 +349,15 @@ export function FeaturedProducts() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-[#FFCC29]/20 text-[#002776] px-4 py-2 rounded-full font-body text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 bg-[#F59E0B]/20 text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
             COMPRE 3+ E GANHE ATÉ 15% OFF
           </div>
-          <h2 className="font-display text-5xl md:text-6xl text-[#00843D] mb-4">
-            COLEÇÃO PATRIOTA
+          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
+            COLEÇÃO GEEKERIA
           </h2>
           <p className="font-body text-lg text-gray-600 max-w-2xl mx-auto">
-            Designs exclusivos que celebram a brasilidade. Cada peça é uma declaração de amor ao nosso país.
+            Estampas exclusivas do universo geek que você ama. Cada peça é uma declaração de quem você é.
           </p>
         </div>
 
@@ -394,7 +394,7 @@ export function FeaturedProducts() {
           <Button
             asChild
             size="lg"
-            className="bg-[#002776] hover:bg-[#001F5C] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
+            className="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105"
           >
             <Link to="/catalogo">
               {allProducts.length > 0

@@ -1,4 +1,4 @@
-# Fly.io Configuration - BRAVOS BRASIL Backend
+# Fly.io Configuration - GEEKERIA Backend
 # Para deploy via Git: use fly.toml na RAIZ (config path = "fly.toml")
 # https://fly.io/docs/reference/configuration/
 

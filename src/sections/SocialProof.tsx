@@ -107,14 +107,14 @@ export function SocialProof() {
   return (
     <section
       ref={sectionRef}
-      className="relative bg-gradient-to-r from-[#00843D] via-[#006633] to-[#002776] py-12 overflow-hidden"
+      className="relative bg-gradient-to-r from-[#7C3AED] via-[#5B21B6] to-[#2563EB] py-12 overflow-hidden"
     >
       {/* Stats Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <stat.icon className="w-10 h-10 text-[#FFCC29] mx-auto mb-3" />
+              <stat.icon className="w-10 h-10 text-[#F59E0B] mx-auto mb-3" />
               <div className="font-display text-4xl md:text-5xl text-white mb-1">
                 {stat.textValue ? (
                   <span className="font-display text-2xl md:text-3xl text-white">{stat.textValue}</span>
@@ -130,8 +130,8 @@ export function SocialProof() {
 
       {/* Marquee */}
       <div className="relative border-t border-white/20 pt-6">
-        <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#00843D] to-transparent z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#002776] to-transparent z-10" />
+        <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#7C3AED] to-transparent z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#2563EB] to-transparent z-10" />
         
         <div ref={marqueeRef} className="overflow-hidden">
           <div className="animate-marquee flex whitespace-nowrap">
@@ -140,7 +140,7 @@ export function SocialProof() {
                 key={index}
                 className="font-display text-lg md:text-xl text-white/70 mx-8 flex items-center gap-3"
               >
-                <span className="w-2 h-2 bg-[#FFCC29] rounded-full" />
+                <span className="w-2 h-2 bg-[#F59E0B] rounded-full" />
                 {item}
               </span>
             ))}

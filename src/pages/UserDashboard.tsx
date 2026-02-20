@@ -135,7 +135,7 @@ function GenerationsGrid({ generations, loading, error, onRefresh }: {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#00843D]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
         <span className="ml-2 text-gray-600">Carregando estampas...</span>
       </div>
     );
@@ -240,7 +240,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[#00843D]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#7C3AED]" />
         <span className="ml-2 text-gray-600">Carregando pedidos...</span>
       </div>
     );
@@ -358,7 +358,7 @@ function OrdersList({ orders, loading, error, onRefresh }: {
 // ─── Main Dashboard ───────────────────────────────────────────────
 
 export default function UserDashboard() {
-  useSEO({ title: 'Minha Conta | BRAVOS BRASIL', description: '', noindex: true });
+  useSEO({ title: 'Minha Conta | GEEKERIA', description: '', noindex: true });
 
   const { user, isLoading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
@@ -392,7 +392,7 @@ export default function UserDashboard() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00843D]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
       </div>
     );
   }
@@ -426,7 +426,7 @@ export default function UserDashboard() {
                 Minha Conta
               </h1>
               <p className="text-gray-600 mt-1">
-                Olá, <span className="font-semibold text-[#00843D]">{user.name || user.email}</span>
+                Olá, <span className="font-semibold text-[#7C3AED]">{user.name || user.email}</span>
               </p>
             </div>
             <Link to="/">
@@ -468,12 +468,12 @@ export default function UserDashboard() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <CreditCard className="w-5 h-5 text-[#00843D]" />
+                    <CreditCard className="w-5 h-5 text-[#7C3AED]" />
                     Créditos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-4xl font-bold text-[#00843D]">{user.credits || 0}</p>
+                  <p className="text-4xl font-bold text-[#7C3AED]">{user.credits || 0}</p>
                   <p className="text-sm text-gray-500 mt-1">disponíveis para gerar estampas</p>
                   <Link to="/">
                     <Button className="w-full mt-3" variant="outline" size="sm">

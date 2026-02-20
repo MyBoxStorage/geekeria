@@ -22,12 +22,9 @@ const supportLinks = [
   { name: 'Rastreamento de pedido', href: '/order', isRoute: true },
 ];
 
-/* Redes sociais ativas (demais serão adicionadas quando tiverem URL real)
-   TODO: Facebook → https://facebook.com/bravosbrasil
-   TODO: YouTube → adicionar URL real
-   TODO: Twitter/X → adicionar URL real */
+/* Redes sociais ativas (demais serão adicionadas quando tiverem URL real) */
 const socialLinks = [
-  { icon: Instagram, href: 'https://www.instagram.com/bravosbrasilco/', label: 'Instagram' },
+  { icon: Instagram, href: 'https://www.instagram.com/geekeria/', label: 'Instagram' },
 ];
 
 const paymentMethods = [
@@ -84,13 +81,12 @@ export function Footer() {
           {/* Logo & Social */}
           <div className="footer-column">
             <div className="mb-6">
-              <span className="font-display text-3xl text-[#00843D]">BRAVOS</span>
-              <span className="font-display text-3xl text-[#FFCC29]"> BRASIL</span>
+              <span className="font-display text-3xl text-[#7C3AED]">GEEKERIA</span>
             </div>
             <p className="font-body text-gray-400 mb-6">
-              Vista seu patriotismo. Roupas e acessórios que celebram a tradição brasileira.
+              Seu universo na estampa. Camisetas geek para quem cresceu amando animes, games e cultura pop.
             </p>
-            
+
             {/* Social Links */}
             <div className="flex gap-4">
               {socialLinks.map((social) => (
@@ -98,13 +94,13 @@ export function Footer() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-[#00843D] transition-colors"
+                  className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-[#7C3AED] transition-colors"
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
             </div>
-            
+
             {/* ADICIONAR: Links das redes sociais */}
           </div>
 
@@ -117,7 +113,7 @@ export function Footer() {
                   {'isRoute' in link && link.isRoute ? (
                     <Link
                       to={link.href}
-                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                      className="font-body text-gray-400 hover:text-[#F59E0B] transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -128,7 +124,7 @@ export function Footer() {
                         e.preventDefault();
                         scrollToSection(link.href);
                       }}
-                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                      className="font-body text-gray-400 hover:text-[#F59E0B] transition-colors"
                     >
                       {link.name}
                     </a>
@@ -147,14 +143,14 @@ export function Footer() {
                   {'isRoute' in link && link.isRoute ? (
                     <Link
                       to={link.href}
-                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                      className="font-body text-gray-400 hover:text-[#F59E0B] transition-colors"
                     >
                       {link.name}
                     </Link>
                   ) : (
                     <a
                       href={link.href}
-                      className="font-body text-gray-400 hover:text-[#FFCC29] transition-colors"
+                      className="font-body text-gray-400 hover:text-[#F59E0B] transition-colors"
                     >
                       {link.name}
                     </a>
@@ -177,11 +173,11 @@ export function Footer() {
                 </div>
               ))}
             </div>
-            
+
             <p className="font-body text-sm text-gray-400 mb-4">
               Parcele em até 12x sem juros
             </p>
-            
+
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-gray-400">
                 <Shield className="w-5 h-5" />
@@ -199,10 +195,10 @@ export function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="font-body text-sm text-gray-500">
-              © 2025 BRAVOS BRASIL. Todos os direitos reservados.
+              © 2025 GEEKERIA. Todos os direitos reservados.
             </p>
             <p className="font-body text-sm text-gray-500">
-              CNPJ: 65.125.279/0001-85
+              CNPJ: [A DEFINIR]
             </p>
           </div>
         </div>

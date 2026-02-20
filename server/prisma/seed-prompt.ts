@@ -27,7 +27,7 @@ IMPORTANTE:
 
 ELEMENTOS BRASILEIROS (sutis):
 - Bandeira do Brasil desfocada ao fundo
-- Respingos de tinta verde (#00843D) e amarelo (#FFCC29)
+- Respingos de tinta verde (#7C3AED) e amarelo (#F59E0B)
 - Efeitos de luz dourada
 - Elementos decorativos discretos
 

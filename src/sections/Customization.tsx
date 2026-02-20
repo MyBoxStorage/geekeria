@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const features = [
   'Sua foto favorita',
-  'Tema patriótico de sua escolha',
+  'Personagem ou universo favorito',
   'Frase personalizada',
   'Design sob medida',
 ];
@@ -67,7 +67,7 @@ export function Customization() {
   }, []);
 
   const openWhatsApp = () => {
-    const message = encodeURIComponent('Olá! Vim do site BRAVOS BRASIL e quero personalizar uma peça.');
+    const message = encodeURIComponent('Olá! Vim do site GEEKERIA e quero personalizar uma peça.');
     window.open(`https://wa.me/5524981313689?text=${message}`, '_blank');
   };
 
@@ -87,30 +87,30 @@ export function Customization() {
                 alt="Personalização"
                 className="w-full max-w-md h-auto"
               />
-              
+
               {/* Decorative elements */}
-              <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#FFCC29] rounded-full opacity-20 animate-pulse" />
-              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#00843D] rounded-full opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#F59E0B] rounded-full opacity-20 animate-pulse" />
+              <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-[#7C3AED] rounded-full opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
           </div>
 
           {/* Content */}
           <div ref={contentRef} className="space-y-6">
-            <h2 className="font-display text-5xl md:text-6xl text-[#00843D]">
+            <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED]">
               CRIE SUA ESTAMPA EXCLUSIVA
             </h2>
-            
+
             <p className="font-body text-lg text-gray-600">
               Quer algo único? Personalizamos sua peça com:
             </p>
-            
+
             <ul className="space-y-3">
               {features.map((feature, index) => (
                 <li
                   key={index}
                   className="flex items-center gap-3 font-body text-gray-700"
                 >
-                  <span className="w-6 h-6 rounded-full bg-[#00843D] flex items-center justify-center flex-shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-[#7C3AED] flex items-center justify-center flex-shrink-0">
                     <Check className="w-4 h-4 text-white" />
                   </span>
                   {feature}
@@ -125,7 +125,7 @@ export function Customization() {
                   Orçamento em minutos!
                 </span>
               </div>
-              
+
               <Button
                 size="lg"
                 onClick={openWhatsApp}
@@ -134,7 +134,7 @@ export function Customization() {
                 <MessageCircle className="w-5 h-5 mr-2" />
                 CHAMAR NO WHATSAPP
               </Button>
-              
+
               <p className="text-sm text-gray-500 mt-3 font-body">
                 Atendimento de segunda a sexta, 9h às 18h
               </p>

@@ -1,4 +1,4 @@
-# Dockerfile for Fly.io - BRAVOS BRASIL Backend
+# Dockerfile for Fly.io - GEEKERIA Backend
 # Build context should be from project root
 # Schema outputs to ../server/node_modules/.prisma/client — layout must match
 FROM node:20-alpine AS base

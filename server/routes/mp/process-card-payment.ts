@@ -133,8 +133,8 @@ export async function processCardPayment(req: Request, res: Response) {
         }),
       },
       external_reference,
-      description: `Pedido BRAVOS BRASIL - ${external_reference}`,
-      statement_descriptor: 'BRAVOS BRASIL',
+      description: `Pedido GEEKERIA - ${external_reference}`,
+      statement_descriptor: 'GEEKERIA',
       ...(device_id && { device_id }),
       notification_url: process.env.BACKEND_URL
         ? `${process.env.BACKEND_URL}/api/mp/webhooks`
@@ -143,7 +143,7 @@ export async function processCardPayment(req: Request, res: Response) {
         items: order.items.map((item) => ({
           id: item.productId,
           title: item.product?.name || `Produto ${item.productId}`,
-          description: item.product?.description || item.product?.name || 'Camiseta patriótica Bravos Brasil',
+          description: item.product?.description || item.product?.name || 'Camiseta geek GEEKERIA',
           category_id: 'fashion',
           quantity: item.quantity,
           unit_price: item.unitPrice,

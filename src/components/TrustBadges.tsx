@@ -5,22 +5,22 @@ const badges = [
     icon: Lock,
     title: 'PAGAMENTO SEGURO',
     subtitle: 'via Mercado Pago',
-    color: 'text-[#00843D]',
-    bg: 'bg-[#00843D]/10',
+    color: 'text-[#7C3AED]',
+    bg: 'bg-[#7C3AED]/10',
   },
   {
     icon: RefreshCcw,
     title: 'TROCA FÁCIL',
     subtitle: 'em até 7 dias',
-    color: 'text-[#002776]',
-    bg: 'bg-[#002776]/10',
+    color: 'text-[#2563EB]',
+    bg: 'bg-[#2563EB]/10',
   },
   {
     icon: Truck,
     title: 'ENVIO RASTREADO',
     subtitle: 'para todo Brasil',
-    color: 'text-[#002776]',
-    bg: 'bg-[#002776]/10',
+    color: 'text-[#2563EB]',
+    bg: 'bg-[#2563EB]/10',
   },
 ] as const;
 

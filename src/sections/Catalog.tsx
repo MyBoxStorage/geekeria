@@ -54,7 +54,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#00843D]">
+          <DialogTitle className="font-display text-2xl text-[#7C3AED]">
             {product.name}
           </DialogTitle>
         </DialogHeader>
@@ -67,7 +67,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
           />
           
           <div className="space-y-4">
-            <p className="font-display text-3xl text-[#00843D]">
+            <p className="font-display text-3xl text-[#7C3AED]">
               {formatPrice(product.price)}
             </p>
             
@@ -91,7 +91,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                     />
                     <Label
                       htmlFor={`size-${size}`}
-                      className="flex items-center justify-center w-10 h-10 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D] peer-data-[state=checked]:text-white hover:bg-gray-100 transition-colors font-body"
+                      className="flex items-center justify-center w-10 h-10 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED] peer-data-[state=checked]:text-white hover:bg-gray-100 transition-colors font-body"
                     >
                       {size}
                     </Label>
@@ -116,7 +116,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                     />
                     <Label
                       htmlFor={`color-${color}`}
-                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D]/10 hover:bg-gray-100 transition-colors font-body capitalize"
+                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED]/10 hover:bg-gray-100 transition-colors font-body capitalize"
                     >
                       <span
                         className="w-4 h-4 rounded-full border"
@@ -127,12 +127,12 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
                               : color === 'preto'
                               ? '#000'
                               : color === 'verde'
-                              ? '#00843D'
+                              ? '#7C3AED'
                               : color === 'azul'
-                              ? '#002776'
+                              ? '#2563EB'
                               : color === 'cinza'
                               ? '#666'
-                              : '#FFCC29',
+                              : '#F59E0B',
                         }}
                       />
                       {color}
@@ -144,7 +144,7 @@ function ProductDialog({ product, isOpen, onClose }: ProductDialogProps) {
             
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
+              className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               ADICIONAR AO CARRINHO
@@ -210,7 +210,7 @@ export function Catalog() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="mb-8">
-          <h2 className="font-display text-5xl md:text-6xl text-[#00843D] mb-2">
+          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-2">
             EXPLORE TODA A COLEÇÃO
           </h2>
           <p className="font-body text-lg text-gray-600">
@@ -229,7 +229,7 @@ export function Catalog() {
               <Filter className="w-4 h-4" />
               Filtros
               {hasActiveFilters && (
-                <span className="w-2 h-2 bg-[#00843D] rounded-full" />
+                <span className="w-2 h-2 bg-[#7C3AED] rounded-full" />
               )}
             </Button>
             
@@ -251,7 +251,7 @@ export function Catalog() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="font-body text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#00843D]"
+              className="font-body text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]"
             >
               <option value="bestsellers">Mais vendidos</option>
               <option value="price-asc">Menor preço</option>
@@ -299,8 +299,8 @@ export function Catalog() {
                     onClick={() => toggleSize(size as any)}
                     className={`w-10 h-10 rounded-md border-2 font-body text-sm transition-colors ${
                       filters.sizes.includes(size as any)
-                        ? 'border-[#00843D] bg-[#00843D] text-white'
-                        : 'border-gray-200 hover:border-[#00843D]'
+                        ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
+                        : 'border-gray-200 hover:border-[#7C3AED]'
                     }`}
                   >
                     {size}
@@ -377,13 +377,13 @@ export function Catalog() {
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-2">
                       {product.isNew && (
-                        <Badge className="bg-[#00843D] text-white font-body text-xs">
+                        <Badge className="bg-[#7C3AED] text-white font-body text-xs">
                           <Sparkles className="w-3 h-3 mr-1" />
                           NOVO
                         </Badge>
                       )}
                       {product.isBestseller && (
-                        <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
+                        <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
                           <TrendingUp className="w-3 h-3 mr-1" />
                           MAIS VENDIDO
                         </Badge>
@@ -393,7 +393,7 @@ export function Catalog() {
                     {/* Quick Add */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       <Button
-                        className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
+                        className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedProduct(product);
@@ -407,11 +407,11 @@ export function Catalog() {
 
                   {/* Content */}
                   <div className="p-4">
-                    <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
+                    <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
                       {product.name}
                     </h3>
                     
-                    <span className="font-display text-xl text-[#00843D]">
+                    <span className="font-display text-xl text-[#7C3AED]">
                       {formatPrice(product.price)}
                     </span>
                   </div>

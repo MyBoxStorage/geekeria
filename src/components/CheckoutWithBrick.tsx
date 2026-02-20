@@ -704,18 +704,18 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl text-[#00843D]">
+          <DialogTitle className="font-display text-2xl text-[#7C3AED]">
             FINALIZAR COMPRA
           </DialogTitle>
           <DialogDescription className="flex items-center gap-2 mt-1 text-sm">
             <span
-              className={`font-display tracking-wide ${!showPaymentBrick ? 'text-[#00843D]' : 'text-gray-400'}`}
+              className={`font-display tracking-wide ${!showPaymentBrick ? 'text-[#7C3AED]' : 'text-gray-400'}`}
             >
               ETAPA 1 · Seus dados
             </span>
             <span className="text-gray-300">→</span>
             <span
-              className={`font-display tracking-wide ${showPaymentBrick ? 'text-[#00843D]' : 'text-gray-400'}`}
+              className={`font-display tracking-wide ${showPaymentBrick ? 'text-[#7C3AED]' : 'text-gray-400'}`}
             >
               ETAPA 2 · Pagamento
             </span>
@@ -767,7 +767,7 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                   <Button
                     type="button"
                     onClick={handleContinuePayment}
-                    className="flex-1 bg-[#00843D] hover:bg-[#006633] text-white font-display"
+                    className="flex-1 bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
                   >
                     CONTINUAR PAGAMENTO
                   </Button>
@@ -934,7 +934,7 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
                   {shippingCost === 0 ? 'Grátis' : formatPrice(shippingCost)}
                 </span>
               </div>
-              <div className="flex justify-between font-display text-xl text-[#00843D] pt-2 border-t">
+              <div className="flex justify-between font-display text-xl text-[#7C3AED] pt-2 border-t">
                 <span>TOTAL</span>
                 <span>
                   {formatPrice(
@@ -961,7 +961,7 @@ export function CheckoutWithBrick({ isOpen, onClose }: CheckoutWithBrickProps) {
               <Button
                 type="submit"
                 disabled={isCreatingOrder}
-                className="flex-1 bg-[#00843D] hover:bg-[#006633] text-white font-display disabled:opacity-50"
+                className="flex-1 bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display disabled:opacity-50"
               >
                 {isCreatingOrder ? (
                   <>

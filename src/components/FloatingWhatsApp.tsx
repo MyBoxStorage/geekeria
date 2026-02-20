@@ -1,7 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 import { buildWhatsAppLink } from '@/utils/whatsapp';
 
-const WA_MESSAGE = 'Olá! Preciso de ajuda com minha compra na Bravos Brasil. Pode me orientar?';
+const WA_MESSAGE = 'Olá! Preciso de ajuda com minha compra na GEEKERIA. Pode me orientar?';
 
 export function FloatingWhatsApp() {
   return (

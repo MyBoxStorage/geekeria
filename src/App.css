@@ -15,23 +15,23 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00843D;
+  background: #7C3AED;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #006633;
+  background: #5B21B6;
 }
 
 /* Selection color */
 ::selection {
-  background: #FFCC29;
-  color: #002776;
+  background: #F59E0B;
+  color: #2563EB;
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid #00843D;
+  outline: 2px solid #7C3AED;
   outline-offset: 2px;
 }
 

@@ -18,7 +18,7 @@ interface Generation {
 }
 
 export function MinhasEstampasPage() {
-  useSEO({ title: 'Minhas Estampas | BRAVOS BRASIL', description: '', noindex: true });
+  useSEO({ title: 'Minhas Estampas | GEEKERIA', description: '', noindex: true });
 
   const { user, isLoading: authLoading } = useAuth();
   const [generations, setGenerations] = useState<Generation[]>([]);

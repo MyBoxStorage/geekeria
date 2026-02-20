@@ -26,13 +26,13 @@
     --radius: 0.5rem;
     
     /* Brand Colors */
-    --brasil-green: #00843D;
-    --brasil-yellow: #FFCC29;
-    --brasil-blue: #002776;
-    --brasil-dark-green: #006633;
-    --brasil-light-green: #00A44D;
-    --brasil-dark-yellow: #E6B800;
-    --brasil-dark-blue: #001F5C;
+    --geekeria-primary: #7C3AED;
+    --geekeria-accent: #F59E0B;
+    --geekeria-secondary: #2563EB;
+    --geekeria-primary-dark: #5B21B6;
+    --geekeria-primary-light: #8B5CF6;
+    --geekeria-accent-dark: #D97706;
+    --geekeria-secondary-dark: #1E40AF;
     --whatsapp-green: #25D366;
   }
 }
@@ -66,19 +66,19 @@
     font-family: 'Inter', sans-serif;
   }
   
-  .text-gradient-patriotic {
-    background: linear-gradient(135deg, var(--brasil-green) 0%, var(--brasil-yellow) 50%, var(--brasil-blue) 100%);
+  .text-gradient-geekeria {
+    background: linear-gradient(135deg, var(--geekeria-primary) 0%, var(--geekeria-accent) 50%, var(--geekeria-secondary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
-  .bg-gradient-patriotic {
-    background: linear-gradient(135deg, var(--brasil-green) 0%, var(--brasil-yellow) 50%, var(--brasil-blue) 100%);
+
+  .bg-gradient-geekeria {
+    background: linear-gradient(135deg, var(--geekeria-primary) 0%, var(--geekeria-accent) 50%, var(--geekeria-secondary) 100%);
   }
-  
+
   .bg-gradient-green-yellow {
-    background: linear-gradient(135deg, var(--brasil-green) 0%, var(--brasil-yellow) 100%);
+    background: linear-gradient(135deg, var(--geekeria-primary) 0%, var(--geekeria-accent) 100%);
   }
   
   .bg-gradient-dark {
@@ -172,16 +172,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--brasil-green);
+  background: var(--geekeria-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--brasil-dark-green);
+  background: var(--geekeria-primary-dark);
 }
 
 /* Selection */
 ::selection {
-  background: var(--brasil-yellow);
-  color: var(--brasil-blue);
+  background: var(--geekeria-accent);
+  color: var(--geekeria-secondary);
 }

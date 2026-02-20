@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const COLORS = ['#00843D', '#FFD700', '#3B82F6', '#EF4444', '#8B5CF6'];
+const COLORS = ['#7C3AED', '#FFD700', '#3B82F6', '#EF4444', '#8B5CF6'];
 
 interface AdminOverviewChartsProps {
   salesByDay: Array<{ date: string; count: number; revenue: number }>;
@@ -68,7 +68,7 @@ export default function AdminOverviewCharts({
               yAxisId="right"
               type="monotone"
               dataKey="revenue"
-              stroke="#00843D"
+              stroke="#7C3AED"
               name="Receita (R$)"
             />
           </LineChart>
@@ -90,7 +90,7 @@ export default function AdminOverviewCharts({
               />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="totalSold" fill="#00843D" name="Vendidos" />
+              <Bar dataKey="totalSold" fill="#7C3AED" name="Vendidos" />
             </BarChart>
           </ResponsiveContainer>
         </div>

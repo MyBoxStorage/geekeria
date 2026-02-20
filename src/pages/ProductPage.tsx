@@ -106,7 +106,7 @@ function ProductNotFound() {
           O produto que você está procurando pode ter sido removido ou não está mais disponível.
         </p>
         <Link to="/catalogo">
-          <Button className="bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg px-8 py-6">
+          <Button className="bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg px-8 py-6">
             <ChevronLeft className="w-5 h-5 mr-2" />
             VOLTAR AO CATÁLOGO
           </Button>
@@ -236,7 +236,7 @@ function ProductLoader({ slug }: { slug: string }) {
 
   // SEO Meta Tags (uses product.metaTitle/metaDescription when available)
   useSEO({
-    title: product?.metaTitle || (product ? `${product.name} | BRAVOS BRASIL` : 'Carregando... | BRAVOS BRASIL'),
+    title: product?.metaTitle || (product ? `${product.name} | GEEKERIA` : 'Carregando... | GEEKERIA'),
     description: product?.metaDescription || product?.description || '',
     canonical: product ? `/produto/${product.slug ?? slug}` : undefined,
     ogImage: imageUrl || undefined,
@@ -325,7 +325,7 @@ function ProductLoader({ slug }: { slug: string }) {
           "sku": product.id,
           "brand": {
             "@type": "Brand",
-            "name": "BRAVOS BRASIL"
+            "name": "GEEKERIA"
           },
           "offers": {
             "@type": "Offer",
@@ -335,7 +335,7 @@ function ProductLoader({ slug }: { slug: string }) {
             "availability": "https://schema.org/InStock",
             "seller": {
               "@type": "Organization",
-              "name": "BRAVOS BRASIL"
+              "name": "GEEKERIA"
             }
           }
         }} />
@@ -385,13 +385,13 @@ function ProductLoader({ slug }: { slug: string }) {
               {/* Badges */}
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                 {product.isNew && (
-                  <Badge className="bg-[#00843D] text-white font-body text-xs">
+                  <Badge className="bg-[#7C3AED] text-white font-body text-xs">
                     <Sparkles className="w-3 h-3 mr-1" />
                     NOVO
                   </Badge>
                 )}
                 {product.isBestseller && (
-                  <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
+                  <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     MAIS VENDIDO
                   </Badge>
@@ -407,7 +407,7 @@ function ProductLoader({ slug }: { slug: string }) {
                   onClick={() => handleGenderToggle('masculino')}
                   className={`px-4 py-2 rounded-lg font-body text-sm transition-all ${
                     uiGender === 'masculino'
-                      ? 'bg-[#002776] text-white'
+                      ? 'bg-[#2563EB] text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -417,7 +417,7 @@ function ProductLoader({ slug }: { slug: string }) {
                   onClick={() => handleGenderToggle('feminino')}
                   className={`px-4 py-2 rounded-lg font-body text-sm transition-all ${
                     uiGender === 'feminino'
-                      ? 'bg-[#00843D] text-white'
+                      ? 'bg-[#7C3AED] text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -431,7 +431,7 @@ function ProductLoader({ slug }: { slug: string }) {
           <div className="space-y-6">
             {/* Title + Share */}
             <div className="flex items-start justify-between gap-4">
-              <h1 className="font-display text-4xl text-[#00843D]">
+              <h1 className="font-display text-4xl text-[#7C3AED]">
                 {product.name}
               </h1>
               <Button
@@ -447,7 +447,7 @@ function ProductLoader({ slug }: { slug: string }) {
 
             {/* Price */}
             <div>
-              <p className="font-display text-4xl text-[#00843D]">
+              <p className="font-display text-4xl text-[#7C3AED]">
                 {formatPrice(product.price)}
               </p>
               <p className="text-sm text-gray-500 font-body mt-1">
@@ -477,7 +477,7 @@ function ProductLoader({ slug }: { slug: string }) {
                     />
                     <Label
                       htmlFor={`pdp-color-${co.id}`}
-                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D]/10 hover:bg-gray-100 transition-colors font-body capitalize"
+                      className="flex items-center gap-2 px-3 py-2 border-2 rounded-md cursor-pointer peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED]/10 hover:bg-gray-100 transition-colors font-body capitalize"
                     >
                       {co.hex && (
                         <span
@@ -511,7 +511,7 @@ function ProductLoader({ slug }: { slug: string }) {
                 <button
                   type="button"
                   onClick={() => setShowSizeGuide(true)}
-                  className="flex items-center gap-1 text-xs text-[#00843D] hover:underline font-body"
+                  className="flex items-center gap-1 text-xs text-[#7C3AED] hover:underline font-body"
                 >
                   <Ruler className="w-3 h-3" />
                   Guia de tamanhos
@@ -539,7 +539,7 @@ function ProductLoader({ slug }: { slug: string }) {
                         className={`flex items-center justify-center w-12 h-12 border-2 rounded-md transition-colors font-body text-sm
                           ${disabled
                             ? 'opacity-30 cursor-not-allowed line-through'
-                            : 'cursor-pointer hover:bg-gray-100 peer-data-[state=checked]:border-[#00843D] peer-data-[state=checked]:bg-[#00843D] peer-data-[state=checked]:text-white'
+                            : 'cursor-pointer hover:bg-gray-100 peer-data-[state=checked]:border-[#7C3AED] peer-data-[state=checked]:bg-[#7C3AED] peer-data-[state=checked]:text-white'
                           }`}
                       >
                         {size}
@@ -559,7 +559,7 @@ function ProductLoader({ slug }: { slug: string }) {
             <Button
               onClick={handleAddToCart}
               disabled={!canAdd}
-              className="hidden md:flex w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="hidden md:flex w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
               ADICIONAR AO CARRINHO
@@ -576,7 +576,7 @@ function ProductLoader({ slug }: { slug: string }) {
         <Button
           onClick={handleAddToCart}
           disabled={!canAdd}
-          className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ShoppingCart className="w-5 h-5 mr-2" />
           COMPRAR &mdash; {formatPrice(product.price)}

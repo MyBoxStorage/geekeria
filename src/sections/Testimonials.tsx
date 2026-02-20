@@ -100,11 +100,11 @@ export function Testimonials() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="text-center mb-12">
-          <h2 className="font-display text-5xl md:text-6xl text-[#00843D] mb-4">
-            O QUE NOSSOS PATRIOTAS DIZEM
+          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
+            O QUE NOSSOS FÃOS DIZEM
           </h2>
           <p className="font-body text-lg text-gray-600">
-            A opinião de quem já vestiu o orgulho brasileiro
+            A opinião de quem já vestiu o que ama
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export function Testimonials() {
                 >
                   <div className="max-w-3xl mx-auto bg-white rounded-2xl p-8 md:p-12 shadow-xl relative">
                     {/* Quote Icon */}
-                    <Quote className="absolute top-6 left-6 w-12 h-12 text-[#FFCC29] opacity-50" />
+                    <Quote className="absolute top-6 left-6 w-12 h-12 text-[#F59E0B] opacity-50" />
                     
                     {/* Text */}
                     <p className="font-body text-lg md:text-xl text-gray-700 text-center mb-8 italic">
@@ -140,7 +140,7 @@ export function Testimonials() {
                     
                     {/* Author */}
                     <div className="text-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#00843D] to-[#002776] flex items-center justify-center text-white font-display text-2xl mx-auto mb-3">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#2563EB] flex items-center justify-center text-white font-display text-2xl mx-auto mb-3">
                         {testimonial.name.charAt(0)}
                       </div>
                       <h4 className="font-body font-semibold text-gray-900">
@@ -161,7 +161,7 @@ export function Testimonials() {
             variant="outline"
             size="icon"
             onClick={goToPrevious}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 rounded-full bg-white shadow-lg hover:bg-[#00843D] hover:text-white hidden md:flex"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-12 h-12 rounded-full bg-white shadow-lg hover:bg-[#7C3AED] hover:text-white hidden md:flex"
           >
             <ChevronLeft className="w-6 h-6" />
           </Button>
@@ -170,7 +170,7 @@ export function Testimonials() {
             variant="outline"
             size="icon"
             onClick={goToNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 rounded-full bg-white shadow-lg hover:bg-[#00843D] hover:text-white hidden md:flex"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-12 h-12 rounded-full bg-white shadow-lg hover:bg-[#7C3AED] hover:text-white hidden md:flex"
           >
             <ChevronRight className="w-6 h-6" />
           </Button>
@@ -183,7 +183,7 @@ export function Testimonials() {
                 onClick={() => goToSlide(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex
-                    ? 'bg-[#00843D] w-8'
+                    ? 'bg-[#7C3AED] w-8'
                     : 'bg-gray-300 hover:bg-gray-400'
                 }`}
               />

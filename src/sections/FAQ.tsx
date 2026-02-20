@@ -61,7 +61,7 @@ export function FAQ() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Title */}
         <div ref={titleRef} className="text-center mb-12">
-          <h2 className="font-display text-5xl md:text-6xl text-[#00843D] mb-4">
+          <h2 className="font-display text-5xl md:text-6xl text-[#7C3AED] mb-4">
             DÚVIDAS FREQUENTES
           </h2>
           <p className="font-body text-lg text-gray-600">
@@ -86,7 +86,7 @@ export function FAQ() {
                 <span
                   className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                     openIndex === index
-                      ? 'bg-[#00843D] text-white rotate-180'
+                      ? 'bg-[#7C3AED] text-white rotate-180'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >

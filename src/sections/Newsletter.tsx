@@ -116,11 +116,11 @@ export function Newsletter() {
     <>
       <section
         ref={sectionRef}
-        className="py-20 bg-gradient-to-br from-[#00843D] via-[#006633] to-[#002776]"
+        className="py-20 bg-gradient-to-br from-[#7C3AED] via-[#5B21B6] to-[#2563EB]"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={contentRef} className="text-center">
-            <div className="inline-flex items-center gap-2 bg-[#FFCC29] text-[#002776] px-4 py-2 rounded-full font-body text-sm font-bold mb-6">
+            <div className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-bold mb-6">
               <Gift className="w-4 h-4" />
               🎁 10% OFF NA PRIMEIRA COMPRA
             </div>
@@ -144,7 +144,7 @@ export function Newsletter() {
                   placeholder="Seu melhor e-mail"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-12 py-6 text-lg bg-white border-0 focus:ring-2 focus:ring-[#FFCC29]"
+                  className="pl-12 py-6 text-lg bg-white border-0 focus:ring-2 focus:ring-[#F59E0B]"
                 />
               </div>
               <Button
@@ -153,7 +153,7 @@ export function Newsletter() {
                 className={`py-6 px-8 font-display text-lg transition-all ${
                   isSubscribed
                     ? 'bg-green-500 text-white'
-                    : 'bg-[#FFCC29] text-[#002776] hover:bg-[#E6B800]'
+                    : 'bg-[#F59E0B] text-[#2563EB] hover:bg-[#D97706]'
                 }`}
               >
                 {isSubscribed ? (
@@ -180,29 +180,29 @@ export function Newsletter() {
       <Dialog open={showExitPopup} onOpenChange={setShowExitPopup}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-3xl text-[#00843D] text-center">
+            <DialogTitle className="font-display text-3xl text-[#7C3AED] text-center">
               GANHE 10% OFF
             </DialogTitle>
           </DialogHeader>
           
           <div className="text-center">
-            <div className="w-20 h-20 bg-[#FFCC29] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Gift className="w-10 h-10 text-[#002776]" />
+            <div className="w-20 h-20 bg-[#F59E0B] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Gift className="w-10 h-10 text-[#2563EB]" />
             </div>
 
             {exitCouponRevealed ? (
               <>
-                <div className="bg-gray-50 border-2 border-dashed border-[#00843D] rounded-xl p-6 mb-4">
+                <div className="bg-gray-50 border-2 border-dashed border-[#7C3AED] rounded-xl p-6 mb-4">
                   <p className="font-body text-xs text-gray-500 uppercase tracking-widest mb-2">Seu cupom exclusivo</p>
-                  <p className="font-display text-4xl text-[#00843D] tracking-[6px] mb-2">BEMVINDO10</p>
-                  <p className="font-body font-bold text-[#002776]">10% OFF na primeira compra</p>
+                  <p className="font-display text-4xl text-[#7C3AED] tracking-[6px] mb-2">BEMVINDO10</p>
+                  <p className="font-body font-bold text-[#2563EB]">10% OFF na primeira compra</p>
                 </div>
                 <p className="font-body text-xs text-gray-500 mb-4">
                   Válido para primeira compra. Não acumulável.
                 </p>
                 <Button
                   onClick={() => setShowExitPopup(false)}
-                  className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
+                  className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
                 >
                   COMEÇAR A COMPRAR
                 </Button>
@@ -227,7 +227,7 @@ export function Newsletter() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display text-lg py-6"
+                    className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display text-lg py-6"
                   >
                     {loading ? 'ENVIANDO...' : 'GANHAR DESCONTO'}
                   </Button>

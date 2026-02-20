@@ -100,7 +100,7 @@ export function PaymentBrick({
         unit_price: item.product.price,
       })),
       external_reference: externalReference,
-      statement_descriptor: 'BRAVOS BRASIL',
+      statement_descriptor: 'GEEKERIA',
       back_urls: {
         success: `${window.location.origin}/checkout/success`,
         failure: `${window.location.origin}/checkout/failure`,

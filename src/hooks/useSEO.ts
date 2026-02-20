@@ -10,7 +10,7 @@ interface SEOProps {
 }
 
 const DEFAULT_OG_IMAGE = 'https://bravosbrasil.com.br/og-image.jpg';
-const SITE_NAME = 'BRAVOS BRASIL';
+const SITE_NAME = 'GEEKERIA';
 const BASE_URL = 'https://bravosbrasil.com.br';
 
 export function useSEO({

@@ -92,7 +92,7 @@ export function Hero() {
       >
         <img
           src="/hero-bg.jpg"
-          alt="BRAVOS BRASIL"
+          alt="GEEKERIA"
           className="w-full h-full object-cover"
         />
         {/* Gradient Overlay */}
@@ -105,7 +105,7 @@ export function Hero() {
         {/* Badge */}
         <div
           ref={badgeRef}
-          className="inline-flex items-center gap-2 bg-[#FFCC29] text-[#002776] px-4 py-2 rounded-full font-body text-sm font-bold mb-8 animate-pulse-slow"
+          className="inline-flex items-center gap-2 bg-[#F59E0B] text-[#2563EB] px-4 py-2 rounded-full font-body text-sm font-bold mb-8 animate-pulse-slow"
         >
           <Sparkles className="w-4 h-4" />
           ESTAMPAS NOVAS TODA SEMANA
@@ -117,9 +117,9 @@ export function Hero() {
           className="font-display text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white leading-[0.9] mb-6"
           style={{ perspective: '1000px' }}
         >
-          <span className="title-line block">VISTA SEU</span>
-          <span className="title-line block text-gradient-patriotic">
-            PATRIOTISMO
+          <span className="title-line block">VISTA O QUE</span>
+          <span className="title-line block text-gradient-geekeria">
+            VOCÊ AMA
           </span>
         </h1>
 
@@ -128,8 +128,7 @@ export function Hero() {
           ref={subtitleRef}
           className="font-body text-lg sm:text-xl md:text-2xl text-white/90 max-w-xl mb-10"
         >
-          Camisetas e acessórios que celebram a tradição brasileira. Vista-se com
-          orgulho e mostre seu amor pelo Brasil.
+          Camisetas geek com as estampas que marcaram sua vida. Dragon Ball, Marvel, games e muito mais — para quem cresceu amando essa arte.
         </p>
 
         {/* CTAs */}
@@ -137,7 +136,7 @@ export function Hero() {
           <Button
             size="lg"
             onClick={() => scrollToSection('#featured')}
-            className="bg-gradient-green-yellow text-[#002776] hover:opacity-90 font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105 hover:shadow-xl"
+            className="bg-gradient-geekeria text-white hover:opacity-90 font-display text-lg px-8 py-6 rounded-full transition-all hover:scale-105 hover:shadow-xl"
           >
             VER COLEÇÃO COMPLETA
           </Button>
@@ -145,7 +144,7 @@ export function Hero() {
             size="lg"
             variant="outline"
             onClick={() => scrollToSection('#customization')}
-            className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#00843D] font-display text-lg px-8 py-6 rounded-full transition-all [&:not(:hover)]:bg-transparent"
+            className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#7C3AED] font-display text-lg px-8 py-6 rounded-full transition-all [&:not(:hover)]:bg-transparent"
           >
             PERSONALIZAR VIA WHATSAPP
           </Button>

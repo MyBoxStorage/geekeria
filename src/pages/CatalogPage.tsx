@@ -101,7 +101,7 @@ function FiltersContent({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-sm text-[#00843D] hover:text-[#006633] px-0"
+            className="text-sm text-[#7C3AED] hover:text-[#5B21B6] px-0"
           >
             Limpar tudo
           </Button>
@@ -122,7 +122,7 @@ function FiltersContent({
               <Checkbox
                 checked={filters.category === cat.id}
                 onCheckedChange={() => setCategory(cat.id as Category)}
-                className="border-gray-300 data-[state=checked]:bg-[#00843D] data-[state=checked]:border-[#00843D]"
+                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
               />
               <span className="font-body text-sm text-gray-700">
                 {cat.name} ({categoryCounts[cat.id] ?? 0})
@@ -156,9 +156,9 @@ function FiltersContent({
                 value={option.id}
                 checked={filters.gender === option.id}
                 onChange={() => setGender(option.id)}
-                className="accent-[#00843D]"
+                className="accent-[#7C3AED]"
               />
-              <span className="text-sm text-gray-700 group-hover:text-[#00843D] transition-colors font-body">
+              <span className="text-sm text-gray-700 group-hover:text-[#7C3AED] transition-colors font-body">
                 {option.label}
               </span>
             </label>
@@ -180,8 +180,8 @@ function FiltersContent({
               onClick={() => toggleSize(size as Size)}
               className={`w-12 h-12 rounded-lg border-2 font-display text-sm transition-all duration-200 ${
                 filters.sizes.includes(size as Size)
-                  ? 'border-[#00843D] bg-[#00843D] text-white'
-                  : 'border-gray-300 text-gray-700 hover:border-[#00843D]'
+                  ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
+                  : 'border-gray-300 text-gray-700 hover:border-[#7C3AED]'
               }`}
             >
               {size}
@@ -206,7 +206,7 @@ function FiltersContent({
               <Checkbox
                 checked={filters.colors.includes(color.id as Color)}
                 onCheckedChange={() => toggleColor(color.id as Color)}
-                className="border-gray-300 data-[state=checked]:bg-[#00843D] data-[state=checked]:border-[#00843D]"
+                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
               />
               <span
                 className="w-5 h-5 rounded-full border"
@@ -254,7 +254,7 @@ function FiltersContent({
                       filters.priceRange[1] === price.range[1]
                 }
                 onCheckedChange={() => setPriceRange(price.range)}
-                className="border-gray-300 data-[state=checked]:bg-[#00843D] data-[state=checked]:border-[#00843D]"
+                className="border-gray-300 data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
               />
               <span className="font-body text-sm text-gray-700">
                 {price.label}
@@ -363,13 +363,13 @@ function ProductCard({
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.isNew && (
-            <Badge className="bg-[#00843D] text-white font-body text-xs">
+            <Badge className="bg-[#7C3AED] text-white font-body text-xs">
               <Sparkles className="w-3 h-3 mr-1" />
               NOVO
             </Badge>
           )}
           {product.isBestseller && (
-            <Badge className="bg-[#FFCC29] text-[#002776] font-body text-xs">
+            <Badge className="bg-[#F59E0B] text-[#2563EB] font-body text-xs">
               <TrendingUp className="w-3 h-3 mr-1" />
               MAIS VENDIDO
             </Badge>
@@ -382,7 +382,7 @@ function ProductCard({
             <span
               className={`text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider transition-all ${
                 currentGender === 'masculino'
-                  ? 'bg-[#002776] text-white'
+                  ? 'bg-[#2563EB] text-white'
                   : 'bg-white/50 text-gray-500'
               }`}
             >
@@ -391,7 +391,7 @@ function ProductCard({
             <span
               className={`text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider transition-all ${
                 currentGender === 'feminino'
-                  ? 'bg-[#00843D] text-white'
+                  ? 'bg-[#7C3AED] text-white'
                   : 'bg-white/50 text-gray-500'
               }`}
             >
@@ -425,7 +425,7 @@ function ProductCard({
         {/* Quick Add */}
         <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
           <Button
-            className="w-full bg-[#00843D] hover:bg-[#006633] text-white font-display"
+            className="w-full bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/produto/${product.slug}`);
@@ -446,7 +446,7 @@ function ProductCard({
           <HoverCard openDelay={200} closeDelay={100}>
             <HoverCardTrigger asChild>
               <button
-                className="hidden md:flex items-center gap-1 text-xs text-gray-400 hover:text-[#00843D] transition-colors"
+                className="hidden md:flex items-center gap-1 text-xs text-gray-400 hover:text-[#7C3AED] transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -471,7 +471,7 @@ function ProductCard({
                   {product.description}
                 </p>
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-lg text-[#00843D]">
+                  <span className="font-display text-lg text-[#7C3AED]">
                     {formatPrice(product.price)}
                   </span>
                   <span className="text-xs text-gray-400 font-body">
@@ -483,12 +483,12 @@ function ProductCard({
           </HoverCard>
         </div>
 
-        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#00843D] transition-colors">
+        <h3 className="font-body font-medium text-gray-900 line-clamp-2 mb-2 group-hover:text-[#7C3AED] transition-colors">
           {product.name}
         </h3>
 
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-xl text-[#00843D]">
+          <span className="font-display text-xl text-[#7C3AED]">
             {formatPrice(product.price)}
           </span>
         </div>
@@ -668,7 +668,7 @@ function CatalogContent() {
   /* 1: SEO Meta Tags (native, no external dependency) */
   useEffect(() => {
     const prev = document.title;
-    document.title = 'Catálogo Completo - Bravos Brasil | Moda Patriótica';
+    document.title = 'Catálogo Completo - GEEKERIA | Moda Geek';
 
     const metas: HTMLMetaElement[] = [];
     const links: HTMLLinkElement[] = [];
@@ -682,7 +682,7 @@ function CatalogContent() {
     };
 
     setMeta('name', 'description', 'Explore nossa coleção completa de roupas patrióticas brasileiras. +45 produtos com frete grátis. Camisetas, moletons, bonés e mais.');
-    setMeta('property', 'og:title', 'Catálogo Bravos Brasil - Moda Patriótica');
+    setMeta('property', 'og:title', 'Catálogo GEEKERIA - Moda Geek');
     setMeta('property', 'og:description', 'Coleção completa de roupas patrióticas brasileiras. Camisetas, moletons, bonés e acessórios com frete grátis.');
     setMeta('property', 'og:type', 'website');
     setMeta('property', 'og:url', 'https://bravosbrasil.com.br/catalogo');
@@ -791,7 +791,7 @@ function CatalogContent() {
                     <Filter className="w-4 h-4" />
                     <span className="font-display text-sm">FILTROS</span>
                     {hasActiveFilters && (
-                      <span className="w-2 h-2 bg-[#00843D] rounded-full" />
+                      <span className="w-2 h-2 bg-[#7C3AED] rounded-full" />
                     )}
                   </Button>
                 </SheetTrigger>
@@ -821,7 +821,7 @@ function CatalogContent() {
                     variant="ghost"
                     size="sm"
                     onClick={clearFilters}
-                    className="text-sm text-[#00843D]"
+                    className="text-sm text-[#7C3AED]"
                   >
                     Limpar filtros
                   </Button>
@@ -873,7 +873,7 @@ function CatalogContent() {
                   </p>
                   <Button
                     onClick={clearFilters}
-                    className="bg-[#00843D] hover:bg-[#006633] text-white font-display"
+                    className="bg-[#7C3AED] hover:bg-[#5B21B6] text-white font-display"
                   >
                     Limpar filtros
                   </Button>

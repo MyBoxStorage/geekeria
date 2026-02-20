@@ -156,7 +156,7 @@ export async function createPayment(req: Request, res: Response) {
     // Preparar dados para o Mercado Pago
     const mpPaymentData: any = {
       transaction_amount: amount,
-      description: `Pedido BRAVOS BRASIL - ${items.length} item(ns)`,
+      description: `Pedido GEEKERIA - ${items.length} item(ns)`,
       payment_method_id: paymentMethod === 'pix' ? 'pix' : 'bolbradesco',
       payer: {
         email: payer.email,
@@ -177,7 +177,7 @@ export async function createPayment(req: Request, res: Response) {
         }),
       },
       external_reference: externalReference,
-      statement_descriptor: 'BRAVOS BRASIL',
+      statement_descriptor: 'GEEKERIA',
       notification_url: process.env.BACKEND_URL 
         ? `${process.env.BACKEND_URL}/api/mp/webhooks`
         : undefined,

@@ -135,7 +135,7 @@ export async function createPreference(req: Request, res: Response) {
         }),
       },
       external_reference: order.externalReference,
-      statement_descriptor: 'BRAVOS BRASIL',
+      statement_descriptor: 'GEEKERIA',
       back_urls: {
         success: `${frontendUrl}/checkout/success`,
         failure: `${frontendUrl}/checkout/failure`,
@@ -161,7 +161,7 @@ export async function createPreference(req: Request, res: Response) {
         order_id: order.id,
         external_reference: order.externalReference,
         items_count: order.items.length,
-        platform: 'BRAVOS_BRASIL',
+        platform: 'GEEKERIA',
       },
     };
 

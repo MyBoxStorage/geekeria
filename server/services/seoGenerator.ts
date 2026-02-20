@@ -21,10 +21,10 @@ interface ProductSEOOutput {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  camisetas: 'Camiseta',
-  bone: 'Boné',
-  moletom: 'Moletom',
-  polo: 'Polo',
+  animes: 'Anime',
+  games: 'Gamer',
+  series: 'Séries',
+  filmes: 'Filmes',
   infantil: 'Infantil',
   acessorios: 'Acessório',
 };
@@ -38,22 +38,22 @@ function generateSEOFromTemplate(product: ProductSEOInput): ProductSEOOutput {
         ? 'Masculina'
         : '';
 
-  const metaTitle = `${product.name} | BRAVOS BRASIL`.substring(0, 60).trim();
+  const metaTitle = `${product.name} | GEEKERIA`.substring(0, 60).trim();
 
   const desc = product.description
-    ? `${categoryLabel} patriótica ${genderLabel} - ${product.description}`
-    : `${categoryLabel} patriótica ${genderLabel} ${product.name}. Qualidade premium, estampas exclusivas. Compre na BRAVOS BRASIL.`;
+    ? `${categoryLabel} geek ${genderLabel} - ${product.description}`
+    : `${categoryLabel} geek ${genderLabel} ${product.name}. Qualidade premium, estampas exclusivas. Compre na GEEKERIA.`;
   const metaDescription = desc.substring(0, 160).trim();
 
   const seoTags = [
-    'bravos brasil',
-    'roupa patriótica',
-    `${categoryLabel.toLowerCase()} patriótica`,
-    'brasil',
-    'patriotismo',
+    'geekeria',
+    'camiseta geek',
+    `${categoryLabel.toLowerCase()} geek`,
+    'cultura pop',
+    'anime games filmes',
     product.category,
     product.gender !== 'unissex' ? product.gender : 'unissex',
-    'deus pátria família',
+    'camiseta estampa exclusiva',
   ]
     .filter(Boolean)
     .slice(0, 8);
@@ -72,9 +72,9 @@ export async function generateProductSEO(
   }
 
   try {
-    const prompt = `Você é um especialista em SEO para e-commerce brasileiro de moda patriótica e cristã.
+    const prompt = `Você é um especialista em SEO para e-commerce brasileiro de moda geek e cultura pop.
 
-Gere SEO otimizado para este produto da marca BRAVOS BRASIL:
+Gere SEO otimizado para este produto da marca GEEKERIA:
 - Nome do produto: ${product.name}
 - Categoria: ${product.category}
 - Gênero: ${product.gender}
@@ -84,21 +84,21 @@ ${product.badge ? `- Badge: ${product.badge}` : ''}
 
 INSTRUÇÕES CRÍTICAS:
 1. O NOME DO PRODUTO é a palavra-chave principal. Use-o como base do metaTitle.
-2. Extraia da descrição a PROPOSTA EMOCIONAL — fé, patriotismo, orgulho nacional, tradição, valores cristãos, amor ao Brasil. Essa emoção deve estar presente no metaTitle e metaDescription.
-3. O metaDescription deve conectar a emoção do produto com a intenção de compra. Use linguagem que ressoe com brasileiros que valorizam Deus, Pátria e Família. Termine com call-to-action direto.
-4. As seoTags devem misturar: (a) termos emocionais de busca — como "camiseta patriótica", "roupa cristã brasil", "camiseta fé e pátria"; (b) termos específicos do tema do produto — extraídos do nome e da descrição; (c) termos de intenção de compra — como "comprar camiseta patriótica", "presente patriótico".
+2. Extraia da descrição a PAIXÃO GEEK — anime, games, filmes, séries, cultura pop, nostalgia. Essa emoção deve estar presente no metaTitle e metaDescription.
+3. O metaDescription deve conectar a paixão do fã com a intenção de compra. Use linguagem que ressoe com quem ama cultura geek. Termine com call-to-action direto.
+4. As seoTags devem misturar: (a) termos de busca do nicho — como "camiseta anime", "camiseta gamer", "camiseta geek brasil"; (b) termos específicos do tema do produto — extraídos do nome e da descrição; (c) termos de intenção de compra — como "comprar camiseta geek", "presente geek".
 5. NUNCA use termos técnicos (gramatura, fio, DTG) nas tags ou description — esses são diferenciais de conversão, não de busca.
-6. Escreva como um brasileiro fala e busca — informal, direto, emocional.
+6. Escreva como um fã brasileiro fala e busca — informal, direto, apaixonado.
 
 Retorne APENAS um JSON válido (sem markdown, sem explicações) neste formato exato:
 {
-  "metaTitle": "título com máximo 60 caracteres terminando com | BRAVOS BRASIL",
+  "metaTitle": "título com máximo 60 caracteres terminando com | GEEKERIA",
   "metaDescription": "máximo 160 caracteres, emocional, com call-to-action",
   "seoTags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8"]
 }
 
 Regras absolutas:
-- metaTitle: máximo 60 caracteres, termine com " | BRAVOS BRASIL"
+- metaTitle: máximo 60 caracteres, termine com " | GEEKERIA"
 - metaDescription: máximo 160 caracteres
 - seoTags: 6 a 8 tags, todas em português, foco emocional e de intenção de compra`;
 

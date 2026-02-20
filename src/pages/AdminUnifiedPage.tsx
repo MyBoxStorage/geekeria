@@ -50,7 +50,7 @@ function resolveInitialTab(paramTab: string | null, pathname: string): TabId {
 }
 
 export function AdminUnifiedPage() {
-  useSEO({ title: 'Admin | BRAVOS BRASIL', description: '', noindex: true });
+  useSEO({ title: 'Admin | GEEKERIA', description: '', noindex: true });
 
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -124,7 +124,7 @@ export function AdminUnifiedPage() {
                 color: '#fff',
               }}
             >
-              BRAVOS <span style={{ color: '#FFCC29' }}>BRASIL</span>
+              GEEKERIA
             </div>
           )}
           <button
@@ -159,9 +159,9 @@ export function AdminUnifiedPage() {
                 cursor: 'pointer',
                 marginBottom: 4,
                 background:
-                  activeTab === tab.id ? '#00843D20' : 'transparent',
-                color: activeTab === tab.id ? '#00843D' : '#666',
-                borderLeft: `3px solid ${activeTab === tab.id ? '#00843D' : 'transparent'}`,
+                  activeTab === tab.id ? '#7C3AED20' : 'transparent',
+                color: activeTab === tab.id ? '#7C3AED' : '#666',
+                borderLeft: `3px solid ${activeTab === tab.id ? '#7C3AED' : 'transparent'}`,
                 transition: 'all 0.15s',
                 justifyContent: sidebarOpen ? 'flex-start' : 'center',
                 fontFamily: "'Inter', sans-serif",
