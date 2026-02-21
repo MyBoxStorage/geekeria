@@ -6,7 +6,7 @@ import { Hero } from '@/sections/Hero';
 import { SocialProof } from '@/sections/SocialProof';
 import { FeaturedProducts } from '@/sections/FeaturedProducts';
 import { VideoShowcase } from '@/sections/VideoShowcase';
-import { GeradorEstampas } from '@/components/GeradorEstampas';
+import { GeradorEstampas } from '@/sections/GeradorEstampas';
 import { Values } from '@/sections/Values';
 import { Testimonials } from '@/sections/Testimonials';
 import { FAQ } from '@/sections/FAQ';
